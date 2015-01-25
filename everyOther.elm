@@ -6,16 +6,16 @@ import List ( (::) )
 import List 
 import Text (..)
 
---zipWith = List.map2
-zipWith = List.length
+zipWith = List.map2
+-- zipWith = List.length
 -- zipWith = map
 
 main : Element
 --main = asText (List.filter filterEvenTuples (pairList['a', 'b', 'c']))
 --main = asText (everyOther ['a', 'b', 'c'])
 --main = asText (everyOther [1, 2, 3, 4])
---main = asText (everyOther ["Tom", "Sue", "Sam"])
-main = asText (everyOther [])
+main = asText (everyOther ["Tom", "Sue", "Sam"])
+--main = asText (everyOther [])
 
 
 --everyOther : List a -> List (a, Int)
@@ -47,7 +47,8 @@ filterEvenTuples (a, b) =
 
 pairList : List a -> List (a, Int)
 pairList list =
-  List.map2 (,) list [1..5000]
+--  List.map2 (,) list [1..5000]
+  zipWith (,) list [1..5000]
 
 dropT : List String -> List String
 dropT list = 
