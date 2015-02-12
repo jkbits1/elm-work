@@ -21,6 +21,7 @@ import Window
 
 --main = render <~ state
 main : Element.Element
+--main : Signal Element.Element
 main = render 
 
 render : Element.Element
