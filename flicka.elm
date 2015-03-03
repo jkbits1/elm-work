@@ -142,11 +142,6 @@ toPhotoRequestURL tag =
   in  
     if tag == "" then "" else flickrRequest args ++ tag
         
---toPhotoRequest : String -> Http.Request String
---toPhotoRequest tag =
---  let args = "&method=flickr.photos.search&sort=random&per_page=10&tags="
---  in  Http.get (if tag == "" then "" else flickrRequest args ++ tag)
-  
 toPhotoRequest : String -> Http.Request String
 toPhotoRequest tag =
   Http.get (toPhotoRequestURL tag)
