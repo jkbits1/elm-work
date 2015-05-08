@@ -104,6 +104,7 @@ resultsSendReq : Signal (Http.Request String) -> Signal (Http.Response String)
 resultsSendReq req =
   Http.send req
   
+-- from http response, get "source" of first item (or return Nothing)
 toPhotoSource : Http.Response String -> Maybe String
 toPhotoSource json = 
   case decodeResponse sizeList json of
@@ -135,17 +136,20 @@ sizeList =
         ("source" := string)
         ("width" := number)
         ("height" := number)
-        
+     
+-- create flickr URL with provided tag     
 toPhotoRequestURL : String -> String
 toPhotoRequestURL tag =
   let args = "&method=flickr.photos.search&sort=random&per_page=10&tags="
   in  
     if tag == "" then "" else flickrRequest args ++ tag
         
+-- given a inputted tag, make a flickr api http get request
 toPhotoRequest : String -> Http.Request String
 toPhotoRequest tag =
   Http.get (toPhotoRequestURL tag)
 
+-- return basic flickr api URL added to provided tags
 flickrRequest : String -> String
 flickrRequest args = 
   "https://api.flickr.com/services/rest/?format=json"
