@@ -1,9 +1,9 @@
 import Signal
 import String
 import Char
-import Graphics.Element (flow, down, right, layers, container, middle, spacer, color, bottomRightAt, absolute, Element)
+import Graphics.Element exposing (flow, down, right, layers, container, middle, spacer, color, bottomRightAt, absolute, Element, leftAligned)
 import Graphics.Input as Input
-import Color (black, grey, white, rgba, Color)
+import Color exposing (black, grey, white, rgba, Color)
 --import Text (fromString)
 import Text 
 
@@ -12,10 +12,10 @@ main =
 --  Signal.subscribe commandChnl
 --    |> Signal.foldp update (Start zero)
 --    |> Signal.map calculator 
-    Signal.map calculator (Signal.foldp update (Start zero) (Signal.subscribe commandChnl))
+    Signal.map calculator (Signal.foldp update (Start zero) commandChnl.signal)
   
-commandChnl : Signal.Channel Command
-commandChnl = Signal.channel Clear
+commandChnl : Signal.Mailbox Command
+commandChnl = Signal.mailbox Clear
 
 type Command =
   Digit String | Decimal | Add | Mult | Equals | Clear
@@ -136,7 +136,7 @@ button w command name =
 --          ]
 --  in Input.customButton (Signal.send commandChnl command) 
 --  in  customButton (Signal.send commandChnl command) 
-  Input.customButton (Signal.send commandChnl command) 
+  Input.customButton (Signal.message commandChnl.address command) 
                         (btn w 0 name) (btn w 0.05 name) (btn w 0.1 name)
 
 btn : Int -> Float -> String -> Element
@@ -178,7 +178,7 @@ txt : Float -> Color -> String -> Element
 txt p clr string =
   Text.fromString string
     |> Text.color clr
-    |> Text.leftAligned
+    |> leftAligned
         
 equals : State -> Float
 equals state = 
