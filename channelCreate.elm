@@ -7,12 +7,13 @@ import Html.Events
 
 type Update = NoOp | Add Int | Remove Int
 
-updates : Signal.Channel Update
-updates = Signal.channel NoOp
+updatesChnl : Signal.Mailbox Update
+updatesChnl = Signal.mailbox NoOp
 
 addButton : Html.Html
 addButton = Html.button
-  [ Html.Events.onClick (Signal.send updates (Add 1))]
+--  [ Html.Events.onClick (Signal.send updates (Add 1))]
+  [ Html.Events.onClick updatesChnl.address (Add 1)]
   [ Html.text "Add 1" ]
 
 -- this bit, from Signal package example doesn't work
