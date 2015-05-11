@@ -3,7 +3,7 @@
 --import Signal (channel)
 import Signal 
 --import Html
-import Html exposing (Html, div)
+import Html exposing (Html, div, text)
 import Html.Attributes exposing (class)
 import Html.Events
 import Graphics.Input.Field as Field
@@ -47,7 +47,8 @@ main = Signal.map (view updatesChnl.address) model
 view : Signal.Address Update -> Model -> Html
 view address model = div [class "container"]
   [
-    addButton
+    addButton,    
+    div [] [ text (toString model) ]
   ]
 
 model : Signal Model
