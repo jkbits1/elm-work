@@ -17,6 +17,7 @@ type Update = NoOp | Add Int | Remove Int
 updatesChnl : Signal.Mailbox Update
 updatesChnl = Signal.mailbox NoOp
 
+-- created by view, returns Html and sends Updates to updatesChnl
 addButton : Html
 addButton = Html.button
 --  [ Html.Events.onClick (Signal.send updates (Add 1))]
@@ -41,19 +42,25 @@ addButton = Html.button
 --    addButton
 --  ]
 
+-- converts Signal Model to Signal Html, using non-signal view
 main : Signal Html
 main = Signal.map (view updatesChnl.address) model
 
+-- used by main, as a non-signal function, to convert a Model to Html
 view : Signal.Address Update -> Model -> Html
-view address model = div [class "container"]
+view address model = 
+  div [class "container"]
   [
     addButton,    
     div [] [ text (toString model) ]
   ]
 
+-- converts Signal Update (from updatesChnl) to Signal Model, 
+-- using non-signal updateModel
 model : Signal Model
 model = Signal.foldp updateModel 0 updatesChnl.signal 
 
+-- converts Update to new Model
 updateModel : Update -> Model -> Model
 updateModel update model =
   case update of
