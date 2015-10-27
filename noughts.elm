@@ -5,12 +5,12 @@ import Signal exposing (Address)
 import StartApp.Simple as StartApp
 import String
 
--- converts Signal Model to Signal Html, using non-signal view
 main : Signal Html
---main = StartApp.start { model = model, view = view, update = update }
 main = StartApp.start { model = init, view = view, update = update }
 
---type alias Board = 
+type alias Action = String  
+
+-- this stores game Board and moves together = 
 type alias Model = 
   { cells : List Char,
     moves : List String
@@ -23,7 +23,6 @@ init =
     moves = []
   }
 
--- view : Address String -> Int -> Html
 view : Address Action -> Model -> Html
 view address model =   
   div [class "row"]
@@ -65,12 +64,8 @@ validateMove move =
     then True
     else False
  
-type alias Action = String  
-
 update : Action -> Model -> Model
 update action model =
---  case action of
---    "0" ->        
     let moveAsChar = (maybeToBlank (List.head (String.toList action)))
         valid = validateMove moveAsChar 
         cells = processMove moveAsChar model.cells 
@@ -81,8 +76,3 @@ update action model =
         moves = [action] ++ model.moves
       } 
       else model
---    otherwise ->  { 
---      cells = ['_', '_', '_'],
---      moves = model.moves
---    }
-
