@@ -68,11 +68,10 @@ update : Action -> Model -> Model
 update action model =
     let moveAsChar = (maybeToBlank (List.head (String.toList action)))
         valid = validateMove moveAsChar 
-        cells = processMove moveAsChar model.cells 
     in
     if valid 
       then { 
-        cells = cells,
+        cells = processMove moveAsChar model.cells,
         moves = [action] ++ model.moves
       } 
       else model
