@@ -58,21 +58,29 @@ processMove move cs =
     '0' -> 'X' :: (List.drop 1 cs)
     '1' -> maybeToBlank (List.head cs) :: 'X' :: (List.drop 2 cs)
     otherwise -> (List.take 2 cs) ++ ['X']
-
+    
+validateMove : Char -> Bool
+validateMove move =
+  if move == '0' || move == '1' || move == '2' 
+    then True
+    else False
+ 
 type alias Action = String  
 
 update : Action -> Model -> Model
 update action model =
 --  case action of
 --    "0" ->        
-    let cells = processMove 
-                    (maybeToBlank (List.head (String.toList action)))
-                    model.cells 
+    let moveAsChar = (maybeToBlank (List.head (String.toList action)))
+        valid = validateMove moveAsChar 
+        cells = processMove moveAsChar model.cells 
     in
-    { 
-      cells = cells,
-      moves = [action] ++ model.moves
-    } 
+    if valid 
+      then { 
+        cells = cells,
+        moves = [action] ++ model.moves
+      } 
+      else model
 --    otherwise ->  { 
 --      cells = ['_', '_', '_'],
 --      moves = model.moves
