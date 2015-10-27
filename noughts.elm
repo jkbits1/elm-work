@@ -7,23 +7,35 @@ import String
 
 -- converts Signal Model to Signal Html, using non-signal view
 main : Signal Html
-main = StartApp.start { model = model, view = view, update = update }
+--main = StartApp.start { model = model, view = view, update = update }
+main = StartApp.start { model = init, view = view, update = update }
 
-model : Int
-model = 0
+--type alias Board = 
+type alias Model = 
+  { cells : List (String),
+    moves : List (String)
+  }
+  
+init : Model  
+init = 
+  {
+    cells = ["_", "_", "_"],
+    moves = []
+  }
 
 -- view : Address String -> Int -> Html
-view : Address Action -> Int -> Html
+view : Address Action -> Model -> Html
 view address model =   
   div [class "row"]
-  ( row model ++
+  ( 
+    row model ++
     [
       div [class "move"]
       [
         input
           [
             placeholder "Move"
-            , value (toString model)
+--            , value (toString (List.head model.moves))
             , on "input" targetValue (Signal.message address)
           ]
           []
@@ -32,10 +44,10 @@ view address model =
   )
   
   
-row : Int -> List Html
+row : Model -> List Html
 row model = 
   -- text "X":: text "X" :: text "X" :: []
-  if model == 0 
+  if List.head model.moves == Just "0" 
     then [text "X", text "_", text "_"]
     else [text "_", text "_", text "_"]
     
@@ -49,9 +61,15 @@ row model =
 
 type alias Action = String  
 
-update : Action -> Int -> Int
+update : Action -> Model -> Model
 update action model =
   case action of
-    "0" -> 0
-    otherwise -> 1
+    "0" ->        { 
+      cells = ["X", "_", "_"],
+      moves = [action] ++ model.moves
+    } 
+    otherwise ->  { 
+      cells = ["_", "_", "_"],
+      moves = model.moves
+    }
 
