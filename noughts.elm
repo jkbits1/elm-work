@@ -44,19 +44,7 @@ view address model =
   )
     
 row : Model -> List Html
-row model = 
-  -- text "X":: text "X" :: text "X" :: []
---  case List.head model.moves of
---    Just move ->   
---      let cells = processMove 
---                    (maybeToBlank (List.head (String.toList move)))
---                    model.cells 
---      in
---      List.map (\x -> text (toString x)) cells
---      [text (toString cells) ]
-      [text (String.fromList model.cells) ]
---      [text "X", text "_", text "_"]
---    otherwise ->  [text "_", text "_", text "_"]
+row model = [text (String.fromList model.cells) ]
 
 maybeToBlank : Maybe Char -> Char
 maybeToBlank maybeChar = 
@@ -83,7 +71,6 @@ update action model =
     in
     { 
       cells = cells,
---      cells = ['X', '_', '_'],
       moves = [action] ++ model.moves
     } 
 --    otherwise ->  { 
