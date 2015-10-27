@@ -47,9 +47,9 @@ view address model =
 row : Model -> List Html
 row model = 
   -- text "X":: text "X" :: text "X" :: []
-  if List.head model.moves == Just "0" 
-    then [text "X", text "_", text "_"]
-    else [text "_", text "_", text "_"]
+  case List.head model.moves of
+    Just "0" ->   [text "X", text "_", text "_"]
+    otherwise ->  [text "_", text "_", text "_"]
     
 
 --processMove move cs =
