@@ -46,17 +46,17 @@ view address model =
 row : Model -> List Html
 row model = 
   -- text "X":: text "X" :: text "X" :: []
-  case List.head model.moves of
-    Just move ->   
-      let cells = processMove 
-                    (maybeToBlank (List.head (String.toList move)))
-                    model.cells 
-      in
+--  case List.head model.moves of
+--    Just move ->   
+--      let cells = processMove 
+--                    (maybeToBlank (List.head (String.toList move)))
+--                    model.cells 
+--      in
 --      List.map (\x -> text (toString x)) cells
 --      [text (toString cells) ]
-      [text (String.fromList cells) ]
+      [text (String.fromList model.cells) ]
 --      [text "X", text "_", text "_"]
-    otherwise ->  [text "_", text "_", text "_"]
+--    otherwise ->  [text "_", text "_", text "_"]
 
 maybeToBlank : Maybe Char -> Char
 maybeToBlank maybeChar = 
