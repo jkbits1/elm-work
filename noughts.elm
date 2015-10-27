@@ -12,14 +12,14 @@ main = StartApp.start { model = init, view = view, update = update }
 
 --type alias Board = 
 type alias Model = 
-  { cells : List (String),
-    moves : List (String)
+  { cells : List Char,
+    moves : List String
   }
   
 init : Model  
 init = 
   {
-    cells = ["_", "_", "_"],
+    cells = ['_', '_', '_'],
     moves = []
   }
 
@@ -42,34 +42,48 @@ view address model =
       ]
     ]
   )
-  
-  
+    
 row : Model -> List Html
 row model = 
   -- text "X":: text "X" :: text "X" :: []
   case List.head model.moves of
-    Just "0" ->   [text "X", text "_", text "_"]
+    Just move ->   
+      let cells = processMove 
+                    (maybeToBlank (List.head (String.toList move)))
+                    model.cells 
+      in
+--      List.map (\x -> text (toString x)) cells
+--      [text (toString cells) ]
+      [text (String.fromList cells) ]
+--      [text "X", text "_", text "_"]
     otherwise ->  [text "_", text "_", text "_"]
-    
 
---processMove move cs =
---    if move == '0'
---        then 'X': (drop 1 cs)
---        else if move == '1'
---            then (head cs): 'X': (drop 2 cs)
---            else (take 2 cs) ++ ['X']
+maybeToBlank : Maybe Char -> Char
+maybeToBlank maybeChar = 
+  case maybeChar of 
+    Just value  -> value
+    Nothing     -> '_'
+
+processMove : Char -> List Char -> List Char
+processMove move cs =
+  case move of 
+    '0' -> 'X' :: (List.drop 1 cs)
+    '1' -> maybeToBlank (List.head cs) :: 'X' :: (List.drop 2 cs)
+    otherwise -> (List.take 2 cs) ++ ['X']
 
 type alias Action = String  
 
 update : Action -> Model -> Model
 update action model =
-  case action of
-    "0" ->        { 
-      cells = ["X", "_", "_"],
+--  case action of
+--    "0" ->        
+    { 
+      cells = model.cells,
+--      cells = ['X', '_', '_'],
       moves = [action] ++ model.moves
     } 
-    otherwise ->  { 
-      cells = ["_", "_", "_"],
-      moves = model.moves
-    }
+--    otherwise ->  { 
+--      cells = ['_', '_', '_'],
+--      moves = model.moves
+--    }
 
