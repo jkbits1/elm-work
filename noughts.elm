@@ -77,8 +77,12 @@ update : Action -> Model -> Model
 update action model =
 --  case action of
 --    "0" ->        
+    let cells = processMove 
+                    (maybeToBlank (List.head (String.toList action)))
+                    model.cells 
+    in
     { 
-      cells = model.cells,
+      cells = cells,
 --      cells = ['X', '_', '_'],
       moves = [action] ++ model.moves
     } 
