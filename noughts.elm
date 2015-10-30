@@ -15,6 +15,7 @@ type alias Model =
   { rowCount  : Int,
     cells     : List Char,
     moves     : List String,
+    gameOver  : Bool,
     message   : String
   }
   
@@ -24,6 +25,7 @@ init =
     rowCount  = 1,
     cells     = ['_', '_', '_'],
     moves     = [],
+    gameOver  = False,
     message   = ""
   }
 
@@ -52,21 +54,39 @@ update action model =
         valid = validateMove moveAsChar 
     in
     if valid 
-      then {
-        rowCount  = model.rowCount,
-        cells     = processMove moveAsChar model.cells,
-        moves     = [action] ++ model.moves,
-        message   = model.message
-      } 
+      then 
+        let cells     = processMove moveAsChar model.cells
+            moves     = [action] ++ model.moves 
+        in
+        if checkForWin cells
+          then 
+          {
+            rowCount  = model.rowCount,
+            cells     = cells,
+            moves     = moves,
+            gameOver  = True,
+            message   = "You win!" -- ++ (String.concat moves) 
+--            message   = "You win!" ++ (joinMoves moves)
+          } 
+          else
+          {
+            rowCount  = model.rowCount,
+            cells     = cells,
+            moves     = moves,
+            gameOver  = model.gameOver,
+            message   = model.message          
+          }
       else model
 
 row : Model -> List Html
 row model = 
   let htmlOutput = [text (String.fromList model.cells) ] in
-  if checkForWin model
-    then [text "You win!", br[][]] ++ 
-      htmlOutput
-    else htmlOutput  
+  if model.gameOver
+    then htmlOutput ++
+          [ br[][], text model.message ] 
+      
+    else htmlOutput 
+--          ++ [text <| String.concat model.moves]
 
 maybeToBlank : Maybe Char -> Char
 maybeToBlank maybeChar = 
@@ -90,11 +110,13 @@ validateMove move =
     then True
     else False
     
-checkForWin : Model -> Bool
-checkForWin model = 
-    let cs = model.cells in
+checkForWin : List Char -> Bool
+checkForWin cs = 
     let testChar = 'X' in
         maybeHeadToBlank cs == testChar 
             && (maybeHeadToBlank <| List.drop 1 cs) == testChar 
             && (maybeHeadToBlank <| List.drop 2 cs) == testChar
-             
+
+
+--joinMoves : List String -> String
+--joinMoves cs = List.foldr (++) "" cs
