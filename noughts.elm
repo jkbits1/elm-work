@@ -33,7 +33,7 @@ view : Address Action -> Model -> Html
 view address model =   
   div [class "row"]
   ( 
-    row model ++
+    boardAsHtml model ++
     [
       div [class "move"]
       [
@@ -55,15 +55,15 @@ update action model =
     in
     if valid 
       then 
-        let cells     = processMove moveAsChar model.cells
-            moves     = [action] ++ model.moves 
+        let newCells     = processMove moveAsChar model.cells
+            newMoves     = [action] ++ model.moves 
         in
-        if checkForWin cells
+        if checkForWin newCells
           then 
           {
             rowCount  = model.rowCount,
-            cells     = cells,
-            moves     = moves,
+            cells     = newCells,
+            moves     = newMoves,
             gameOver  = True,
             message   = "You win!" -- ++ (String.concat moves) 
 --            message   = "You win!" ++ (joinMoves moves)
@@ -71,20 +71,19 @@ update action model =
           else
           {
             rowCount  = model.rowCount,
-            cells     = cells,
-            moves     = moves,
+            cells     = newCells,
+            moves     = newMoves,
             gameOver  = model.gameOver,
             message   = model.message          
           }
       else model
 
-row : Model -> List Html
-row model = 
+boardAsHtml : Model -> List Html
+boardAsHtml model = 
   let htmlOutput = [text (String.fromList model.cells) ] in
   if model.gameOver
     then htmlOutput ++
-          [ br[][], text model.message ] 
-      
+          [ br[][], text model.message ]       
     else htmlOutput 
 --          ++ [text <| String.concat model.moves]
 
@@ -116,7 +115,6 @@ checkForWin cs =
         maybeHeadToBlank cs == testChar 
             && (maybeHeadToBlank <| List.drop 1 cs) == testChar 
             && (maybeHeadToBlank <| List.drop 2 cs) == testChar
-
 
 --joinMoves : List String -> String
 --joinMoves cs = List.foldr (++) "" cs
