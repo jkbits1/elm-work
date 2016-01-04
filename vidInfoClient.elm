@@ -65,10 +65,24 @@ resultsChnl = Signal.mailbox "waiting.gif"
 
 port updateResultsVidInfo : Signal (Task Http.Error ())
 port updateResultsVidInfo =
-  Signal.map2 getFlickrImage Window.dimensions queryChnl.signal
+--  Signal.map2 getFlickrImage Window.dimensions queryChnl.signal
+  Signal.map getFileNamesAsString queryChnl.signal
     |> Signal.sampleOn trigger
     |> Signal.map (\task -> task `andThen` Signal.send resultsChnl.address)
 
+getStringCors : String -> Task Http.Error String
+getStringCors url =
+  let request =
+        { verb = "GET"
+        , headers = [
+--            ("Accept", "*/*")
+        ]
+        , url = url
+        , body = Http.empty
+        }
+  in
+      mapError promoteError (Http.send Http.defaultSettings request)
+        `andThen` handleResponse succeed
 
 trigger : Signal Bool
 trigger =
@@ -92,8 +106,30 @@ getFlickrImage dimensions tag =
         `andThen`
             pickSize dimensions
 
-getFileNamesAsString : Task Http.Error String
-getFileNamesAsString = Http.getString "localhost:9090/vidInfo/files"
+getFileNamesAsString : String -> Task Http.Error String
+getFileNamesAsString string = Http.getString "http://localhost:9090/vidInfo/files"
+--getFileNamesAsString string = getStringCors "http://localhost:9090/vidInfo/files"
+
+promoteError : Http.RawError -> Http.Error
+promoteError rawError =
+  case rawError of
+    Http.RawTimeout -> Http.Timeout
+    Http.RawNetworkError -> Http.NetworkError
+    
+handleResponse : (String -> Task Http.Error a) -> Http.Response -> Task Http.Error a
+handleResponse handle response =
+  if 200 <= response.status && response.status < 300 then
+
+      case response.value of
+        Http.Text str ->
+            handle str
+
+        _ ->
+            fail (Http.UnexpectedPayload "Response body is a blob, expecting a string.")
+
+  else
+
+      fail (Http.BadResponse response.status response.statusText)    
 
 -- JSON DECODERS
 
