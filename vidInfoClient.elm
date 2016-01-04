@@ -64,8 +64,8 @@ resultsChnl = Signal.mailbox "waiting.gif"
 --    |> Signal.sampleOn trigger
 --    |> Signal.map (\task -> task `andThen` Signal.send resultsChnl.address)
 
-port updateResultsVidInfo : Signal (Task Http.Error ())
-port updateResultsVidInfo =
+port getVidInfoFiles : Signal (Task Http.Error ())
+port getVidInfoFiles =
 --  Signal.map2 getFlickrImage Window.dimensions queryChnl.signal
   Signal.map getFileNamesAsString queryChnl.signal
     |> Signal.sampleOn trigger
@@ -108,7 +108,11 @@ getFlickrImage dimensions tag =
             pickSize dimensions
 
 getFileNamesAsString : String -> Task Http.Error String
-getFileNamesAsString string = Http.getString "http://localhost:9090/vidInfo/files"
+getFileNamesAsString string = 
+  Http.getString -- "http://localhost:9090/vidInfo/files"
+--    vidInfoURL        
+    vidInfoFilesURL        
+
 --getFileNamesAsString string = getStringCors "http://localhost:9090/vidInfo/files"
 
 promoteError : Http.RawError -> Http.Error
@@ -178,9 +182,13 @@ createFlickrURL method args =
     , ("method", "flickr.photos." ++ method)
     ] ++ args
 
-createInfoURL : String -> List (String, String) -> String
-createInfoURL method args =
+vidInfoURL : String
+vidInfoURL =
   Http.url "http://localhost:9090/vidInfo" []
+
+vidInfoFilesURL : String
+vidInfoFilesURL =
+  Http.url "http://localhost:9090/vidInfo/files" []
 
 
 -- HANDLE RESPONSES
