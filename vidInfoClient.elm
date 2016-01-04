@@ -57,8 +57,14 @@ resultsChnl : Signal.Mailbox String
 resultsChnl = Signal.mailbox "waiting.gif"
 
 
-port updateResults : Signal (Task Http.Error ())
-port updateResults =
+--port updateResults : Signal (Task Http.Error ())
+--port updateResults =
+--  Signal.map2 getFlickrImage Window.dimensions queryChnl.signal
+--    |> Signal.sampleOn trigger
+--    |> Signal.map (\task -> task `andThen` Signal.send resultsChnl.address)
+
+port updateResultsVidInfo : Signal (Task Http.Error ())
+port updateResultsVidInfo =
   Signal.map2 getFlickrImage Window.dimensions queryChnl.signal
     |> Signal.sampleOn trigger
     |> Signal.map (\task -> task `andThen` Signal.send resultsChnl.address)
