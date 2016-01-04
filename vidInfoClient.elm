@@ -12,14 +12,15 @@ import Window
 
 view : Int -> String -> String -> Html
 view height searchString imgUrl =
-  div [ style (imgStyle height imgUrl) ]
+  div [ style (imgStyle height "") ]
     [ input
         [ placeholder "Files Query"
         , Attr.value searchString
         , on "input" targetValue (Signal.message queryChnl.address)
         , style myStyle
         ]
-        []
+        [],
+        div [] [ text imgUrl ]
     ]
 
 
