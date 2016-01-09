@@ -20,7 +20,9 @@ view height searchString imgUrl =
         , style myStyle
         ]
         [],
-        div [] [ text imgUrl ]
+        div [] [ 
+         text imgUrl 
+        ]
     ]
 
 
@@ -64,10 +66,17 @@ resultsChnl = Signal.mailbox "waiting.gif"
 --    |> Signal.sampleOn trigger
 --    |> Signal.map (\task -> task `andThen` Signal.send resultsChnl.address)
 
+--port getVidInfoFilesAsString : Signal (Task Http.Error ())
+--port getVidInfoFilesAsString =
+----  Signal.map2 getFlickrImage Window.dimensions queryChnl.signal
+--  Signal.map getFileNamesAsString queryChnl.signal
+--    |> Signal.sampleOn trigger
+--    |> Signal.map (\task -> task `andThen` Signal.send resultsChnl.address)
+
 port getVidInfoFiles : Signal (Task Http.Error ())
 port getVidInfoFiles =
 --  Signal.map2 getFlickrImage Window.dimensions queryChnl.signal
-  Signal.map getFileNamesAsString queryChnl.signal
+  Signal.map getFileNames queryChnl.signal
     |> Signal.sampleOn trigger
     |> Signal.map (\task -> task `andThen` Signal.send resultsChnl.address)
 
@@ -106,6 +115,13 @@ getFlickrImage dimensions tag =
             Http.get sizeList (createFlickrURL "getSizes" [ ("photo_id", photo.id) ])
         `andThen`
             pickSize dimensions
+
+getFileNames : String -> Task Http.Error String
+getFileNames string = 
+  Http.get stringList
+    -- "http://localhost:9090/vidInfo/files"
+    --    vidInfoURL        
+    vidInfoFilesURL `andThen` getFirstString
 
 getFileNamesAsString : String -> Task Http.Error String
 getFileNamesAsString string = 
@@ -149,7 +165,9 @@ type alias Size =
     , width : Int
     , height : Int
     }
-
+    
+stringList : Json.Decoder (List String)    
+stringList = Json.list Json.string
 
 photoList : Json.Decoder (List Photo)
 photoList =
@@ -192,6 +210,13 @@ vidInfoFilesURL =
 
 
 -- HANDLE RESPONSES
+
+getFirstString : List String -> Task Http.Error String
+getFirstString strings =
+  case strings of
+    string :: _ -> succeed string
+    [] ->
+      fail (Http.UnexpectedPayload "expecting 1 or more strings from server")
 
 selectPhoto : List Photo -> Task Http.Error Photo
 selectPhoto photos =
