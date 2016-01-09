@@ -10,8 +10,8 @@ import Window
 
 -- VIEW
 
-view : Int -> String -> String -> List String -> Html
-view height searchString firstResult results =
+view : Int -> String -> String -> List String -> List String -> Html
+view height searchString firstResult results details =
   div [ style (imgStyle height "") ]
     [ input
         [ placeholder "Files Query"
@@ -26,6 +26,9 @@ view height searchString firstResult results =
         ,
         div [] [
           text <| resultsAsString2 results
+        ],
+        div [] [
+          text <| resultsAsString2 details
         ]
     ]
 
@@ -66,7 +69,7 @@ imgStyle h src =
 
 main : Signal Html
 main =
-  Signal.map4 view Window.height queryChnl.signal resultChnl.signal resultsChnl.signal
+  Signal.map5 view Window.height queryChnl.signal resultChnl.signal resultsChnl.signal detailsChnl.signal
 
 queryChnl : Signal.Mailbox String
 queryChnl = Signal.mailbox "red-info.txt"
@@ -77,6 +80,9 @@ resultChnl = Signal.mailbox "filename"
 resultsChnl : Signal.Mailbox (List String)
 resultsChnl = Signal.mailbox ["filename"]
 
+detailsChnl : Signal.Mailbox (List String)
+detailsChnl = Signal.mailbox ["details"]
+
 --port 
 getVidInfoFilesAsString : Signal (Task Http.Error ())
 --port 
@@ -85,16 +91,27 @@ getVidInfoFilesAsString =
     |> Signal.sampleOn trigger
     |> Signal.map (\task -> task `andThen` Signal.send    
         resultChnl.address)
+        
+port getVidInfoFileDetails : Signal (Task Http.Error ())        
+port getVidInfoFileDetails =
+  Signal.map getFileDetails queryChnl.signal
+    |> Signal.sampleOn trigger
+    |> Signal.map (\task -> task `andThen` 
+                    Signal.send detailsChnl.address)
 
-port getVidInfoFirstFile : Signal (Task Http.Error ())
-port getVidInfoFirstFile =
+--port 
+getVidInfoFirstFile : Signal (Task Http.Error ())
+--port 
+getVidInfoFirstFile =
       Signal.map getFirstFileName queryChnl.signal
         |> Signal.sampleOn trigger
         |> Signal.map (\task -> task `andThen` Signal.send 
             resultChnl.address)
 
-port getVidInfoFiles : Signal (Task Http.Error ())
-port getVidInfoFiles =
+--port 
+getVidInfoFiles : Signal (Task Http.Error ())
+--port 
+getVidInfoFiles =
       Signal.map getFileNames queryChnl.signal
       |> Signal.sampleOn trigger    
       |> Signal.map (\task -> task `andThen` Signal.send 
@@ -112,6 +129,11 @@ trigger =
   Signal.filter identity True
     (Signal.map2 (==) stamped delayed)
 
+
+getFileDetails : String -> Task Http.Error (List String)
+getFileDetails string = 
+  Http.get detailsList
+    vidInfoURL `andThen` getDetail
 
 getFileNames : String -> Task Http.Error (List String)
 getFileNames string = 
@@ -142,6 +164,12 @@ type alias Size =
     , height : Int
     }
     
+--detailsList : Json.Decoder (List String)    
+detailsList : Json.Decoder (String)    
+--detailsList = Json.list Json.string
+detailsList = "fileName" := Json.string
+--Json.list Json.string
+
 stringList : Json.Decoder (List String)    
 stringList = Json.list Json.string
 
@@ -185,6 +213,19 @@ vidInfoFilesURL =
   Http.url "http://localhost:9090/vidInfo/files" []
 
 -- HANDLE RESPONSES
+
+getDetail : String -> Task Http.Error (List String)
+getDetail string =
+--    succeed ["file details"]
+    succeed [string]
+
+getDetails : List String -> Task Http.Error (List String)
+getDetails strings =
+  case strings of
+    string :: _ -> succeed ["file details"]
+    [] ->
+--      fail (Http.UnexpectedPayload "expecting 1 or more strings from server")
+        succeed ["no details found"]
 
 getStrings : List String -> Task Http.Error (List String)
 getStrings strings =
