@@ -6,6 +6,7 @@ import String
 import Http
 import Json.Decode (decodeString, oneOf, int, string, customDecoder, at, list, object2, object3, (:=), Decoder)
 
+-- channel that creates a signal for user-inputted tags
 tagChnl : Signal.Channel Field.Content
 tagChnl = Signal.channel Field.noContent
 
