@@ -11,12 +11,12 @@ import Window
 -- VIEW
 
 view : Int -> String -> String -> Html
-view h string imgUrl =
-  div [ style (imgStyle h imgUrl) ]
+view height string imgUrl =
+  div [ style (imgStyle height imgUrl) ]
     [ input
         [ placeholder "Flickr Query"
         , Attr.value string
-        , on "input" targetValue (Signal.message query.address)
+        , on "input" targetValue (Signal.message queryChnl.address)
         , style myStyle
         ]
         []
@@ -48,45 +48,41 @@ imgStyle h src =
 
 main : Signal Html
 main =
-  Signal.map3 view Window.height query.signal results.signal
+  Signal.map3 view Window.height queryChnl.signal resultsChnl.signal
 
+queryChnl : Signal.Mailbox String
+queryChnl = Signal.mailbox ""
 
-query : Signal.Mailbox String
-query =
-  Signal.mailbox ""
-
-
-results : Signal.Mailbox String
-results =
-  Signal.mailbox "waiting.gif"
+resultsChnl : Signal.Mailbox String
+resultsChnl = Signal.mailbox "waiting.gif"
 
 
 port updateResults : Signal (Task Http.Error ())
 port updateResults =
-  Signal.map2 getImage Window.dimensions query.signal
+  Signal.map2 getFlickrImage Window.dimensions queryChnl.signal
     |> Signal.sampleOn trigger
-    |> Signal.map (\task -> task `andThen` Signal.send results.address)
+    |> Signal.map (\task -> task `andThen` Signal.send resultsChnl.address)
 
 
 trigger : Signal Bool
 trigger =
-  let stamped = Time.timestamp query.signal
+  let stamped = Time.timestamp queryChnl.signal
       delayed = Time.delay 500 stamped
   in
       Signal.map2 (==) stamped delayed
         |> Signal.filter identity True
 
 
-getImage : (Int,Int) -> String -> Task Http.Error String
-getImage dimensions tag =
+getFlickrImage : (Int,Int) -> String -> Task Http.Error String
+getFlickrImage dimensions tag =
   let searchArgs =
         [ ("sort", "random"), ("per_page", "10"), ("tags", tag) ]
   in
-      Http.get photoList (flickr "search" searchArgs)
+      Http.get photoList (createFlickrURL "search" searchArgs)
         `andThen`
             selectPhoto
         `andThen` \photo ->
-            Http.get sizeList (flickr "getSizes" [ ("photo_id", photo.id) ])
+            Http.get sizeList (createFlickrURL "getSizes" [ ("photo_id", photo.id) ])
         `andThen`
             pickSize dimensions
 
@@ -128,8 +124,8 @@ sizeList =
 
 --  FLICKR URLS
 
-flickr : String -> List (String, String) -> String
-flickr method args =
+createFlickrURL : String -> List (String, String) -> String
+createFlickrURL method args =
   Http.url "https://api.flickr.com/services/rest/" <|
     [ ("format", "json")
     , ("nojsoncallback", "1")
