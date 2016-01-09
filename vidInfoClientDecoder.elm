@@ -10,8 +10,8 @@ import Window
 
 -- VIEW
 
-view : Int -> String -> String -> Html
-view height searchString imgUrl =
+view : Int -> String -> String -> List String -> Html
+view height searchString firstResult results =
   div [ style (imgStyle height "") ]
     [ input
         [ placeholder "Files Query"
@@ -21,10 +21,16 @@ view height searchString imgUrl =
         ]
         [],
         div [] [ 
-         text imgUrl 
+         text firstResult 
+        ]
+        ,
+        div [] [
+          text <| resultsAsString results
         ]
     ]
 
+resultsAsString : List String -> String
+resultsAsString strings = List.foldr (++) "" strings
 
 myStyle : List (String, String)
 myStyle =
@@ -51,13 +57,16 @@ imgStyle h src =
 
 main : Signal Html
 main =
-  Signal.map3 view Window.height queryChnl.signal resultsChnl.signal
+  Signal.map4 view Window.height queryChnl.signal resultChnl.signal resultsChnl.signal
 
 queryChnl : Signal.Mailbox String
 queryChnl = Signal.mailbox ""
 
-resultsChnl : Signal.Mailbox String
-resultsChnl = Signal.mailbox "waiting.gif"
+resultChnl : Signal.Mailbox String
+resultChnl = Signal.mailbox "waiting.gif"
+
+resultsChnl : Signal.Mailbox (List String)
+resultsChnl = Signal.mailbox ["waiting.gif"]
 
 
 --port updateResults : Signal (Task Http.Error ())
@@ -73,12 +82,35 @@ resultsChnl = Signal.mailbox "waiting.gif"
 --    |> Signal.sampleOn trigger
 --    |> Signal.map (\task -> task `andThen` Signal.send resultsChnl.address)
 
+--port getVidInfoFirstFile : Signal (Task Http.Error ())
+--port getVidInfoFirstFile =
+----  Signal.map2 getFlickrImage Window.dimensions queryChnl.signal
+----  Signal.map getFileNames queryChnl.signal
+--  Signal.map getFirstFileName queryChnl.signal
+--    |> Signal.sampleOn trigger
+--    |> Signal.map (\task -> task `andThen` Signal.send resultsChnl.address)
+
+port getVidInfoFirstFile : Signal (Task Http.Error ())
+port getVidInfoFirstFile =
+--  Signal.map2 getFlickrImage Window.dimensions queryChnl.signal
+--  Signal.map getFileNames queryChnl.signal
+  Signal.map (\task -> task `andThen` Signal.send resultChnl.address)
+    (
+      Signal.map getFirstFileName queryChnl.signal
+        |> Signal.sampleOn trigger
+    )
+
 port getVidInfoFiles : Signal (Task Http.Error ())
 port getVidInfoFiles =
 --  Signal.map2 getFlickrImage Window.dimensions queryChnl.signal
-  Signal.map getFileNames queryChnl.signal
-    |> Signal.sampleOn trigger
-    |> Signal.map (\task -> task `andThen` Signal.send resultsChnl.address)
+    Signal.map (\task -> task `andThen` Signal.send resultsChnl.address) 
+      (
+        Signal.map getFileNames queryChnl.signal
+        |> Signal.sampleOn trigger    
+      )
+
+--getFileNames : String -> Task Http.Error (List String)
+
 
 getStringCors : String -> Task Http.Error String
 getStringCors url =
@@ -116,8 +148,15 @@ getFlickrImage dimensions tag =
         `andThen`
             pickSize dimensions
 
-getFileNames : String -> Task Http.Error String
+getFileNames : String -> Task Http.Error (List String)
 getFileNames string = 
+  Http.get stringList
+    -- "http://localhost:9090/vidInfo/files"
+    --    vidInfoURL        
+    vidInfoFilesURL `andThen` getStrings
+    
+getFirstFileName : String -> Task Http.Error String
+getFirstFileName string = 
   Http.get stringList
     -- "http://localhost:9090/vidInfo/files"
     --    vidInfoURL        
@@ -210,6 +249,13 @@ vidInfoFilesURL =
 
 
 -- HANDLE RESPONSES
+
+getStrings : List String -> Task Http.Error (List String)
+getStrings strings =
+  case strings of
+    string :: _ -> succeed strings
+    [] ->
+      fail (Http.UnexpectedPayload "expecting 1 or more strings from server")
 
 getFirstString : List String -> Task Http.Error String
 getFirstString strings =
