@@ -25,12 +25,21 @@ view height searchString firstResult results =
         ]
         ,
         div [] [
-          text <| resultsAsString results
+          text <| resultsAsString2 results
         ]
     ]
 
+resultsAsString2 : List String -> String
+resultsAsString2 results = String.join ", " results
+
 resultsAsString : List String -> String
-resultsAsString strings = List.foldr (++) "" strings
+resultsAsString strings = List.foldr 
+  --  (++) 
+  (appendResults)  
+  "" strings
+  
+appendResults : String -> String -> String
+appendResults a b = a ++ ", " ++ b 
 
 myStyle : List (String, String)
 myStyle =
@@ -60,56 +69,36 @@ main =
   Signal.map4 view Window.height queryChnl.signal resultChnl.signal resultsChnl.signal
 
 queryChnl : Signal.Mailbox String
-queryChnl = Signal.mailbox ""
+queryChnl = Signal.mailbox "red-info.txt"
 
 resultChnl : Signal.Mailbox String
-resultChnl = Signal.mailbox "waiting.gif"
+resultChnl = Signal.mailbox "filename"
 
 resultsChnl : Signal.Mailbox (List String)
-resultsChnl = Signal.mailbox ["waiting.gif"]
+resultsChnl = Signal.mailbox ["filename"]
 
-
---port updateResults : Signal (Task Http.Error ())
---port updateResults =
---  Signal.map2 getFlickrImage Window.dimensions queryChnl.signal
---    |> Signal.sampleOn trigger
---    |> Signal.map (\task -> task `andThen` Signal.send resultsChnl.address)
-
---port getVidInfoFilesAsString : Signal (Task Http.Error ())
---port getVidInfoFilesAsString =
-----  Signal.map2 getFlickrImage Window.dimensions queryChnl.signal
---  Signal.map getFileNamesAsString queryChnl.signal
---    |> Signal.sampleOn trigger
---    |> Signal.map (\task -> task `andThen` Signal.send resultsChnl.address)
-
---port getVidInfoFirstFile : Signal (Task Http.Error ())
---port getVidInfoFirstFile =
-----  Signal.map2 getFlickrImage Window.dimensions queryChnl.signal
-----  Signal.map getFileNames queryChnl.signal
---  Signal.map getFirstFileName queryChnl.signal
---    |> Signal.sampleOn trigger
---    |> Signal.map (\task -> task `andThen` Signal.send resultsChnl.address)
+--port 
+getVidInfoFilesAsString : Signal (Task Http.Error ())
+--port 
+getVidInfoFilesAsString =
+  Signal.map getFileNamesAsString queryChnl.signal
+    |> Signal.sampleOn trigger
+    |> Signal.map (\task -> task `andThen` Signal.send    
+        resultChnl.address)
 
 port getVidInfoFirstFile : Signal (Task Http.Error ())
 port getVidInfoFirstFile =
---  Signal.map2 getFlickrImage Window.dimensions queryChnl.signal
---  Signal.map getFileNames queryChnl.signal
-  Signal.map (\task -> task `andThen` Signal.send resultChnl.address)
-    (
       Signal.map getFirstFileName queryChnl.signal
         |> Signal.sampleOn trigger
-    )
+        |> Signal.map (\task -> task `andThen` Signal.send 
+            resultChnl.address)
 
 port getVidInfoFiles : Signal (Task Http.Error ())
 port getVidInfoFiles =
---  Signal.map2 getFlickrImage Window.dimensions queryChnl.signal
-    Signal.map (\task -> task `andThen` Signal.send resultsChnl.address) 
-      (
-        Signal.map getFileNames queryChnl.signal
-        |> Signal.sampleOn trigger    
-      )
-
---getFileNames : String -> Task Http.Error (List String)
+      Signal.map getFileNames queryChnl.signal
+      |> Signal.sampleOn trigger    
+      |> Signal.map (\task -> task `andThen` Signal.send 
+          resultsChnl.address) 
 
 
 getStringCors : String -> Task Http.Error String
@@ -135,38 +124,19 @@ trigger =
         |> Signal.filter identity True
 
 
-getFlickrImage : (Int,Int) -> String -> Task Http.Error String
-getFlickrImage dimensions tag =
-  let searchArgs =
-        [ ("sort", "random"), ("per_page", "10"), ("tags", tag) ]
-  in
-      Http.get photoList (createFlickrURL "search" searchArgs)
-        `andThen`
-            selectPhoto
-        `andThen` \photo ->
-            Http.get sizeList (createFlickrURL "getSizes" [ ("photo_id", photo.id) ])
-        `andThen`
-            pickSize dimensions
-
 getFileNames : String -> Task Http.Error (List String)
 getFileNames string = 
   Http.get stringList
-    -- "http://localhost:9090/vidInfo/files"
-    --    vidInfoURL        
     vidInfoFilesURL `andThen` getStrings
     
 getFirstFileName : String -> Task Http.Error String
 getFirstFileName string = 
   Http.get stringList
-    -- "http://localhost:9090/vidInfo/files"
-    --    vidInfoURL        
     vidInfoFilesURL `andThen` getFirstString
 
 getFileNamesAsString : String -> Task Http.Error String
 getFileNamesAsString string = 
-  Http.getString -- "http://localhost:9090/vidInfo/files"
---    vidInfoURL        
-    vidInfoFilesURL        
+  Http.getString vidInfoFilesURL        
 
 --getFileNamesAsString string = getStringCors "http://localhost:9090/vidInfo/files"
 
@@ -188,7 +158,6 @@ handleResponse handle response =
             fail (Http.UnexpectedPayload "Response body is a blob, expecting a string.")
 
   else
-
       fail (Http.BadResponse response.status response.statusText)    
 
 -- JSON DECODERS
@@ -197,7 +166,6 @@ type alias Photo =
     { id : String
     , title : String
     }
-
 
 type alias Size =
     { source : String
@@ -247,7 +215,6 @@ vidInfoFilesURL : String
 vidInfoFilesURL =
   Http.url "http://localhost:9090/vidInfo/files" []
 
-
 -- HANDLE RESPONSES
 
 getStrings : List String -> Task Http.Error (List String)
@@ -264,14 +231,6 @@ getFirstString strings =
     [] ->
       fail (Http.UnexpectedPayload "expecting 1 or more strings from server")
 
-selectPhoto : List Photo -> Task Http.Error Photo
-selectPhoto photos =
-  case photos of
-    photo :: _ -> succeed photo
-    [] ->
-      fail (Http.UnexpectedPayload "expecting 1 or more photos from Flickr")
-
-
 pickSize : (Int,Int) -> List Size -> Task Http.Error String
 pickSize (width,height) sizes =
   let sizeRating size =
@@ -284,3 +243,18 @@ pickSize (width,height) sizes =
         size :: _ -> succeed size.source
         [] ->
           fail (Http.UnexpectedPayload "expecting 1 or more image sizes to choose from")
+
+
+--getFlickrImage : (Int,Int) -> String -> Task Http.Error String
+--getFlickrImage dimensions tag =
+--  let searchArgs =
+--        [ ("sort", "random"), ("per_page", "10"), ("tags", tag) ]
+--  in
+--      Http.get photoList (createFlickrURL "search" searchArgs)
+--        `andThen`
+--            selectPhoto
+--        `andThen` \photo ->
+--            Http.get sizeList (createFlickrURL "getSizes" [ ("photo_id", photo.id) ])
+--        `andThen`
+--            pickSize dimensions
+--
