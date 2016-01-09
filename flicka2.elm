@@ -50,65 +50,35 @@ results =
         toPhotoSource
 --      NOTE: brackets ( or <| ) are important
         <| 
-          resultsSendReq 
+          respSignal 
           <|
             Signal.map
-              toSizeRequest 
-                (resultsSendReq <| resultsPhotoReq resultsInput)
---                (resultsSendReq (resultsPhotoReq resultsInput))
-        
---NOTE: this works
---  Signal.subscribe tagChnl
---    |> Signal.map .string
---    |> Signal.dropRepeats
---    |> Signal.map toPhotoRequest
---    |> Http.send
---    |> Signal.map toSizeRequest
---    |> Http.send
---    |> Signal.map toPhotoSource
-
---NOTE: this works
---  resultsInput
---    |> resultsPhotoReq
---    |> resultsSendReq
---    |> Signal.map toSizeRequest
---    |> resultsSendReq
---    |> Signal.map toPhotoSource
-
-----NOTE: this works
---  Signal.map toSizeRequest  
-----  NOTE: brackets are important
---    (resultsSendReq (resultsPhotoReq resultsInput))
-----    |> Signal.map toSizeRequest
---    |> resultsSendReq
---    |> Signal.map toPhotoSource
-
-----NOTE: this works
---  Signal.map toSizeRequest  
-----  NOTE: brackets are important
---    (resultsSendReq (resultsPhotoReq resultsInput))
---    |> resultsSendReq
---    |> Signal.map toPhotoSource
-
-        
-resultsInput : Signal String
-resultsInput = 
+              convertRespToReq 
+                (respSignal <| searchReqSignal tagSignal)
+              
+--resultsInput : Signal String
+--resultsInput = 
+tagSignal : Signal String
+tagSignal = 
   Signal.dropRepeats <|
   Signal.map .string (tagChnl.signal)
 
 resultsPhotoReqTest : Signal String -> Signal String
 resultsPhotoReqTest input =
-  Signal.map toPhotoRequestURL input
+  Signal.map createPhotoSearchURL input
   
---resultsPhotoReq : Signal String -> Signal (Http.Request String)
-resultsPhotoReq : Signal String -> Signal (Http.Request)
-resultsPhotoReq input =
-  Signal.map toPhotoRequest input
+--resultsPhotoReq : Signal String -> Signal (Http.Request)
+--resultsPhotoReq input =
+searchReqSignal : Signal String -> Signal (Http.Request)
+searchReqSignal tags =
+  Signal.map createPhotoSearchRequest tags
   
 --resultsSendReq : Signal (Http.Request String) -> Signal (Http.Response String)
-resultsSendReq : Signal (Http.Request) -> Signal (Http.Response)
-resultsSendReq req =
-  Http.send req
+--resultsSendReq : Signal (Http.Request) -> Signal (Http.Response)
+--resultsSendReq req =
+respSignal : Signal (Http.Request) -> Signal (Http.Response)
+respSignal reqs =
+  Http.send reqs
   
 -- from http response, get "source" of first item (or return Nothing)
 --toPhotoSource : Http.Response String -> Maybe String
@@ -126,11 +96,12 @@ toPhotoSource json =
 --decodeResponse : Decoder a -> Http.Response String -> Result String a
 decodeResponse : Decoder a -> Http.Response -> Result String a
 decodeResponse decoder response =
-  case response of 
-    Http.Success str ->
-      decodeString decoder str
+--  case response of 
+--    Http.Success str ->
+--      decodeString decoder str
+      decodeString decoder response.value
     
-    _ -> Err (toString response)
+--    _ -> Err (toString response)
     
 type alias Size = { source: String, width: Int, height: Int }    
 
@@ -145,21 +116,23 @@ sizeList =
         ("width" := number)
         ("height" := number)
      
--- create flickr URL with provided tag     
-toPhotoRequestURL : String -> String
-toPhotoRequestURL tag =
+-- create flickr search URL with provided tag     
+createPhotoSearchURL : String -> String
+createPhotoSearchURL tag =
   let args = "&method=flickr.photos.search&sort=random&per_page=10&tags="
   in  
-    if tag == "" then "" else flickrRequest args ++ tag
+    if tag == "" then "" else createFlickrURL args ++ tag
         
--- given a inputted tag, make a flickr api http get request
-toPhotoRequest : String -> Http.Request String
-toPhotoRequest tag =
-  Http.get (toPhotoRequestURL tag)
+-- given a inputted tag, create a flickr search http get request
+--createPhotoSearchRequest : String -> Http.Request String
+createPhotoSearchRequest : String -> String
+createPhotoSearchRequest tag =
+--  Http.get (createPhotoSearchURL tag)
+  Http.getString (createPhotoSearchURL tag)
 
 -- return basic flickr api URL added to provided tags
-flickrRequest : String -> String
-flickrRequest args = 
+createFlickrURL : String -> String
+createFlickrURL args = 
   "https://api.flickr.com/services/rest/?format=json"
     ++ "&nojsoncallback=1&api_key=9be5b08cd8168fa82d136aa55f1fdb3c"
     ++ args
@@ -173,13 +146,17 @@ toSizeRequestURL json =
     Ok photos ->
       case photos of
         photo :: _ ->
-          flickrRequest "&method=flickr.photos.getSizes&photo_id=" 
+          createFlickrURL "&method=flickr.photos.getSizes&photo_id=" 
             ++ photo.id
             
         [] -> ""
         
-toSizeRequest : Http.Response String -> Http.Request String
-toSizeRequest json =
+convertRespToReq : Http.Response String -> Http.Request String
+convertRespToReq json =
+  Http.get <| toSizeRequestURL json
+
+convertRespToString : Http.Response String -> Http.Request String
+convertRespToString json =
   Http.get <| toSizeRequestURL json
 
 type alias Photo = { id: String, title: String }
