@@ -101,27 +101,16 @@ port getVidInfoFiles =
           resultsChnl.address) 
 
 
-getStringCors : String -> Task Http.Error String
-getStringCors url =
-  let request =
-        { verb = "GET"
-        , headers = [
---            ("Accept", "*/*")
-        ]
-        , url = url
-        , body = Http.empty
-        }
-  in
-      mapError promoteError (Http.send Http.defaultSettings request)
-        `andThen` handleResponse succeed
-
 trigger : Signal Bool
 trigger =
   let stamped = Time.timestamp queryChnl.signal
       delayed = Time.delay 500 stamped
   in
-      Signal.map2 (==) stamped delayed
-        |> Signal.filter identity True
+--      Signal.map2 (==) stamped delayed
+--        |> Signal.filter identity True
+      
+  Signal.filter identity True
+    (Signal.map2 (==) stamped delayed)
 
 
 getFileNames : String -> Task Http.Error (List String)
@@ -139,26 +128,6 @@ getFileNamesAsString string =
   Http.getString vidInfoFilesURL        
 
 --getFileNamesAsString string = getStringCors "http://localhost:9090/vidInfo/files"
-
-promoteError : Http.RawError -> Http.Error
-promoteError rawError =
-  case rawError of
-    Http.RawTimeout -> Http.Timeout
-    Http.RawNetworkError -> Http.NetworkError
-    
-handleResponse : (String -> Task Http.Error a) -> Http.Response -> Task Http.Error a
-handleResponse handle response =
-  if 200 <= response.status && response.status < 300 then
-
-      case response.value of
-        Http.Text str ->
-            handle str
-
-        _ ->
-            fail (Http.UnexpectedPayload "Response body is a blob, expecting a string.")
-
-  else
-      fail (Http.BadResponse response.status response.statusText)    
 
 -- JSON DECODERS
 
@@ -258,3 +227,41 @@ pickSize (width,height) sizes =
 --        `andThen`
 --            pickSize dimensions
 --
+
+
+-- GETSTRING FOR CUSTOM HEADERS
+
+getStringCors : String -> Task Http.Error String
+getStringCors url =
+  let request =
+        { verb = "GET"
+        , headers = [
+--            ("Accept", "*/*")
+        ]
+        , url = url
+        , body = Http.empty
+        }
+  in
+      mapError promoteError (Http.send Http.defaultSettings request)
+        `andThen` handleResponse succeed
+
+promoteError : Http.RawError -> Http.Error
+promoteError rawError =
+  case rawError of
+    Http.RawTimeout -> Http.Timeout
+    Http.RawNetworkError -> Http.NetworkError
+    
+handleResponse : (String -> Task Http.Error a) -> Http.Response -> Task Http.Error a
+handleResponse handle response =
+  if 200 <= response.status && response.status < 300 then
+
+      case response.value of
+        Http.Text str ->
+            handle str
+
+        _ ->
+            fail (Http.UnexpectedPayload "Response body is a blob, expecting a string.")
+
+  else
+      fail (Http.BadResponse response.status response.statusText)    
+
