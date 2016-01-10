@@ -14,7 +14,6 @@ import Window
 view : Int -> String -> String -> List String -> List String -> 
         List TitleDetail -> Html
 view height searchString firstResult results details specifics =
---view height searchString firstResult results details =
   div [ style (imgStyle height "") ]
     [ input
         [ placeholder "Files Query"
@@ -39,9 +38,6 @@ view height searchString firstResult results details specifics =
           text ",",
           text <| 
             toString <| (firstSpecific specifics).length
-
---              List.head specifics
---            resultsAsString2 specifics
         ]
     ]
     
@@ -232,8 +228,6 @@ type alias Size =
     , height : Int
     }
     
---detailsList : Json.Decoder (List String)    
---detailsList = Json.list Json.string
 filenameDecoder : Json.Decoder (String)    
 filenameDecoder = "fileName" := Json.string
 
