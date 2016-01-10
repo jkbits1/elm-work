@@ -1,3 +1,4 @@
+import Debug exposing (log)
 import Html exposing (..)
 import Html.Attributes as Attr exposing (..)
 import Html.Events exposing (..)
@@ -83,15 +84,6 @@ resultsChnl = Signal.mailbox ["filename"]
 detailsChnl : Signal.Mailbox (List String)
 detailsChnl = Signal.mailbox ["details"]
 
---port 
-getVidInfoFilesAsString : Signal (Task Http.Error ())
---port 
-getVidInfoFilesAsString =
-  Signal.map getFileNamesAsString queryChnl.signal
-    |> Signal.sampleOn trigger
-    |> Signal.map (\task -> task `andThen` Signal.send    
-        resultChnl.address)
-        
 port getVidInfoFileDetails : Signal (Task Http.Error ())        
 port getVidInfoFileDetails =
   Signal.map getFileDetails queryChnl.signal
@@ -117,6 +109,15 @@ getVidInfoFiles =
       |> Signal.map (\task -> task `andThen` Signal.send 
           resultsChnl.address) 
 
+--port 
+getVidInfoFilesAsString : Signal (Task Http.Error ())
+--port 
+getVidInfoFilesAsString =
+  Signal.map getFileNamesAsString queryChnl.signal
+    |> Signal.sampleOn trigger
+    |> Signal.map (\task -> task `andThen` Signal.send    
+        resultChnl.address)
+        
 
 trigger : Signal Bool
 trigger =
@@ -132,8 +133,19 @@ trigger =
 
 getFileDetails : String -> Task Http.Error (List String)
 getFileDetails string = 
-  Http.get detailsList
-    vidInfoURL `andThen` getDetail
+  Http.get 
+--    detailsList
+--    filenameDecoder
+--    titleDetailsDecoder
+    titleDetailsList
+    vidInfoURL `andThen` 
+--      getDetail
+--      getDetails
+      getTitleDetails
+    
+--titleDetailsDecoder : Json.Decoder (List String)    
+--getDetails : List String -> Task Http.Error (List String)
+
 
 getFileNames : String -> Task Http.Error (List String)
 getFileNames string = 
@@ -153,6 +165,14 @@ getFileNamesAsString string =
 
 -- JSON DECODERS
 
+type alias TitleDetail =
+    { 
+--      titleNumber : String
+--    , length: String
+      titleNumber : Int
+    , length: Float
+    }
+
 type alias Photo =
     { id : String
     , title : String
@@ -165,10 +185,25 @@ type alias Size =
     }
     
 --detailsList : Json.Decoder (List String)    
-detailsList : Json.Decoder (String)    
 --detailsList = Json.list Json.string
-detailsList = "fileName" := Json.string
---Json.list Json.string
+filenameDecoder : Json.Decoder (String)    
+filenameDecoder = "fileName" := Json.string
+
+titleDetailsDecoder : Json.Decoder (List String)    
+titleDetailsDecoder = 
+--  Debug.log "titleDetails" <|
+    "titleDetails" := Json.list Json.string
+    
+titleDetailsList : Json.Decoder (List TitleDetail)
+titleDetailsList =
+  Json.at ["wrapper", "titleDetails"] <| 
+    Json.list <|
+      Json.object2 TitleDetail
+--        ("titleNumber" := Json.string)
+--        ("length" := Json.string)
+        ("titleNumber" := Json.int)
+        ("length" := Json.float)
+  
 
 stringList : Json.Decoder (List String)    
 stringList = Json.list Json.string
@@ -206,7 +241,8 @@ createFlickrURL method args =
 
 vidInfoURL : String
 vidInfoURL =
-  Http.url "http://localhost:9090/vidInfo" []
+--  Http.url "http://localhost:9090/vidInfo" []
+  Http.url "http://localhost:9090/vidInfoWrapped" []
 
 vidInfoFilesURL : String
 vidInfoFilesURL =
@@ -222,10 +258,26 @@ getDetail string =
 getDetails : List String -> Task Http.Error (List String)
 getDetails strings =
   case strings of
-    string :: _ -> succeed ["file details"]
+    string :: _ -> succeed [
+      Debug.log "files dets" "file details"
+      ]
     [] ->
 --      fail (Http.UnexpectedPayload "expecting 1 or more strings from server")
         succeed ["no details found"]
+        
+getTitleDetails : List TitleDetail -> Task Http.Error (List String)
+getTitleDetails details =
+  case details of
+    string :: _ -> succeed 
+      (List.map (toString) details)
+--      [
+----      Debug.log "files dets" "file details"
+--        "dummy title dets"
+--      ]
+    [] ->
+--      fail (Http.UnexpectedPayload "expecting 1 or more strings from server")
+        succeed ["no details found"]
+        
 
 getStrings : List String -> Task Http.Error (List String)
 getStrings strings =
