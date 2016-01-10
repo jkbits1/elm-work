@@ -11,8 +11,10 @@ import Window
 
 -- VIEW
 
-view : Int -> String -> String -> List String -> List String -> Html
-view height searchString firstResult results details =
+view : Int -> String -> String -> List String -> List String -> 
+        List TitleDetail -> Html
+view height searchString firstResult results details specifics =
+--view height searchString firstResult results details =
   div [ style (imgStyle height "") ]
     [ input
         [ placeholder "Files Query"
@@ -30,6 +32,9 @@ view height searchString firstResult results details =
         ],
         div [] [
           text <| resultsAsString2 details
+        ],
+        div [] [
+--          text <| resultsAsString2 specifics
         ]
     ]
 
@@ -70,7 +75,21 @@ imgStyle h src =
 
 main : Signal Html
 main =
-  Signal.map5 view Window.height queryChnl.signal resultChnl.signal resultsChnl.signal detailsChnl.signal
+--  Signal.map2 view Window.height queryChnl.signal 
+  view <~ Window.height ~ queryChnl.signal ~ resultChnl.signal ~ 
+    resultsChnl.signal ~ detailsChnl.signal ~       
+    specificDetailsChnl.signal
+
+  
+(<~) : (a -> b) -> Signal a -> Signal b
+(<~) = Signal.map  
+  
+(~) : Signal (a -> b) -> Signal a -> Signal b
+(~) funcs args =
+  Signal.map2 (\f v -> f v) funcs args
+
+--infixl 4 ~
+
 
 queryChnl : Signal.Mailbox String
 queryChnl = Signal.mailbox "red-info.txt"
@@ -83,6 +102,21 @@ resultsChnl = Signal.mailbox ["filename"]
 
 detailsChnl : Signal.Mailbox (List String)
 detailsChnl = Signal.mailbox ["details"]
+
+specificDetailsChnl : Signal.Mailbox (List TitleDetail)
+specificDetailsChnl = Signal.mailbox [TitleDetail 0 0.0]
+
+trigger : Signal Bool
+trigger =
+  let stamped = Time.timestamp queryChnl.signal
+      delayed = Time.delay 500 stamped
+  in
+--      Signal.map2 (==) stamped delayed
+--        |> Signal.filter identity True
+      
+  Signal.filter identity True
+    (Signal.map2 (==) stamped delayed)
+
 
 port getVidInfoFileDetails : Signal (Task Http.Error ())        
 port getVidInfoFileDetails =
@@ -118,18 +152,6 @@ getVidInfoFilesAsString =
     |> Signal.map (\task -> task `andThen` Signal.send    
         resultChnl.address)
         
-
-trigger : Signal Bool
-trigger =
-  let stamped = Time.timestamp queryChnl.signal
-      delayed = Time.delay 500 stamped
-  in
---      Signal.map2 (==) stamped delayed
---        |> Signal.filter identity True
-      
-  Signal.filter identity True
-    (Signal.map2 (==) stamped delayed)
-
 
 getFileDetails : String -> Task Http.Error (List String)
 getFileDetails string = 
@@ -203,7 +225,15 @@ titleDetailsList =
 --        ("length" := Json.string)
         ("titleNumber" := Json.int)
         ("length" := Json.float)
-  
+
+--titleDetailsList : Json.Decoder (List TitleDetail)
+--titleDetailsList =
+--  ("titleDetails" := (Json.list <|
+--      Json.object2 TitleDetail
+--        ("titleNumber" := Json.int)
+--        ("length" := Json.float)
+--    )
+--  )
 
 stringList : Json.Decoder (List String)    
 stringList = Json.list Json.string
