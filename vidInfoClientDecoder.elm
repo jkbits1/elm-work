@@ -34,9 +34,27 @@ view height searchString firstResult results details specifics =
           text <| resultsAsString2 details
         ],
         div [] [
---          text <| resultsAsString2 specifics
+          text <| 
+            toString <| (firstSpecific specifics).titleNumber,
+          text ",",
+          text <| 
+            toString <| (firstSpecific specifics).length
+
+--              List.head specifics
+--            resultsAsString2 specifics
         ]
     ]
+    
+firstSpecific : List TitleDetail -> TitleDetail
+firstSpecific details = 
+  let m = List.head details
+  in 
+    case m of 
+      Just detail -> detail
+      Nothing     -> TitleDetail 0 0.0
+
+--specificsAsString : List TitleDetail -> String
+--specificsAsString results = String.join ", " results
 
 resultsAsString2 : List String -> String
 resultsAsString2 results = String.join ", " results
@@ -125,6 +143,13 @@ port getVidInfoFileDetails =
     |> Signal.map (\task -> task `andThen` 
                     Signal.send detailsChnl.address)
 
+port getVidInfoFileSpecifics : Signal (Task Http.Error ())        
+port getVidInfoFileSpecifics =
+  Signal.map getFileSpecifics queryChnl.signal
+    |> Signal.sampleOn trigger
+    |> Signal.map (\task -> task `andThen` 
+                    Signal.send specificDetailsChnl.address)
+
 --port 
 getVidInfoFirstFile : Signal (Task Http.Error ())
 --port 
@@ -151,18 +176,19 @@ getVidInfoFilesAsString =
     |> Signal.sampleOn trigger
     |> Signal.map (\task -> task `andThen` Signal.send    
         resultChnl.address)
-        
+
+getFileSpecifics : String -> Task Http.Error (List TitleDetail)
+getFileSpecifics string = 
+  Http.get
+    titleDetailsList
+    vidInfoURL `andThen` 
+      getTitleSpecifics
 
 getFileDetails : String -> Task Http.Error (List String)
 getFileDetails string = 
   Http.get 
---    detailsList
---    filenameDecoder
---    titleDetailsDecoder
     titleDetailsList
     vidInfoURL `andThen` 
---      getDetail
---      getDetails
       getTitleDetails
     
 --titleDetailsDecoder : Json.Decoder (List String)    
@@ -307,7 +333,24 @@ getTitleDetails details =
     [] ->
 --      fail (Http.UnexpectedPayload "expecting 1 or more strings from server")
         succeed ["no details found"]
-        
+
+getTitleSpecifics : List TitleDetail -> Task Http.Error (List TitleDetail)
+getTitleSpecifics details =
+  case details of
+    detail :: _ -> succeed 
+      details
+--      (List.map (toString) details)
+--      [
+----      Debug.log "files dets" "file details"
+--        "dummy title dets"
+--      ]
+    [] ->
+--      fail (Http.UnexpectedPayload "expecting 1 or more strings from server")
+        succeed 
+--          ["no specifics found"]
+          [TitleDetail 0 0.0]
+
+
 
 getStrings : List String -> Task Http.Error (List String)
 getStrings strings =
