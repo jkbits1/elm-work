@@ -19,11 +19,12 @@ import String
 import List exposing (..)
 
 type alias Model = (Int, String, String, String, String,
-                         String, String, String)
+                         String, String, String, String)
 
 type Update =
       NoOp | Add Int | Remove Int |
-      UpdateField String | Circle2Field String | Circle3Field String | Circle4Field String
+      UpdateField String |
+      Circle2Field String | Circle3Field String | Circle4Field String
 
 type CircleChange = String
 
@@ -91,7 +92,7 @@ viewLift = Signal.map (view updatesChnl.address) updateModelLift
 
 -- used by main, as a non-signal function, to convert a Model to Html
 view : Signal.Address Update -> Model -> Html
-view updatesChnlAddress (i, s1, s2, s3, s4, s5, s6, s7) =
+view updatesChnlAddress (i, s1, s2, s3, s4, s5, s6, s7, s8) =
   div [class "container"]
   [
     addButton,    
@@ -112,9 +113,10 @@ view updatesChnlAddress (i, s1, s2, s3, s4, s5, s6, s7) =
     [
       inputField "Files Query" s4 updatesChnlAddress Circle4Field myStyle
     ],
-    div [ style textStyle] [ text ("first - " ++ s5) ],
+    div [ style textStyle] [ text ("first xxxxx - " ++ s5) ],
     div [ style textStyle] [ text ("secPerms - " ++ s6) ],
-    div [ style textStyle] [ text ("triPerms - " ++ s7) ]
+    div [ style textStyle] [ text ("triPermsx - " ++ s7) ],
+    div [ style textStyle] [ text ("2listPermsx - " ++ s8) ]
   ]
 
 -- converts Signal Update (from updatesChnl) to Signal Model, 
@@ -122,27 +124,27 @@ view updatesChnlAddress (i, s1, s2, s3, s4, s5, s6, s7) =
 updateModelLift : Signal Model
 updateModelLift = Signal.foldp
                     updateModel
-                    (0, "xxx", "yyy", "zzz", "aaa", "r1", "r2", "r3")
+                    (0, "xxx", "yyy", "zzz", "aaa", "r1", "r2", "r3", "r4")
                     updatesChnl.signal
 
 -- converts Update to new Model
 updateModel : Update -> Model -> Model
-updateModel update (i, s1, s2, s3, s4, s5, s6, s7) =
+updateModel update (i, s1, s2, s3, s4, s5, s6, s7, s8) =
   let
-    res1      = (\s1 -> s1 ++ ( toString ( circleNumsFromString s1 ) ) )
-    secPerms  = (\s2 -> s2 ++ (toString <| wheelPerms <| circleNumsFromString s2) )
-    thrPerms  = (\s3 -> s3 ++ (toString <| wheelPerms <| circleNumsFromString s3) )
+    res1      = (\s1 -> s1 ++ " " ++ ( toString ( circleNumsFromString s1 ) ) )
+    thrPerms  = (\s3 -> s3 ++ " " ++ (toString <| wheelPerms <| circleNumsFromString s3) )
+    twoListPermsShow = toString <| twoListPerms (circleNumsFromString s1) s2
     --res = s
   in
     case update of
-      NoOp        -> (i,      s1, s2, s3, s4, res1 s1, secPerms s2, thrPerms s3)
-      Add val     -> (i + 1,  s1, s2, s3, s4, res1 s1, secPerms s2, thrPerms s3)
-      Remove val  -> (i - 1,  s1, s2, s3, s4, res1 s1, secPerms s2, thrPerms s3)
+      NoOp        -> (i,      s1, s2, s3, s4, res1 s1, secPermsShow s2, thrPerms s3, twoListPermsShow)
+      Add val     -> (i + 1,  s1, s2, s3, s4, res1 s1, secPermsShow s2, thrPerms s3, twoListPermsShow)
+      Remove val  -> (i - 1,  s1, s2, s3, s4, res1 s1, secPermsShow s2, thrPerms s3, twoListPermsShow)
 
-      UpdateField s ->  (i,   s, s2, s3, s4, res1 s, secPerms s2, thrPerms s3)
-      Circle2Field s -> (i,   s1, s, s3, s4, res1 s1, secPerms s, thrPerms s3)
-      Circle3Field s -> (i,   s1, s2, s, s4, res1 s1, secPerms s2, thrPerms s)
-      Circle4Field s -> (i,   s1, s2, s3, s, res1 s1, secPerms s2, thrPerms s3)
+      UpdateField s ->  (i,   s, s2, s3, s4, res1 s, secPermsShow s2, thrPerms s3, twoListPermsShow)
+      Circle2Field s -> (i,   s1, s, s3, s4, res1 s1, secPermsShow s, thrPerms s3, twoListPermsShow)
+      Circle3Field s -> (i,   s1, s2, s, s4, res1 s1, secPermsShow s2, thrPerms s, twoListPermsShow)
+      Circle4Field s -> (i,   s1, s2, s3, s, res1 s1, secPermsShow s2, thrPerms s, twoListPermsShow)
 
 
 
@@ -178,3 +180,13 @@ listLoops lists seed count =
 
 wheelPerms : List Int -> List (List Int)
 wheelPerms xs = listLoops [] xs ( (length xs) - 1 )
+
+secPerms : String -> List (List Int)
+secPerms  = (\s2 -> wheelPerms <| circleNumsFromString s2)
+
+secPermsShow : String -> String
+secPermsShow  = (\s2 -> s2 ++ " " ++ (toString <| secPerms s2) )
+
+twoListPerms : List Int -> String -> List (List (List Int ))
+twoListPerms inner s2 = List.map (\sec -> inner :: sec :: []) (secPerms s2)
+
