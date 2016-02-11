@@ -129,21 +129,20 @@ updateModelLift = Signal.foldp
 updateModel : Update -> Model -> Model
 updateModel update (i, s1, s2, s3, s4, s5, s6, s7) =
   let
-    res1      = (\s1 -> s1 ++ ( toString ( circleNumsFromString s1 ) ) )
-    secPerms  = (\s2 -> s2 ++ (toString <| wheelPerms <| circleNumsFromString s2) )
-    thrPerms  = (\s3 -> s3 ++ (toString <| wheelPerms <| circleNumsFromString s3) )
+    res       = s1 ++ ( toString ( circleNumsFromString s1 ) )
+    secPerms  = s2 ++ (toString <| wheelPerms <| circleNumsFromString s2)
+    thrPerms  = s3 ++ (toString <| wheelPerms <| circleNumsFromString s3)
     --res = s
   in
     case update of
-      NoOp        -> (i,      s1, s2, s3, s4, res1 s1, secPerms s2, thrPerms s3)
-      Add val     -> (i + 1,  s1, s2, s3, s4, res1 s1, secPerms s2, thrPerms s3)
-      Remove val  -> (i - 1,  s1, s2, s3, s4, res1 s1, secPerms s2, thrPerms s3)
+      NoOp        -> (i,      s1, s2, s3, s4, res, secPerms, thrPerms)
+      Add val     -> (i + 1,  s1, s2, s3, s4, res, secPerms, thrPerms)
+      Remove val  -> (i - 1,  s1, s2, s3, s4, res, secPerms, thrPerms)
 
-      UpdateField s ->  (i,   s, s2, s3, s4, res1 s, secPerms s2, thrPerms s3)
-      Circle2Field s -> (i,   s1, s, s3, s4, res1 s1, secPerms s, thrPerms s3)
-      Circle3Field s -> (i,   s1, s2, s, s4, res1 s1, secPerms s2, thrPerms s)
-      Circle4Field s -> (i,   s1, s2, s3, s, res1 s1, secPerms s2, thrPerms s3)
-
+      UpdateField s ->  (i,   s, s2, s3, s4, res, secPerms, thrPerms)
+      Circle2Field s -> (i,   s1, s, s3, s4, res, secPerms, thrPerms)
+      Circle3Field s -> (i,   s1, s2, s, s4, res, secPerms, thrPerms)
+      Circle4Field s -> (i,   s1, s2, s3, s, res, secPerms, thrPerms)
 
 
 circleNumsFromString : String -> List Int
