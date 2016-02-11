@@ -16,10 +16,13 @@ import Graphics.Input.Field as Field
 import Graphics.Element exposing (..)
 
 import String
+import List exposing (..)
 
 type alias Model = (Int, String, String, String, String, String)
 
-type Update = NoOp | Add Int | Remove Int | UpdateField String | Circle2Field String
+type Update =
+      NoOp | Add Int | Remove Int |
+      UpdateField String | Circle2Field String | Circle3Field String
 
 type CircleChange = String
 
@@ -33,8 +36,8 @@ updatesChnl = Signal.mailbox NoOp
 circle2Chnl : Signal.Mailbox Update
 circle2Chnl = Signal.mailbox (Circle2Field "")
 
-circle3Chnl : Signal.Mailbox String
-circle3Chnl = Signal.mailbox ""
+circle3Chnl : Signal.Mailbox Update
+circle3Chnl = Signal.mailbox (Circle3Field "")
 
 circle4Chnl : Signal.Mailbox String
 circle4Chnl = Signal.mailbox ""
@@ -46,14 +49,24 @@ addButton = Html.button
   [ Html.Events.onClick updatesChnl.address (Add 1)]
   [ Html.text "Add 1" ]
 
+inputField : String -> String -> Signal.Address Update -> (String -> Update) -> Html
+inputField default text chnlAddress updateItem =
+  input
+    [ placeholder default, Attr.value text
+    , on "input" targetValue
+        (Signal.message chnlAddress << updateItem)
+    , style myStyle
+    ]
+    []
+
 myStyle : List (String, String)
 myStyle =
-      [ ("width", "100%")
-      , ("height", "40px")
-      , ("padding", "10px 0")
-      , ("font-size", "2em")
-      , ("text-align", "center")
-      ]
+  [ ("width", "100%")
+  , ("height", "40px")
+  , ("padding", "10px 0")
+  , ("font-size", "2em")
+  , ("text-align", "center")
+  ]
 
 
 -- converts Signal Model to Signal Html, using non-signal view
@@ -65,62 +78,64 @@ viewLift = Signal.map (view updatesChnl.address) updateModelLift
 
 -- used by main, as a non-signal function, to convert a Model to Html
 view : Signal.Address Update -> Model -> Html
-view address (i, s1, s2, s3, s4, s5) =
+view updatesChnlAddress (i, s1, s2, s3, s4, s5) =
   div [class "container"]
   [
     addButton,    
     div [] [ text (toString i) ],
     div []
     [
-        input
-                [ placeholder "Files Query"
-                , Attr.value s1
-                , on "input" targetValue
-                    (Signal.message updatesChnl.address << UpdateField)
-                , style myStyle
-                ]
-                []
+      inputField "Files Query" s1 updatesChnlAddress UpdateField
+      --input
+      --  [ placeholder "Files Query"
+      --  , Attr.value s1
+      --  , on "input" targetValue
+      --      (Signal.message updatesChnlAddress << UpdateField)
+      --  , style myStyle
+      --  ]
+      --  []
     ],
     div []
     [
-        input
-                [ placeholder "Files Query"
-                , Attr.value s2
-                , on "input" targetValue
-                    (Signal.message updatesChnl.address << Circle2Field)
-                , style myStyle
-                ]
-                []
+      input
+        [ placeholder "Files Query"
+        , Attr.value s2
+        , on "input" targetValue
+          (Signal.message updatesChnl.address << Circle2Field)
+        , style myStyle
+        ]
+        []
     ],
     div []
     [
-        input
-                [ placeholder "Files Query"
-                , Attr.value s3
-                , on "input" targetValue (Signal.message circle3Chnl.address)
-                , style myStyle
-                ]
-                []
+      input
+        [ placeholder "Files Query"
+        , Attr.value s3
+        , on "input" targetValue
+          (Signal.message updatesChnl.address << Circle3Field)
+        , style myStyle
+        ]
+        []
     ],
      div []
      [
-         input
-                 [ placeholder "Files Query"
-                 , Attr.value s4
-                 , on "input" targetValue (Signal.message circle4Chnl.address)
-                 , style myStyle
-                 ]
-                 []
+       input
+         [ placeholder "Files Query"
+         , Attr.value s4
+         , on "input" targetValue (Signal.message circle4Chnl.address)
+         , style myStyle
+         ]
+         []
      ],
        div []
        [
-           input
-                   [ placeholder "Files Query"
-                   , Attr.value s5
-                   -- , on "input" targetValue (Signal.message circle4Chnl.address)
-                   , style myStyle
-                   ]
-                   []
+         input
+           [ placeholder "Files Query"
+           , Attr.value s5
+           -- , on "input" targetValue (Signal.message circle4Chnl.address)
+           , style myStyle
+           ]
+           []
        ]
   ]
 
@@ -138,6 +153,7 @@ updateModel update (i, s1, s2, s3, s4, s5) =
     let
         res = toString ( circleNumsFromString s1 )
         res2 = toString ( circleNumsFromString s2 )
+        res3 = toString <| wheelPerms <| circleNumsFromString s3
         --res = s
     in
       case update of
@@ -147,6 +163,7 @@ updateModel update (i, s1, s2, s3, s4, s5) =
 
         UpdateField s -> (i,    s, s2, s3, s4, res)
         Circle2Field s -> (i,   s1, s, s3, s4, res2)
+        Circle3Field s -> (i,   s1, s2, s, s4, res3)
 
 
 circleNumsFromString : String -> List Int
@@ -165,3 +182,19 @@ resToNum r =
     case r of
         Ok x -> x
         Err s -> 0
+
+
+-- PUZZLE SOLUTIONS
+
+listLoopItem list chunk = (drop chunk list) ++ (take chunk list)
+
+listLoops : List (List Int) -> List Int -> Int -> List (List Int)
+listLoops lists seed count =
+  case count of
+    0 ->
+      lists ++ [seed]
+    otherwise ->
+      listLoops (lists ++ [listLoopItem seed count]) seed (count-1)
+
+wheelPerms : List Int -> List (List Int)
+wheelPerms xs = listLoops [] xs ( (length xs) - 1 )
