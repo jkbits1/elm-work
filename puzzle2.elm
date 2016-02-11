@@ -18,11 +18,12 @@ import Graphics.Element exposing (..)
 import String
 import List exposing (..)
 
-type alias Model = (Int, String, String, String, String, String)
+type alias Model = (Int, String, String, String, String,
+                         String, String, String)
 
 type Update =
       NoOp | Add Int | Remove Int |
-      UpdateField String | Circle2Field String | Circle3Field String
+      UpdateField String | Circle2Field String | Circle3Field String | Circle4Field String
 
 type CircleChange = String
 
@@ -33,14 +34,14 @@ updatesChnl = Signal.mailbox NoOp
 --circle1Chnl : Signal.Mailbox Update
 --circle1Chnl = Signal.mailbox (UpdateField "")
 
-circle2Chnl : Signal.Mailbox Update
-circle2Chnl = Signal.mailbox (Circle2Field "")
+--circle2Chnl : Signal.Mailbox Update
+--circle2Chnl = Signal.mailbox (Circle2Field "")
 
-circle3Chnl : Signal.Mailbox Update
-circle3Chnl = Signal.mailbox (Circle3Field "")
+--circle3Chnl : Signal.Mailbox Update
+--circle3Chnl = Signal.mailbox (Circle3Field "")
 
-circle4Chnl : Signal.Mailbox String
-circle4Chnl = Signal.mailbox ""
+--circle4Chnl : Signal.Mailbox Update
+--circle4Chnl = Signal.mailbox (Circle4Field "")
 
 
 -- created by view, returns Html and sends Updates to updatesChnl
@@ -49,13 +50,16 @@ addButton = Html.button
   [ Html.Events.onClick updatesChnl.address (Add 1)]
   [ Html.text "Add 1" ]
 
-inputField : String -> String -> Signal.Address Update -> (String -> Update) -> Html
-inputField default text chnlAddress updateItem =
+inputField : String -> String ->
+              Signal.Address Update -> (String -> Update) ->
+              List (String, String) -> Html
+inputField default text chnlAddress updateItem inputStyle =
   input
     [ placeholder default, Attr.value text
     , on "input" targetValue
+    --, on "change" targetValue
         (Signal.message chnlAddress << updateItem)
-    , style myStyle
+    , style inputStyle
     ]
     []
 
@@ -68,6 +72,15 @@ myStyle =
   , ("text-align", "center")
   ]
 
+textStyle : List (String, String)
+textStyle =
+  [ ("width", "100%")
+  , ("height", "40px")
+  , ("padding", "10px 0")
+  , ("font-size", "2em")
+  , ("text-align", "left")
+  ]
+
 
 -- converts Signal Model to Signal Html, using non-signal view
 main : Signal Html
@@ -78,65 +91,30 @@ viewLift = Signal.map (view updatesChnl.address) updateModelLift
 
 -- used by main, as a non-signal function, to convert a Model to Html
 view : Signal.Address Update -> Model -> Html
-view updatesChnlAddress (i, s1, s2, s3, s4, s5) =
+view updatesChnlAddress (i, s1, s2, s3, s4, s5, s6, s7) =
   div [class "container"]
   [
     addButton,    
     div [] [ text (toString i) ],
     div []
     [
-      inputField "Files Query" s1 updatesChnlAddress UpdateField
-      --input
-      --  [ placeholder "Files Query"
-      --  , Attr.value s1
-      --  , on "input" targetValue
-      --      (Signal.message updatesChnlAddress << UpdateField)
-      --  , style myStyle
-      --  ]
-      --  []
+      inputField "Files Query" s1 updatesChnlAddress UpdateField myStyle
     ],
     div []
     [
-      input
-        [ placeholder "Files Query"
-        , Attr.value s2
-        , on "input" targetValue
-          (Signal.message updatesChnl.address << Circle2Field)
-        , style myStyle
-        ]
-        []
+      inputField "Files Query" s2 updatesChnlAddress Circle2Field myStyle
     ],
     div []
     [
-      input
-        [ placeholder "Files Query"
-        , Attr.value s3
-        , on "input" targetValue
-          (Signal.message updatesChnl.address << Circle3Field)
-        , style myStyle
-        ]
-        []
+      inputField "Files Query" s3 updatesChnlAddress Circle3Field myStyle
     ],
-     div []
-     [
-       input
-         [ placeholder "Files Query"
-         , Attr.value s4
-         , on "input" targetValue (Signal.message circle4Chnl.address)
-         , style myStyle
-         ]
-         []
-     ],
-       div []
-       [
-         input
-           [ placeholder "Files Query"
-           , Attr.value s5
-           -- , on "input" targetValue (Signal.message circle4Chnl.address)
-           , style myStyle
-           ]
-           []
-       ]
+    div []
+    [
+      inputField "Files Query" s4 updatesChnlAddress Circle4Field myStyle
+    ],
+    div [ style textStyle] [ text ("first - " ++ s5) ],
+    div [ style textStyle] [ text ("secPerms - " ++ s6) ],
+    div [ style textStyle] [ text ("triPerms - " ++ s7) ]
   ]
 
 -- converts Signal Update (from updatesChnl) to Signal Model, 
@@ -144,44 +122,45 @@ view updatesChnlAddress (i, s1, s2, s3, s4, s5) =
 updateModelLift : Signal Model
 updateModelLift = Signal.foldp
                     updateModel
-                    (0, "xxx", "yyy", "zzz", "aaa", "rrr")
+                    (0, "xxx", "yyy", "zzz", "aaa", "r1", "r2", "r3")
                     updatesChnl.signal
 
 -- converts Update to new Model
 updateModel : Update -> Model -> Model
-updateModel update (i, s1, s2, s3, s4, s5) =
-    let
-        res = toString ( circleNumsFromString s1 )
-        res2 = toString ( circleNumsFromString s2 )
-        res3 = toString <| wheelPerms <| circleNumsFromString s3
-        --res = s
-    in
-      case update of
-        NoOp        -> (i,      s1, s2, s3, s4, res)
-        Add val     -> (i + 1,  s1, s2, s3, s4, res)
-        Remove val  -> (i - 1,  s1, s2, s3, s4, res)
+updateModel update (i, s1, s2, s3, s4, s5, s6, s7) =
+  let
+    res       = s1 ++ ( toString ( circleNumsFromString s1 ) )
+    secPerms  = s2 ++ (toString <| wheelPerms <| circleNumsFromString s2)
+    thrPerms  = s3 ++ (toString <| wheelPerms <| circleNumsFromString s3)
+    --res = s
+  in
+    case update of
+      NoOp        -> (i,      s1, s2, s3, s4, res, secPerms, thrPerms)
+      Add val     -> (i + 1,  s1, s2, s3, s4, res, secPerms, thrPerms)
+      Remove val  -> (i - 1,  s1, s2, s3, s4, res, secPerms, thrPerms)
 
-        UpdateField s -> (i,    s, s2, s3, s4, res)
-        Circle2Field s -> (i,   s1, s, s3, s4, res2)
-        Circle3Field s -> (i,   s1, s2, s, s4, res3)
+      UpdateField s ->  (i,   s, s2, s3, s4, res, secPerms, thrPerms)
+      Circle2Field s -> (i,   s1, s, s3, s4, res, secPerms, thrPerms)
+      Circle3Field s -> (i,   s1, s2, s, s4, res, secPerms, thrPerms)
+      Circle4Field s -> (i,   s1, s2, s3, s, res, secPerms, thrPerms)
 
 
 circleNumsFromString : String -> List Int
 --circleNumsFromString : String -> List String
 -- circleNumsFromString s = [1]
 circleNumsFromString s =
-    List.map
-      strToNum
-        (String.split "," s)
+  List.map
+    strToNum
+      (String.split "," s)
 
 strToNum : String -> Int
 strToNum s = resToNum (String.toInt s)
 
 resToNum : Result e Int -> Int
 resToNum r =
-    case r of
-        Ok x -> x
-        Err s -> 0
+  case r of
+    Ok x -> x
+    Err s -> 0
 
 
 -- PUZZLE SOLUTIONS
