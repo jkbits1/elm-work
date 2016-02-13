@@ -18,7 +18,7 @@ import Graphics.Element exposing (..)
 import String
 import List exposing (..)
 
-type alias Model = (Int, String, String, String, String,
+type alias Model = (Int, String, String, String, String, (Bool),
                          (String, String, String, String, String, String))
 
 type Update =
@@ -82,8 +82,11 @@ textStyle =
   , ("text-align", "left")
   ]
 
-
-
+displayStyle : Bool -> List (String, String)
+displayStyle show =
+  case show of
+    True ->   [("display", "block")]
+    False ->  [("display", "none")]
 
 -- converts Signal Model to Signal Html, using non-signal view
 main : Signal Html
@@ -94,7 +97,7 @@ viewLift = Signal.map (view updatesChnl.address) updateModelLift
 
 -- used by main, as a non-signal function, to convert a Model to Html
 view : Signal.Address Update -> Model -> Html
-view updatesChnlAddress (i, s1, s2, s3, s4, (s5, s6, s7, s8, s9, s10)) =
+view updatesChnlAddress (i, s1, s2, s3, s4, (b1), (s5, s6, s7, s8, s9, s10)) =
   div [class "container"]
   [
     addButton,    
@@ -120,7 +123,7 @@ view updatesChnlAddress (i, s1, s2, s3, s4, (s5, s6, s7, s8, s9, s10)) =
     div [ style textStyle] [ text ("triPermsx - " ++ s7) ],
     div [ style textStyle] [ text ("2listPermsx - " ++ s8) ],
     div [ style textStyle] [ text ("3listPermsx - " ++ s9) ],
-    div [ style textStyle] [ text ("3listPermsx - " ++ s10) ]
+    div [ style <| textStyle ++ (displayStyle b1)] [ text ("3listPermsx - " ++ s10) ]
   ]
 
 -- converts Signal Update (from updatesChnl) to Signal Model, 
@@ -128,12 +131,12 @@ view updatesChnlAddress (i, s1, s2, s3, s4, (s5, s6, s7, s8, s9, s10)) =
 updateModelLift : Signal Model
 updateModelLift = Signal.foldp
                     updateModel
-                    (0, "1,2,3", "4,5,6", "7,8,9", "12,15,18", ("r1", "r2", "r3", "r4", "r5", "r6"))
+                    (0, "1,2,3", "4,5,6", "7,8,9", "12,15,18", (True), ("r1", "r2", "r3", "r4", "r5", "r6"))
                     updatesChnl.signal
 
 -- converts Update to new Model
 updateModel : Update -> Model -> Model
-updateModel update (i, s1, s2, s3, s4, (s5, s6, s7, s8, s9, s10)) =
+updateModel update (i, s1, s2, s3, s4, (b1), (s5, s6, s7, s8, s9, s10)) =
   let
     inner = (circleNumsFromString s1)
     res1      = (\s1 -> s1 ++ " " ++ ( toString ( circleNumsFromString s1 ) ) )
@@ -143,26 +146,26 @@ updateModel update (i, s1, s2, s3, s4, (s5, s6, s7, s8, s9, s10)) =
     --res = s
   in
     case update of
-      NoOp        -> (i,      s1, s2, s3, s4,
+      NoOp        -> (i,      s1, s2, s3, s4, (True),
                         (res1 s1, secPermsShow s2, thrPermsShow s3,
                           twoListPermsShow, threeListPermsShow, answersPlusListShow))
-      Add val     -> (i + 1,  s1, s2, s3, s4,
+      Add val     -> (i + 1,  s1, s2, s3, s4, (not b1),
                         (res1 s1, secPermsShow s2, thrPermsShow s3,
                           twoListPermsShow, threeListPermsShow, answersPlusListShow))
-      Remove val  -> (i - 1,  s1, s2, s3, s4,
+      Remove val  -> (i - 1,  s1, s2, s3, s4, (True),
                         (res1 s1, secPermsShow s2, thrPermsShow s3,
                           twoListPermsShow, threeListPermsShow, answersPlusListShow))
 
-      UpdateField s ->  (i,   s, s2, s3, s4,
+      UpdateField s ->  (i,   s, s2, s3, s4, (True),
                         (res1 s, secPermsShow s2, thrPermsShow s3,
                           twoListPermsShow, threeListPermsShow, answersPlusListShow))
-      Circle2Field s -> (i,   s1, s, s3, s4,
+      Circle2Field s -> (i,   s1, s, s3, s4, (True),
                         (res1 s1, secPermsShow s, thrPermsShow s3,
                           twoListPermsShow, threeListPermsShow, answersPlusListShow))
-      Circle3Field s -> (i,   s1, s2, s, s4,
+      Circle3Field s -> (i,   s1, s2, s, s4, (True),
                         (res1 s1, secPermsShow s2, thrPermsShow s,
                           twoListPermsShow, threeListPermsShow, answersPlusListShow))
-      Circle4Field s -> (i,   s1, s2, s3, s,
+      Circle4Field s -> (i,   s1, s2, s3, s, (True),
                         (res1 s1, secPermsShow s2, thrPermsShow s,
                           twoListPermsShow, threeListPermsShow, answersPlusListShow))
 
