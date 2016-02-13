@@ -19,7 +19,7 @@ import String
 import List exposing (..)
 
 type alias Model = (Int, String, String, String, String, (Bool),
-                         (String, String, String, String, String, (String, String)))
+                         (String, String, String, String, String, (String, String, String)))
 
 type Update =
       NoOp | Add Int | Remove Int |
@@ -97,7 +97,7 @@ viewLift = Signal.map (view updatesChnl.address) updateModelLift
 
 -- used by main, as a non-signal function, to convert a Model to Html
 view : Signal.Address Update -> Model -> Html
-view updatesChnlAddress (i, s1, s2, s3, s4, (b1), (s5, s6, s7, s8, s9, (s10, s11))) =
+view updatesChnlAddress (i, s1, s2, s3, s4, (b1), (s5, s6, s7, s8, s9, (s10, s11, s12))) =
   div [class "container"]
   [
     addButton,    
@@ -123,8 +123,9 @@ view updatesChnlAddress (i, s1, s2, s3, s4, (b1), (s5, s6, s7, s8, s9, (s10, s11
     div [ style textStyle] [ text ("triPermsx - " ++ s7) ],
     div [ style textStyle] [ text ("2listPermsx - " ++ s8) ],
     div [ style textStyle] [ text ("3listPermsx - " ++ s9) ],
-    div [ style <| textStyle ++ (displayStyle b1)] [ text ("3listPermsx - " ++ s10) ],
-    div [ style <| textStyle ++ (displayStyle b1)] [ text ("3listPermsx - " ++ s11) ]
+    div [ style <| textStyle ++ (displayStyle b1)] [ text ("answersPlus - " ++ s10) ],
+    div [ style <| textStyle ++ (displayStyle b1)] [ text ("answersPerms - " ++ s11) ],
+    div [ style <| textStyle ++ (displayStyle b1)] [ text ("displayAnswer - " ++ s12) ]
   ]
 
 -- converts Signal Update (from updatesChnl) to Signal Model, 
@@ -134,51 +135,53 @@ updateModelLift = Signal.foldp
                     updateModel
                     (0, "1,2,3", "4,5,6", "7,8,9", "12,15,18",
                     (True),
-                    ("r1", "r2", "r3", "r4", "r5", ("r6", "r7")))
+                    ("r1", "r2", "r3", "r4", "r5", ("r6", "r7", "r8")))
                     updatesChnl.signal
 
 -- converts Update to new Model
 updateModel : Update -> Model -> Model
-updateModel update (i, s1, s2, s3, s4, (b1), (s5, s6, s7, s8, s9, (s10, s11))) =
+updateModel update (i, s1, s2, s3, s4, (b1), (s5, s6, s7, s8, s9, (s10, s11, s12))) =
   let
-    inner = (circleNumsFromString s1)
-    res1      = (\s1 -> s1 ++ " " ++ ( toString ( circleNumsFromString s1 ) ) )
+    inner   = circleNumsFromString s1
+    answers = circleNumsFromString s4
+    innerShow      = s1 ++ " " ++ (toString inner)
     twoListPermsShow = toString <| twoListPerms inner s2
     threeListPermsShow = toString <| threeListPerms inner s2 s3
     answersPlusListShow = toString <| answersPlusList inner s2 s3
     answersPermsPlusListShow = toString <| answersPermsPlusList inner s2 s3
+    displaySpecificAnswersShow = toString <| displaySpecificAnswers inner s2 s3 answers
     --res = s
   in
     case update of
       NoOp        -> (i,      s1, s2, s3, s4, (True),
-                        (res1 s1, secPermsShow s2, thrPermsShow s3,
+                        (innerShow, secPermsShow s2, thrPermsShow s3,
                           twoListPermsShow, threeListPermsShow,
-                          (answersPlusListShow, answersPermsPlusListShow)))
+                          (answersPlusListShow, answersPermsPlusListShow, displaySpecificAnswersShow)))
       Add val     -> (i + 1,  s1, s2, s3, s4, (not b1),
-                        (res1 s1, secPermsShow s2, thrPermsShow s3,
+                        (innerShow, secPermsShow s2, thrPermsShow s3,
                           twoListPermsShow, threeListPermsShow,
-                          (answersPlusListShow, answersPermsPlusListShow)))
+                          (answersPlusListShow, answersPermsPlusListShow, displaySpecificAnswersShow)))
       Remove val  -> (i - 1,  s1, s2, s3, s4, (True),
-                        (res1 s1, secPermsShow s2, thrPermsShow s3,
+                        (innerShow, secPermsShow s2, thrPermsShow s3,
                           twoListPermsShow, threeListPermsShow,
-                          (answersPlusListShow, answersPermsPlusListShow)))
+                          (answersPlusListShow, answersPermsPlusListShow, displaySpecificAnswersShow)))
 
       UpdateField s ->  (i,   s, s2, s3, s4, (True),
-                        (res1 s, secPermsShow s2, thrPermsShow s3,
+                        (innerShow, secPermsShow s2, thrPermsShow s3,
                           twoListPermsShow, threeListPermsShow,
-                          (answersPlusListShow, answersPermsPlusListShow)))
+                          (answersPlusListShow, answersPermsPlusListShow, displaySpecificAnswersShow)))
       Circle2Field s -> (i,   s1, s, s3, s4, (True),
-                        (res1 s1, secPermsShow s, thrPermsShow s3,
+                        (innerShow, secPermsShow s, thrPermsShow s3,
                           twoListPermsShow, threeListPermsShow,
-                          (answersPlusListShow, answersPermsPlusListShow)))
+                          (answersPlusListShow, answersPermsPlusListShow, displaySpecificAnswersShow)))
       Circle3Field s -> (i,   s1, s2, s, s4, (True),
-                        (res1 s1, secPermsShow s2, thrPermsShow s,
+                        (innerShow, secPermsShow s2, thrPermsShow s,
                           twoListPermsShow, threeListPermsShow,
-                          (answersPlusListShow, answersPermsPlusListShow)))
+                          (answersPlusListShow, answersPermsPlusListShow, displaySpecificAnswersShow)))
       Circle4Field s -> (i,   s1, s2, s3, s, (True),
-                        (res1 s1, secPermsShow s2, thrPermsShow s,
+                        (innerShow, secPermsShow s2, thrPermsShow s,
                           twoListPermsShow, threeListPermsShow,
-                          (answersPlusListShow, answersPermsPlusListShow)))
+                          (answersPlusListShow, answersPermsPlusListShow, displaySpecificAnswersShow)))
 
 
 circleNumsFromString : String -> List Int
@@ -241,17 +244,17 @@ sumTriple (a, b, c) = a + b + c
 
 tuplesFromLists : List (List Int) -> List (Int, Int, Int)
 tuplesFromLists lists =
-    let list1   = head2 lists
-        list2   = head2 <| drop 1 lists
-        list3   = head2 <| drop 2 lists
+    let list1   = headLLI lists
+        list2   = headLLI <| drop 1 lists
+        list3   = headLLI <| drop 2 lists
     in
         zip3 list1 list2 list3
 
 zip3 : List Int -> List Int -> List Int -> List (Int, Int, Int)
 zip3 l1 l2 l3 = List.map3 (,,) l1 l2 l3
 
-head2 : List (List Int) -> List Int
-head2 xs =
+headLLI : List (List Int) -> List Int
+headLLI xs =
   let
     h = head xs
   in
@@ -270,3 +273,35 @@ answersPermsLoop2 (ans, lists) = (wheelPerms ans, lists)
 
 answersPermsPlusList : List Int -> String -> String -> List ((List (List Int), List (List Int)))
 answersPermsPlusList inner s2 s3 = map answersPermsLoop2 <| answersPlusList inner s2 s3
+
+-- finds solution
+findSpecificAnswerPlusList : List Int -> String -> String -> List Int ->
+                              List (List (List Int), List (List Int))
+findSpecificAnswerPlusList inner s2 s3 answers =
+    filter (\(ans, lists) -> elem2 answers ans) <| answersPermsPlusList inner s2 s3
+
+-- display solution
+displaySpecificAnswers inner s2 s3 answers =
+  -- snd <|
+  -- headX <|
+  findSpecificAnswerPlusList inner s2 s3 answers
+
+headX : List (List (List Int), List (List Int)) -> (List (List Int), List (List Int))
+headX xs =
+  let
+    h = head xs
+  in
+    case h of
+      Just x  -> x
+      Nothing -> ([[0]], [[0]])
+
+elem2 : List Int -> List (List Int) -> Bool
+elem2 a (x::xs) =
+  case (x == a) of
+    True -> True
+    False ->
+      case (xs == []) of
+        True -> False
+        False -> elem2 a xs
+
+
