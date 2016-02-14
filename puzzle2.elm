@@ -18,9 +18,12 @@ import Graphics.Element exposing (..)
 import String
 import List exposing (..)
 
-type alias ModelResults = (String, String, String, String, String, (String, String, String))
+type alias ModelInputs = (Int, String, String, String, String)
+type alias ModelResults =
+  (String, String, String, String, String, String,
+    (String, String, String, String))
 
-type alias Model = (Int, String, String, String, String, (Bool), ModelResults)
+type alias Model = (ModelInputs, (Bool), ModelResults)
 
 type Update =
       NoOp | Add Int | Remove Int |
@@ -98,7 +101,11 @@ viewLift = Signal.map (view updatesChnl.address) updateModelLift
 
 -- used by main, as a non-signal function, to convert a Model to Html
 view : Signal.Address Update -> Model -> Html
-view updatesChnlAddress (i, s1, s2, s3, s4, (b1), (s5, s6, s7, s8, s9, (s10, s11, s12))) =
+view updatesChnlAddress (
+                          (i, s1, s2, s3, s4),
+                          (b1),
+                          (s5, s6, s7, s8, s9, s10, (s11, s12, s13, s14))
+                        ) =
   div [class "container"]
   [
     addButton,    
@@ -122,11 +129,13 @@ view updatesChnlAddress (i, s1, s2, s3, s4, (b1), (s5, s6, s7, s8, s9, (s10, s11
     div [ style textStyle] [ text ("first xxxxx - " ++ s5) ],
     div [ style textStyle] [ text ("secPerms - " ++ s6) ],
     div [ style textStyle] [ text ("triPermsx - " ++ s7) ],
-    div [ style textStyle] [ text ("2listPermsx - " ++ s8) ],
-    div [ style textStyle] [ text ("3listPermsx - " ++ s9) ],
-    div [ style <| textStyle ++ (displayStyle b1)] [ text ("answersPlus - " ++ s10) ],
-    div [ style <| textStyle ++ (displayStyle b1)] [ text ("answersPerms - " ++ s11) ],
-    div [ style <| textStyle ++ (displayStyle b1)] [ text ("displayAnswer - " ++ s12) ]
+    div [ style textStyle] [ text ("ansPermsx - " ++ s8) ],
+    div [ style textStyle] [ text ("2listPermsx - " ++ s9) ],
+    div [ style textStyle] [ text ("3listPermsx - " ++ s10) ],
+    div [ style <| textStyle ++ (displayStyle b1)] [ text ("answersPlus - " ++ s11) ],
+    div [ style <| textStyle ++ (displayStyle b1)] [ text ("findAnswers - " ++ s12) ],
+    div [ style <| textStyle ++ (displayStyle b1)] [ text ("answersPerms - " ++ s13) ],
+    div [ style <| textStyle ++ (displayStyle b1)] [ text ("displayAnswer - " ++ s14) ]
   ]
 
 -- converts Signal Update (from updatesChnl) to Signal Model, 
@@ -134,14 +143,19 @@ view updatesChnlAddress (i, s1, s2, s3, s4, (b1), (s5, s6, s7, s8, s9, (s10, s11
 updateModelLift : Signal Model
 updateModelLift = Signal.foldp
                     updateModel
-                    (0, "1,2,3", "4,5,6", "7,8,9", "12,15,18",
-                    (True),
-                    ("r1", "r2", "r3", "r4", "r5", ("r6", "r7", "r8")))
+                    (
+                      (0, "1,2,3", "4,5,6", "7,8,9", "12,15,18"),
+                      (True),
+                      ("r1", "r2", "r3", "r4", "r5", "r6", ("r7", "r8", "r9", "r10"))
+                    )
                     updatesChnl.signal
 
 -- converts Update to new Model
 updateModel : Update -> Model -> Model
-updateModel update (i, s1, s2, s3, s4, (b1), (s5, s6, s7, s8, s9, (s10, s11, s12))) =
+updateModel update ( (i, s1, s2, s3, s4),
+                     (b1),
+                     (s5, s6, s7, s8, s9, s10, (s11, s12, s13, s14))
+                   ) =
   let
     inner     = circleNumsFromString s1
     answers   = circleNumsFromString s4
@@ -149,14 +163,16 @@ updateModel update (i, s1, s2, s3, s4, (b1), (s5, s6, s7, s8, s9, (s10, s11, s12
     twoListPermsShow =            toString <| twoListPerms            inner s2
     threeListPermsShow =          toString <| threeListPerms          inner s2 s3
     answersPlusListShow =         toString <| answersPlusList         inner s2 s3
+    findSpecificAnswerShow =      toString <| findSpecificAnswer      inner s2 s3 <| ansPerms s4
     answersPermsPlusListShow =    toString <| answersPermsPlusList    inner s2 s3
     displaySpecificAnswersShow =  toString <| displaySpecificAnswers  inner s2 s3 answers
 
     createModel i s1 s2 s3 s4 b1 =
-                  (i, s1, s2, s3, s4, (True),
-                    (innerShow, secPermsShow s2, thrPermsShow s3,
+                  ((i, s1, s2, s3, s4), (True),
+                    (innerShow, secPermsShow s2, thrPermsShow s3, ansPermsShow s4,
                       twoListPermsShow, threeListPermsShow,
-                      (answersPlusListShow, answersPermsPlusListShow, displaySpecificAnswersShow)))
+                      (answersPlusListShow, findSpecificAnswerShow,
+                        answersPermsPlusListShow, displaySpecificAnswersShow)))
   in
     case update of
       NoOp        ->    createModel  i      s1 s2 s3 s4 b1
@@ -205,11 +221,17 @@ secPerms  = (\s2 -> wheelPerms <| circleNumsFromString s2)
 thrPerms : String -> List (List Int)
 thrPerms = (\s3 -> wheelPerms <| circleNumsFromString s3)
 
+ansPerms : String -> List (List Int)
+ansPerms = (\s4 -> wheelPerms <| circleNumsFromString s4)
+
 secPermsShow : String -> String
 secPermsShow  = (\s2 -> s2 ++ " " ++ (toString <| secPerms s2) )
 
 thrPermsShow : String -> String
 thrPermsShow = (\s3 -> s3 ++ " " ++ (toString <| thrPerms s3) )
+
+ansPermsShow : String -> String
+ansPermsShow = (\s4 -> s4 ++ " " ++ (toString <| ansPerms s4) )
 
 
 twoListPerms : List Int -> String -> List (List (List Int ))
@@ -251,6 +273,12 @@ sumPlusLists lists = [(map sumTriple <| tuplesFromLists lists, lists)]
 -- NOTE can factor some later steps by comparing list to loop of answers
 answersPlusList : List Int -> String -> String -> List (List Int, List (List Int))
 answersPlusList inner s2 s3 = concat <| map sumPlusLists (threeListPerms inner s2 s3)
+
+findSpecificAnswer : List Int -> String -> String ->
+                              List (List Int) ->
+                              List (List Int, List (List Int))
+findSpecificAnswer inner s2 s3 answersPerms =
+    filter (\(answer, lists) -> elem2 answer answersPerms) <| answersPlusList inner s2 s3
 
 answersPermsLoop2 : (List Int, t) -> (List (List Int), t)
 answersPermsLoop2 (ans, lists) = (wheelPerms ans, lists)
