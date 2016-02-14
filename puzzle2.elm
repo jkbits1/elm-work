@@ -18,8 +18,9 @@ import Graphics.Element exposing (..)
 import String
 import List exposing (..)
 
-type alias Model = (Int, String, String, String, String, (Bool),
-                         (String, String, String, String, String, (String, String, String)))
+type alias ModelResults = (String, String, String, String, String, (String, String, String))
+
+type alias Model = (Int, String, String, String, String, (Bool), ModelResults)
 
 type Update =
       NoOp | Add Int | Remove Int |
@@ -158,14 +159,14 @@ updateModel update (i, s1, s2, s3, s4, (b1), (s5, s6, s7, s8, s9, (s10, s11, s12
                       (answersPlusListShow, answersPermsPlusListShow, displaySpecificAnswersShow)))
   in
     case update of
-      NoOp        -> createModel  i      s1 s2 s3 s4 b1
-      Add val     -> createModel (i + 1) s1 s2 s3 s4 (not b1)
-      Remove val  -> createModel (i - 1) s1 s2 s3 s4 (True)
+      NoOp        ->    createModel  i      s1 s2 s3 s4 b1
+      Add val     ->    createModel (i + 1) s1 s2 s3 s4 (not b1)
+      Remove val  ->    createModel (i - 1) s1 s2 s3 s4 (True)
 
-      UpdateField s ->  createModel i s  s2 s3 s4 (True)
-      Circle2Field s -> createModel i s1 s  s3 s4 (True)
-      Circle3Field s -> createModel i s1 s2 s  s4 (True)
-      Circle4Field s -> createModel i s1 s2 s3 s  (True)
+      UpdateField s ->  createModel  i      s  s2 s3 s4 (True)
+      Circle2Field s -> createModel  i      s1 s  s3 s4 (True)
+      Circle3Field s -> createModel  i      s1 s2 s  s4 (True)
+      Circle4Field s -> createModel  i      s1 s2 s3 s  (True)
 
 circleNumsFromString : String -> List Int
 circleNumsFromString s =
@@ -246,6 +247,8 @@ headLLI xs =
 sumPlusLists : List (List Int) -> List (List Int, List (List Int))
 sumPlusLists lists = [(map sumTriple <| tuplesFromLists lists, lists)]
 
+-- NOTE can factor some later steps by comparing list to loop of answers
+-- NOTE can factor some later steps by comparing list to loop of answers
 answersPlusList : List Int -> String -> String -> List (List Int, List (List Int))
 answersPlusList inner s2 s3 = concat <| map sumPlusLists (threeListPerms inner s2 s3)
 
