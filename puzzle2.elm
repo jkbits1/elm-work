@@ -142,51 +142,32 @@ updateModelLift = Signal.foldp
 updateModel : Update -> Model -> Model
 updateModel update (i, s1, s2, s3, s4, (b1), (s5, s6, s7, s8, s9, (s10, s11, s12))) =
   let
-    inner   = circleNumsFromString s1
-    answers = circleNumsFromString s4
-    innerShow      = s1 ++ " " ++ (toString inner)
-    twoListPermsShow = toString <| twoListPerms inner s2
-    threeListPermsShow = toString <| threeListPerms inner s2 s3
-    answersPlusListShow = toString <| answersPlusList inner s2 s3
-    answersPermsPlusListShow = toString <| answersPermsPlusList inner s2 s3
-    displaySpecificAnswersShow = toString <| displaySpecificAnswers inner s2 s3 answers
-    --res = s
+    inner     = circleNumsFromString s1
+    answers   = circleNumsFromString s4
+    innerShow = s1 ++ " " ++ (toString inner)
+    twoListPermsShow =            toString <| twoListPerms            inner s2
+    threeListPermsShow =          toString <| threeListPerms          inner s2 s3
+    answersPlusListShow =         toString <| answersPlusList         inner s2 s3
+    answersPermsPlusListShow =    toString <| answersPermsPlusList    inner s2 s3
+    displaySpecificAnswersShow =  toString <| displaySpecificAnswers  inner s2 s3 answers
+
+    createModel i s1 s2 s3 s4 b1 =
+                  (i, s1, s2, s3, s4, (True),
+                    (innerShow, secPermsShow s2, thrPermsShow s3,
+                      twoListPermsShow, threeListPermsShow,
+                      (answersPlusListShow, answersPermsPlusListShow, displaySpecificAnswersShow)))
   in
     case update of
-      NoOp        -> (i,      s1, s2, s3, s4, (True),
-                        (innerShow, secPermsShow s2, thrPermsShow s3,
-                          twoListPermsShow, threeListPermsShow,
-                          (answersPlusListShow, answersPermsPlusListShow, displaySpecificAnswersShow)))
-      Add val     -> (i + 1,  s1, s2, s3, s4, (not b1),
-                        (innerShow, secPermsShow s2, thrPermsShow s3,
-                          twoListPermsShow, threeListPermsShow,
-                          (answersPlusListShow, answersPermsPlusListShow, displaySpecificAnswersShow)))
-      Remove val  -> (i - 1,  s1, s2, s3, s4, (True),
-                        (innerShow, secPermsShow s2, thrPermsShow s3,
-                          twoListPermsShow, threeListPermsShow,
-                          (answersPlusListShow, answersPermsPlusListShow, displaySpecificAnswersShow)))
+      NoOp        -> createModel  i      s1 s2 s3 s4 b1
+      Add val     -> createModel (i + 1) s1 s2 s3 s4 (not b1)
+      Remove val  -> createModel (i - 1) s1 s2 s3 s4 (True)
 
-      UpdateField s ->  (i,   s, s2, s3, s4, (True),
-                        (innerShow, secPermsShow s2, thrPermsShow s3,
-                          twoListPermsShow, threeListPermsShow,
-                          (answersPlusListShow, answersPermsPlusListShow, displaySpecificAnswersShow)))
-      Circle2Field s -> (i,   s1, s, s3, s4, (True),
-                        (innerShow, secPermsShow s, thrPermsShow s3,
-                          twoListPermsShow, threeListPermsShow,
-                          (answersPlusListShow, answersPermsPlusListShow, displaySpecificAnswersShow)))
-      Circle3Field s -> (i,   s1, s2, s, s4, (True),
-                        (innerShow, secPermsShow s2, thrPermsShow s,
-                          twoListPermsShow, threeListPermsShow,
-                          (answersPlusListShow, answersPermsPlusListShow, displaySpecificAnswersShow)))
-      Circle4Field s -> (i,   s1, s2, s3, s, (True),
-                        (innerShow, secPermsShow s2, thrPermsShow s,
-                          twoListPermsShow, threeListPermsShow,
-                          (answersPlusListShow, answersPermsPlusListShow, displaySpecificAnswersShow)))
-
+      UpdateField s ->  createModel i s  s2 s3 s4 (True)
+      Circle2Field s -> createModel i s1 s  s3 s4 (True)
+      Circle3Field s -> createModel i s1 s2 s  s4 (True)
+      Circle4Field s -> createModel i s1 s2 s3 s  (True)
 
 circleNumsFromString : String -> List Int
---circleNumsFromString : String -> List String
--- circleNumsFromString s = [1]
 circleNumsFromString s =
   List.map
     strToNum
