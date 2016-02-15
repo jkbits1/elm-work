@@ -20,7 +20,7 @@ import List exposing (..)
 
 type alias ModelInputs = (Int, String, String, String, String)
 type alias ModelResults =
-  (String, String, String, String, String, String,
+  (List Int, List (List Int), List (List Int), List (List Int), String, String,
     (String, String, String, String))
 
 type alias Model = (ModelInputs, (Bool), ModelResults)
@@ -104,7 +104,7 @@ view : Signal.Address Update -> Model -> Html
 view updatesChnlAddress (
                           (i, s1, s2, s3, s4),
                           (b1),
-                          (s5, s6, s7, s8, s9, s10, (s11, s12, s13, s14))
+                          (xs, xxs2, xxs3, xxs4, s9, s10, (s11, s12, s13, s14))
                         ) =
   div [class "container"]
   [
@@ -126,10 +126,10 @@ view updatesChnlAddress (
     [
       inputField "Files Query" s4 updatesChnlAddress Circle4Field myStyle
     ],
-    div [ style textStyle] [ text ("first xxxxx - " ++ s5) ],
-    div [ style textStyle] [ text ("secPerms - " ++ s6) ],
-    div [ style textStyle] [ text ("triPermsx - " ++ s7) ],
-    div [ style textStyle] [ text ("ansPermsx - " ++ s8) ],
+    div [ style textStyle] [ text ("first xxxxx - " ++ (toString xs)) ],
+    div [ style textStyle] [ text ("secPerms - " ++ (toString xxs2)) ],
+    div [ style textStyle] [ text ("triPermsx - " ++ (toString xxs3)) ],
+    div [ style textStyle] [ text ("ansPermsx - " ++ (toString xxs4)) ],
     div [ style textStyle] [ text ("2listPermsx - " ++ s9) ],
     div [ style textStyle] [ text ("3listPermsx - " ++ s10) ],
     div [ style <| textStyle ++ (displayStyle b1)] [ text ("answersPlus - " ++ s11) ],
@@ -146,7 +146,7 @@ updateModelLift = Signal.foldp
                     (
                       (0, "1,2,3", "4,5,6", "7,8,9", "12,15,18"),
                       (True),
-                      ("r1", "r2", "r3", "r4", "r5", "r6", ("r7", "r8", "r9", "r10"))
+                      ([1,2,3], [[4,5,6]], [[7,8,9]], [[12,15,18]], "r5", "r6", ("r7", "r8", "r9", "r10"))
                     )
                     updatesChnl.signal
 
@@ -154,12 +154,12 @@ updateModelLift = Signal.foldp
 updateModel : Update -> Model -> Model
 updateModel update ( (i, s1, s2, s3, s4),
                      (b1),
-                     (s5, s6, s7, s8, s9, s10, (s11, s12, s13, s14))
+                     (xs, xxs2, xxs3, xxs4, s9, s10, (s11, s12, s13, s14))
                    ) =
   let
     inner     = circleNumsFromString s1
     answers   = circleNumsFromString s4
-    innerShow = s1 ++ " " ++ (toString inner)
+    -- innerShow = s1 ++ " " ++ (toString inner)
     twoListPermsShow =            toString <| twoListPerms            inner s2
     threeListPermsShow =          toString <| threeListPerms          inner s2 s3
     answersPlusListShow =         toString <| answersPlusList         inner s2 s3
@@ -169,7 +169,7 @@ updateModel update ( (i, s1, s2, s3, s4),
 
     createModel i s1 s2 s3 s4 b1 =
                   ((i, s1, s2, s3, s4), (True),
-                    (innerShow, secPermsShow s2, thrPermsShow s3, ansPermsShow s4,
+                    (inner, secPerms s2, thrPerms s3, ansPerms s4,
                       twoListPermsShow, threeListPermsShow,
                       (answersPlusListShow, findSpecificAnswerShow,
                         answersPermsPlusListShow, displaySpecificAnswersShow)))
@@ -224,14 +224,15 @@ thrPerms = (\s3 -> wheelPerms <| circleNumsFromString s3)
 ansPerms : String -> List (List Int)
 ansPerms = (\s4 -> wheelPerms <| circleNumsFromString s4)
 
-secPermsShow : String -> String
-secPermsShow  = (\s2 -> s2 ++ " " ++ (toString <| secPerms s2) )
+-- NOTE: may use these in view at some point
+--secPermsShow : String -> String
+--secPermsShow  = (\s2 -> s2 ++ " " ++ (toString <| secPerms s2) )
 
-thrPermsShow : String -> String
-thrPermsShow = (\s3 -> s3 ++ " " ++ (toString <| thrPerms s3) )
+--thrPermsShow : String -> String
+--thrPermsShow = (\s3 -> s3 ++ " " ++ (toString <| thrPerms s3) )
 
-ansPermsShow : String -> String
-ansPermsShow = (\s4 -> s4 ++ " " ++ (toString <| ansPerms s4) )
+--ansPermsShow : String -> String
+--ansPermsShow = (\s4 -> s4 ++ " " ++ (toString <| ansPerms s4) )
 
 
 twoListPerms : List Int -> String -> List (List (List Int ))
