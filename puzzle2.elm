@@ -53,7 +53,7 @@ updatesChnl = Signal.mailbox NoOp
 addButton : Html
 addButton = Html.button
   [ Html.Events.onClick updatesChnl.address (Add 1)]
-  [ Html.text "Add 1" ]
+  [ Html.text "Show Answers" ]
 
 inputField : String -> String ->
               Signal.Address Update -> (String -> Update) ->
@@ -110,6 +110,7 @@ view updatesChnlAddress (
   [
     addButton,    
     div [] [ text (toString i) ],
+    div [] [ text (toString b1) ],
     div []
     [
       inputField "Files Query" s1 updatesChnlAddress UpdateField myStyle
@@ -157,22 +158,23 @@ updateModel update ( (i, s1, s2, s3, s4),
                      (xs, xxs2, xxs3, xxs4, s9, s10, (s11, s12, s13, s14))
                    ) =
   let
-    inner     = circleNumsFromString s1
-    answers   = circleNumsFromString s4
-    -- innerShow = s1 ++ " " ++ (toString inner)
-    twoListPermsShow =            toString <| twoListPerms            inner s2
-    threeListPermsShow =          toString <| threeListPerms          inner s2 s3
-    answersPlusListShow =         toString <| answersPlusList         inner s2 s3
-    findSpecificAnswerShow =      toString <| findSpecificAnswer      inner s2 s3 <| ansPerms s4
-    answersPermsPlusListShow =    toString <| answersPermsPlusList    inner s2 s3
-    displaySpecificAnswersShow =  toString <| displaySpecificAnswers  inner s2 s3 answers
-
     createModel i s1 s2 s3 s4 b1 =
-                  ((i, s1, s2, s3, s4), (True),
-                    (inner, secPerms s2, thrPerms s3, ansPerms s4,
-                      twoListPermsShow, threeListPermsShow,
-                      (answersPlusListShow, findSpecificAnswerShow,
-                        answersPermsPlusListShow, displaySpecificAnswersShow)))
+      let
+        inner     = circleNumsFromString s1
+        answers   = circleNumsFromString s4
+        -- innerShow = s1 ++ " " ++ (toString inner)
+        twoListPermsShow =            toString <| twoListPerms            inner s2
+        threeListPermsShow =          toString <| threeListPerms          inner s2 s3
+        answersPlusListShow =         toString <| answersPlusList         inner s2 s3
+        findSpecificAnswerShow =      toString <| findSpecificAnswer      inner s2 s3 <| ansPerms s4
+        answersPermsPlusListShow =    toString <| answersPermsPlusList    inner s2 s3
+        displaySpecificAnswersShow =  toString <| displaySpecificAnswers  inner s2 s3 answers
+      in
+        ((i, s1, s2, s3, s4), (b1),
+          (inner, secPerms s2, thrPerms s3, ansPerms s4,
+            twoListPermsShow, threeListPermsShow,
+            (answersPlusListShow, findSpecificAnswerShow,
+              answersPermsPlusListShow, displaySpecificAnswersShow)))
   in
     case update of
       NoOp        ->    createModel  i      s1 s2 s3 s4 b1
