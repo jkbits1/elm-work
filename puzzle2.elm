@@ -73,7 +73,8 @@ myStyle =
   [ ("width", "100%")
   , ("height", "40px")
   , ("padding", "10px 0")
-  , ("font-size", "2em")
+  --, ("font-size", "2em")
+  , ("font-size", "1.8em")
   , ("text-align", "center")
   ]
 
@@ -82,7 +83,8 @@ textStyle =
   [ ("width", "100%")
   --, ("height", "70px")
   , ("padding", "10px 0")
-  , ("font-size", "2em")
+  --, ("font-size", "2em")
+  , ("font-size", "1.8em")
   , ("text-align", "left")
   ]
 
@@ -181,10 +183,10 @@ updateModel update ( (i, s1, s2, s3, s4),
       Add val     ->    createModel (i + 1) s1 s2 s3 s4 (not b1)
       Remove val  ->    createModel (i - 1) s1 s2 s3 s4 (True)
 
-      UpdateField s ->  createModel  i      s  s2 s3 s4 (True)
-      Circle2Field s -> createModel  i      s1 s  s3 s4 (True)
-      Circle3Field s -> createModel  i      s1 s2 s  s4 (True)
-      Circle4Field s -> createModel  i      s1 s2 s3 s  (True)
+      UpdateField s ->  createModel  i      s  s2 s3 s4 (b1)
+      Circle2Field s -> createModel  i      s1 s  s3 s4 (b1)
+      Circle3Field s -> createModel  i      s1 s2 s  s4 (b1)
+      Circle4Field s -> createModel  i      s1 s2 s3 s  (b1)
 
 circleNumsFromString : String -> List Int
 circleNumsFromString s =
