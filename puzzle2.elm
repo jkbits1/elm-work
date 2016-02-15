@@ -212,9 +212,10 @@ listLoops : List (List Int) -> List Int -> Int -> List (List Int)
 listLoops lists seed count =
   case count of
     0 ->
-      lists ++ [seed]
+      --lists ++ [seed]
+      [seed] ++ lists
     otherwise ->
-      listLoops (lists ++ [listLoopItem seed count]) seed (count-1)
+      listLoops ([listLoopItem seed count] ++ lists) seed (count-1)
 
 wheelPerms : List Int -> List (List Int)
 wheelPerms xs = listLoops [] xs ( (length xs) - 1 )
