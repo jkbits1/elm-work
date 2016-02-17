@@ -18,18 +18,19 @@ import Graphics.Element exposing (..)
 import String
 import List exposing (..)
 
-type alias Wheel            = List Int
-type alias WheelLoop        = List (List Int) -- all turns of wheel
+type alias WheelPosition    = List Int
+type alias WheelLoop        = List (List Int) -- all turns/position of wheel
+type alias LoopItem         = List Int        -- a single turn/position of a wheel
 type alias LoopsPermutation = List (List Int) -- combo of one or more loops
 type alias LoopsAnswer      = List Int        -- results of combo addition
-type alias LoopsAnswerLoop = List Wheel      -- all turns of combo addition
+type alias LoopsAnswerLoop = List WheelPosition      -- all turns of combo addition
 
 -- values received from UI
 type alias ModelInputs  = (Int, String, String, String, String)
 
 -- values generated from UI input
 type alias ModelResults =
-  (Wheel, WheelLoop, WheelLoop, WheelLoop,
+  (WheelPosition, WheelLoop, WheelLoop, WheelLoop,
     List LoopsPermutation,                       List LoopsPermutation,
     (List (LoopsAnswer, LoopsPermutation),       List (LoopsAnswer, LoopsPermutation),
       List (LoopsAnswerLoop, LoopsPermutation), List (LoopsAnswerLoop, LoopsPermutation)))
@@ -200,13 +201,16 @@ updateModel update ( (i, s1, s2, s3, s4),
   let
     createModel i s1 s2 s3 s4 b1 =
       let
-        inner     = wheelFromString s1
-        answers   = wheelFromString s4
+        inner     = wheelPositionFromString s1
+        answers   = wheelPositionFromString s4
+        secLoop   = secPerms s2
+        thrLoop   = thrPerms s3
+        ansLoop   = ansPerms s4
       in
         ((i, s1, s2, s3, s4), (b1),
-          (inner, secPerms s2, thrPerms s3, ansPerms s4,
-            twoListPerms inner s2, threeListPerms inner s2 s3,
-            (answersPlusList inner s2 s3, findSpecificAnswer inner s2 s3 <| ansPerms s4,
+          (inner, secLoop, thrLoop, ansLoop,
+            twoListPerms inner secLoop, threeListPerms inner secLoop thrLoop,
+            (answersPlusList inner s2 s3, findSpecificAnswer inner s2 s3 ansLoop,
               answersPermsPlusList inner s2 s3, displaySpecificAnswers inner s2 s3 answers)))
   in
     case update of
@@ -219,8 +223,8 @@ updateModel update ( (i, s1, s2, s3, s4),
       Circle3Field s -> createModel  i      s1 s2 s  s4 (b1)
       Circle4Field s -> createModel  i      s1 s2 s3 s  (b1)
 
-wheelFromString : String -> Wheel
-wheelFromString s =
+wheelPositionFromString : String -> WheelPosition
+wheelPositionFromString s =
   List.map
     strToNum
       (String.split "," s)
@@ -237,37 +241,40 @@ resToNum r =
 
 -- PUZZLE SOLUTIONS
 
-listLoopItem list chunk = (drop chunk list) ++ (take chunk list)
+listLoopItem : WheelPosition -> Int -> WheelPosition
+listLoopItem wheel chunk = (drop chunk wheel) ++ (take chunk wheel)
 
-listLoops : List (List Int) -> List Int -> Int -> List (List Int)
-listLoops lists seed count =
+listLoops : List WheelPosition -> WheelPosition -> Int -> WheelLoop
+listLoops lists wheel count =
   case count of
     0 ->
       --lists ++ [seed]
-      [seed] ++ lists
+      [wheel] ++ lists
     otherwise ->
-      listLoops ([listLoopItem seed count] ++ lists) seed (count-1)
+      listLoops ([listLoopItem wheel count] ++ lists) wheel (count-1)
 
-wheelPerms : Wheel -> WheelLoop
-wheelPerms xs = listLoops [] xs ( (length xs) - 1 )
+wheelPerms : WheelPosition -> WheelLoop
+wheelPerms wheel = listLoops [] wheel ( (length wheel) - 1 )
 
 secPerms : String -> WheelLoop
-secPerms  = (\s2 -> wheelPerms <| wheelFromString s2)
+secPerms  = (\s2 -> wheelPerms <| wheelPositionFromString s2)
 
 thrPerms : String -> WheelLoop
-thrPerms = (\s3 -> wheelPerms <| wheelFromString s3)
+thrPerms = (\s3 -> wheelPerms <| wheelPositionFromString s3)
 
 ansPerms : String -> WheelLoop
-ansPerms = (\s4 -> wheelPerms <| wheelFromString s4)
+ansPerms = (\s4 -> wheelPerms <| wheelPositionFromString s4)
 
-twoListPerms : Wheel -> String -> List LoopsPermutation
-twoListPerms inner s2 = List.map (\sec -> inner :: sec :: []) (secPerms s2)
+twoListPerms : WheelPosition -> WheelLoop -> List LoopsPermutation
+twoListPerms inner secLoop = List.map (\sec -> inner :: sec :: []) secLoop
 
-appendTwoListPerms : Wheel -> String -> List Int -> List LoopsPermutation
-appendTwoListPerms inner s2 thr = map (\xs ->  xs ++ [thr]) (twoListPerms inner s2)
+appendTwoListPerms : WheelPosition -> WheelLoop -> LoopItem -> List LoopsPermutation
+appendTwoListPerms inner secLoop thrPermsItem =
+  map (\xs ->  xs ++ [thrPermsItem]) (twoListPerms inner secLoop)
 
-threeListPerms : Wheel -> String -> String -> List LoopsPermutation
-threeListPerms inner s2 s3 = concat <| map (appendTwoListPerms inner s2) (thrPerms s3)
+threeListPerms : WheelPosition -> WheelLoop -> WheelLoop -> List LoopsPermutation
+threeListPerms inner secLoop thrLoop =
+  concat <| map (appendTwoListPerms inner secLoop) thrLoop
 
 sumTriple : (Int, Int, Int) -> Int
 sumTriple (a, b, c) = a + b + c
@@ -296,31 +303,32 @@ sumPlusLists : List (List Int) -> List (List Int, List (List Int))
 sumPlusLists lists = [(map sumTriple <| tuplesFromLists lists, lists)]
 
 -- NOTE this refactors out two later steps by comparing list to loop of answers
-answersPlusList : Wheel -> String -> String -> List (LoopsAnswer, LoopsPermutation)
-answersPlusList inner s2 s3 = concat <| map sumPlusLists (threeListPerms inner s2 s3)
+answersPlusList : WheelPosition -> String -> String -> List (LoopsAnswer, LoopsPermutation)
+answersPlusList inner s2 s3 =
+  concat <| map sumPlusLists (threeListPerms inner (secPerms s2) (thrPerms s3))
 
-findSpecificAnswer : Wheel -> String -> String ->
-                              List (List Int) ->
+findSpecificAnswer : WheelPosition -> String -> String ->
+                              WheelLoop ->
                               List (LoopsAnswer, LoopsPermutation)
-findSpecificAnswer inner s2 s3 answersPerms =
-    filter (\(answer, lists) -> elem2 answer answersPerms) <| answersPlusList inner s2 s3
+findSpecificAnswer inner s2 s3 answersLoop =
+    filter (\(answer, lists) -> elem2 answer answersLoop) <| answersPlusList inner s2 s3
 
 answersPermsLoop2 : (List Int, t) -> (List (List Int), t)
 answersPermsLoop2 (ans, lists) = (wheelPerms ans, lists)
 
-answersPermsPlusList : Wheel -> String -> String ->
+answersPermsPlusList : WheelPosition -> String -> String ->
                         List (LoopsAnswerLoop, LoopsPermutation)
 answersPermsPlusList inner s2 s3 = map answersPermsLoop2 <| answersPlusList inner s2 s3
 
 -- finds solution
-findSpecificAnswerPlusList : Wheel -> String -> String -> Wheel ->
+findSpecificAnswerPlusList : WheelPosition -> String -> String -> WheelPosition ->
                               List (LoopsAnswerLoop, LoopsPermutation)
 findSpecificAnswerPlusList inner s2 s3 answers =
     filter (\(ans, lists) -> elem2 answers ans) <| answersPermsPlusList inner s2 s3
 
 -- display solution
-displaySpecificAnswers : Wheel -> String -> String -> Wheel ->
-                          List (List (List Int), List (List Int))
+displaySpecificAnswers : WheelPosition -> String -> String -> WheelPosition ->
+                          List (LoopsAnswerLoop, LoopsPermutation)
 displaySpecificAnswers inner s2 s3 answers =
   -- snd <|
   -- headX <|
