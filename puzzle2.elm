@@ -23,7 +23,8 @@ type alias WheelLoop        = List (List Int) -- all turns/position of wheel
 type alias LoopItem         = List Int        -- a single turn/position of a wheel
 type alias LoopsPermutation = List (List Int) -- combo of one or more loops
 type alias LoopsAnswer      = List Int        -- results of combo addition
-type alias LoopsAnswerLoop = List WheelPosition      -- all turns of combo addition
+type alias LoopsAnswerLoop  = List WheelPosition      -- all turns of combo addition
+type alias LoopsPermColumn  = (Int, Int, Int)  -- values from a single loops perm
 
 -- values received from UI
 type alias ModelInputs  = (Int, String, String, String, String)
@@ -278,19 +279,19 @@ threeListPerms : WheelPosition -> WheelLoop -> WheelLoop -> List LoopsPermutatio
 threeListPerms inner secLoop thrLoop =
   concat <| map (appendTwoListPerms inner secLoop) thrLoop
 
-sumTriple : (Int, Int, Int) -> Int
-sumTriple (a, b, c) = a + b + c
+sumColumn : LoopsPermColumn -> Int
+sumColumn (a, b, c) = a + b + c
 
-tuplesFromLists : List (List Int) -> List (Int, Int, Int)
-tuplesFromLists lists =
+columnsFromLists : LoopsPermutation -> List LoopsPermColumn
+columnsFromLists lists =
     let list1   = headLLI lists
         list2   = headLLI <| drop 1 lists
         list3   = headLLI <| drop 2 lists
     in
         zip3 list1 list2 list3
 
-zip3 : List Int -> List Int -> List Int -> List (Int, Int, Int)
-zip3 l1 l2 l3 = List.map3 (,,) l1 l2 l3
+zip3 : WheelPosition -> WheelPosition -> WheelPosition -> List LoopsPermColumn
+zip3 pos1 pos2 pos3 = List.map3 (,,) pos1 pos2 pos3
 
 headLLI : List (List Int) -> List Int
 headLLI xs =
@@ -301,8 +302,8 @@ headLLI xs =
       Just x  -> x
       Nothing -> []
 
-sumPlusLists : List (List Int) -> List (List Int, List (List Int))
-sumPlusLists lists = [(map sumTriple <| tuplesFromLists lists, lists)]
+sumPlusLists : LoopsPermutation -> List (LoopsAnswer, LoopsPermutation)
+sumPlusLists perm = [(map sumColumn <| columnsFromLists perm, perm)]
 
 -- NOTE this refactors out two later steps by comparing list to loop of answers
 answersPlusList : WheelPosition -> WheelLoop -> WheelLoop ->
@@ -317,7 +318,7 @@ findSpecificAnswer inner secLoop thrLoop answersLoop =
     filter (\(answer, lists) -> elem2 answer answersLoop)
                 <| answersPlusList inner secLoop thrLoop
 
-answersPermsLoop2 : (List Int, t) -> (List (List Int), t)
+answersPermsLoop2 : (LoopsAnswer, t) -> (LoopsPermutation, t)
 answersPermsLoop2 (ans, lists) = (wheelPerms ans, lists)
 
 answersPermsPlusList : WheelPosition -> WheelLoop -> WheelLoop ->
@@ -341,7 +342,7 @@ displaySpecificAnswers inner secLoop thrLoop answers =
   findSpecificAnswerPlusList inner secLoop thrLoop answers
 
 
-headX : List (List (List Int), List (List Int)) -> (List (List Int), List (List Int))
+headX : List (LoopsAnswerLoop, LoopsPermutation) -> (LoopsAnswerLoop, LoopsPermutation)
 headX xs =
   let
     h = head xs
@@ -350,7 +351,7 @@ headX xs =
       Just x  -> x
       Nothing -> ([[0]], [[0]])
 
-elem2 : List Int -> List (List Int) -> Bool
+elem2 : LoopsAnswer -> LoopsAnswerLoop -> Bool
 elem2 a (x::xs) =
   case (x == a) of
     True -> True
@@ -360,3 +361,4 @@ elem2 a (x::xs) =
         False -> elem2 a xs
 
 
+-- haskell foldr map
