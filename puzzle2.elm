@@ -20,8 +20,9 @@ import List exposing (..)
 
 type alias ModelInputs = (Int, String, String, String, String)
 type alias ModelResults =
-  (List Int, List (List Int), List (List Int), List (List Int), String, String,
-    (String, String, String, String))
+  (List Int, List (List Int), List (List Int), List (List Int), List (List (List Int)), List (List (List Int)),
+    (List (List Int, List (List Int)), List (List Int, List (List Int)),
+      List (List (List Int), List (List Int)), List (List (List Int), List (List Int))))
 
 type alias Model = (ModelInputs, (Bool), ModelResults)
 
@@ -106,7 +107,8 @@ view : Signal.Address Update -> Model -> Html
 view updatesChnlAddress (
                           (i, s1, s2, s3, s4),
                           (b1),
-                          (xs, xxs2, xxs3, xxs4, s9, s10, (s11, s12, s13, s14))
+                          (xs, xxs2, xxs3, xxs4, xxxs2, xxxs3,
+                            (ansPlusList, specificAnswer, ansPermsPlusList, specificAnswerPlusList))
                         ) =
   div [class "container"]
   [
@@ -133,13 +135,34 @@ view updatesChnlAddress (
     div [ style textStyle] [ text ("secPerms - " ++ (toString xxs2)) ],
     div [ style textStyle] [ text ("triPermsx - " ++ (toString xxs3)) ],
     div [ style textStyle] [ text ("ansPermsx - " ++ (toString xxs4)) ],
-    div [ style textStyle] [ text ("2listPermsx - " ++ s9) ],
-    div [ style textStyle] [ text ("3listPermsx - " ++ s10) ],
-    div [ style <| textStyle ++ (displayStyle b1)] [ text ("answersPlus - " ++ s11) ],
-    div [ style <| textStyle ++ (displayStyle b1)] [ text ("findAnswers - " ++ s12) ],
-    div [ style <| textStyle ++ (displayStyle b1)] [ text ("answersPerms - " ++ s13) ],
-    div [ style <| textStyle ++ (displayStyle b1)] [ text ("displayAnswer - " ++ s14) ]
+    div [ style textStyle] [ text ("2listPermsx - " ++ (toString xxxs2)) ],
+    div [ style textStyle] [ text ("3listPermsx - " ++ (toString xxxs3)) ],
+    div [ style <| textStyle ++ (displayStyle b1)] [ text ("answersPlus - " ++ (toString ansPlusList)) ],
+    div [ style <| textStyle ++ (displayStyle b1)] [ text ("findAnswers - " ++ (toString specificAnswer)) ],
+    div [ style <| textStyle ++ (displayStyle b1)] [ text ("answersPerms - " ++ (toString ansPermsPlusList)) ],
+    div [ style <| textStyle ++ (displayStyle b1)] [ text ("displayAnswer - " ++ (toString specificAnswerPlusList)) ]
   ]
+
+-- candidates for viewHelperFns
+--
+
+--secPermsShow : String -> String
+--secPermsShow  = (\s2 -> s2 ++ " " ++ (toString <| secPerms s2) )
+
+--thrPermsShow : String -> String
+--thrPermsShow = (\s3 -> s3 ++ " " ++ (toString <| thrPerms s3) )
+
+--ansPermsShow : String -> String
+--ansPermsShow = (\s4 -> s4 ++ " " ++ (toString <| ansPerms s4) )
+
+-- innerShow = s1 ++ " " ++ (toString inner)
+-- twoListPermsShow =            toString <| twoListPerms            inner s2
+-- threeListPermsShow =          toString <| threeListPerms          inner s2 s3
+-- answersPlusListShow =         toString <| answersPlusList         inner s2 s3
+-- findSpecificAnswerShow =      toString <| findSpecificAnswer      inner s2 s3 <| ansPerms s4
+-- answersPermsPlusListShow =    toString <| answersPermsPlusList    inner s2 s3
+-- displaySpecificAnswersShow =  toString <| displaySpecificAnswers  inner s2 s3 answers
+
 
 -- converts Signal Update (from updatesChnl) to Signal Model, 
 -- using non-signal updateModel
@@ -149,7 +172,8 @@ updateModelLift = Signal.foldp
                     (
                       (0, "1,2,3", "4,5,6", "7,8,9", "12,15,18"),
                       (True),
-                      ([1,2,3], [[4,5,6]], [[7,8,9]], [[12,15,18]], "r5", "r6", ("r7", "r8", "r9", "r10"))
+                      ([1,2,3], [[4,5,6]], [[7,8,9]], [[12,15,18]], [[[2]]], [[[3]]],
+                        ([([1], [[1]])], [([1], [[1]])], [([[1]], [[1]])], [([[1]], [[1]])]))
                     )
                     updatesChnl.signal
 
@@ -164,19 +188,12 @@ updateModel update ( (i, s1, s2, s3, s4),
       let
         inner     = circleNumsFromString s1
         answers   = circleNumsFromString s4
-        -- innerShow = s1 ++ " " ++ (toString inner)
-        twoListPermsShow =            toString <| twoListPerms            inner s2
-        threeListPermsShow =          toString <| threeListPerms          inner s2 s3
-        answersPlusListShow =         toString <| answersPlusList         inner s2 s3
-        findSpecificAnswerShow =      toString <| findSpecificAnswer      inner s2 s3 <| ansPerms s4
-        answersPermsPlusListShow =    toString <| answersPermsPlusList    inner s2 s3
-        displaySpecificAnswersShow =  toString <| displaySpecificAnswers  inner s2 s3 answers
       in
         ((i, s1, s2, s3, s4), (b1),
           (inner, secPerms s2, thrPerms s3, ansPerms s4,
-            twoListPermsShow, threeListPermsShow,
-            (answersPlusListShow, findSpecificAnswerShow,
-              answersPermsPlusListShow, displaySpecificAnswersShow)))
+            twoListPerms inner s2, threeListPerms inner s2 s3,
+            (answersPlusList inner s2 s3, findSpecificAnswer inner s2 s3 <| ansPerms s4,
+              answersPermsPlusList inner s2 s3, displaySpecificAnswers inner s2 s3 answers)))
   in
     case update of
       NoOp        ->    createModel  i      s1 s2 s3 s4 b1
@@ -229,17 +246,6 @@ thrPerms = (\s3 -> wheelPerms <| circleNumsFromString s3)
 ansPerms : String -> List (List Int)
 ansPerms = (\s4 -> wheelPerms <| circleNumsFromString s4)
 
--- NOTE: may use these in view at some point
---secPermsShow : String -> String
---secPermsShow  = (\s2 -> s2 ++ " " ++ (toString <| secPerms s2) )
-
---thrPermsShow : String -> String
---thrPermsShow = (\s3 -> s3 ++ " " ++ (toString <| thrPerms s3) )
-
---ansPermsShow : String -> String
---ansPermsShow = (\s4 -> s4 ++ " " ++ (toString <| ansPerms s4) )
-
-
 twoListPerms : List Int -> String -> List (List (List Int ))
 twoListPerms inner s2 = List.map (\sec -> inner :: sec :: []) (secPerms s2)
 
@@ -276,7 +282,6 @@ sumPlusLists : List (List Int) -> List (List Int, List (List Int))
 sumPlusLists lists = [(map sumTriple <| tuplesFromLists lists, lists)]
 
 -- NOTE can factor some later steps by comparing list to loop of answers
--- NOTE can factor some later steps by comparing list to loop of answers
 answersPlusList : List Int -> String -> String -> List (List Int, List (List Int))
 answersPlusList inner s2 s3 = concat <| map sumPlusLists (threeListPerms inner s2 s3)
 
@@ -299,6 +304,8 @@ findSpecificAnswerPlusList inner s2 s3 answers =
     filter (\(ans, lists) -> elem2 answers ans) <| answersPermsPlusList inner s2 s3
 
 -- display solution
+displaySpecificAnswers : List Int -> String -> String -> List Int ->
+                          List (List (List Int), List (List Int))
 displaySpecificAnswers inner s2 s3 answers =
   -- snd <|
   -- headX <|
