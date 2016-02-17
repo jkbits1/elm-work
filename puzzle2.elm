@@ -18,11 +18,24 @@ import Graphics.Element exposing (..)
 import String
 import List exposing (..)
 
-type alias ModelInputs = (Int, String, String, String, String)
+type alias Wheel            = List Int
+type alias WheelLoop        = List (List Int) -- all turns of wheel
+type alias LoopsPermutation = List (List Int) -- combo of one or more loops
+type alias LoopsAnswer      = List Int        -- results of combo addition
+type alias LoopsAnswerLoop = List Wheel      -- all turns of combo addition
+
+-- values received from UI
+type alias ModelInputs  = (Int, String, String, String, String)
+
+-- values generated from UI input
 type alias ModelResults =
-  (List Int, List (List Int), List (List Int), List (List Int), List (List (List Int)), List (List (List Int)),
-    (List (List Int, List (List Int)), List (List Int, List (List Int)),
-      List (List (List Int), List (List Int)), List (List (List Int), List (List Int))))
+  (Wheel, WheelLoop, WheelLoop, WheelLoop,
+    List LoopsPermutation,                       List LoopsPermutation,
+    (List (LoopsAnswer, LoopsPermutation),       List (LoopsAnswer, LoopsPermutation),
+      List (LoopsAnswerLoop, LoopsPermutation), List (LoopsAnswerLoop, LoopsPermutation)))
+
+  --(firstList, secList, thrList, ansList, twoListPerms, threeListPerms,
+   --(ansPlusList, specificAnswer, ansPermsPlusList, specificAnswerPlusList))
 
 type alias Model = (ModelInputs, (Bool), ModelResults)
 
@@ -107,7 +120,7 @@ view : Signal.Address Update -> Model -> Html
 view updatesChnlAddress (
                           (i, s1, s2, s3, s4),
                           (b1),
-                          (xs, xxs2, xxs3, xxs4, xxxs2, xxxs3,
+                          (firstList, secList, thrList, ansList, twoListPerms, threeListPerms,
                             (ansPlusList, specificAnswer, ansPermsPlusList, specificAnswerPlusList))
                         ) =
   div [class "container"]
@@ -131,12 +144,12 @@ view updatesChnlAddress (
     [
       inputField "Files Query" s4 updatesChnlAddress Circle4Field myStyle
     ],
-    div [ style textStyle] [ text ("first xxxxx - " ++ (toString xs)) ],
-    div [ style textStyle] [ text ("secPerms - " ++ (toString xxs2)) ],
-    div [ style textStyle] [ text ("triPermsx - " ++ (toString xxs3)) ],
-    div [ style textStyle] [ text ("ansPermsx - " ++ (toString xxs4)) ],
-    div [ style textStyle] [ text ("2listPermsx - " ++ (toString xxxs2)) ],
-    div [ style textStyle] [ text ("3listPermsx - " ++ (toString xxxs3)) ],
+    div [ style textStyle] [ text ("first xxxxx - " ++ (toString firstList)) ],
+    div [ style textStyle] [ text ("secPerms - " ++ (toString secList)) ],
+    div [ style textStyle] [ text ("triPermsx - " ++ (toString thrList)) ],
+    div [ style textStyle] [ text ("ansPermsx - " ++ (toString ansList)) ],
+    div [ style textStyle] [ text ("2listPermsx - " ++ (toString twoListPerms)) ],
+    div [ style textStyle] [ text ("3listPermsx - " ++ (toString threeListPerms)) ],
     div [ style <| textStyle ++ (displayStyle b1)] [ text ("answersPlus - " ++ (toString ansPlusList)) ],
     div [ style <| textStyle ++ (displayStyle b1)] [ text ("findAnswers - " ++ (toString specificAnswer)) ],
     div [ style <| textStyle ++ (displayStyle b1)] [ text ("answersPerms - " ++ (toString ansPermsPlusList)) ],
@@ -181,13 +194,14 @@ updateModelLift = Signal.foldp
 updateModel : Update -> Model -> Model
 updateModel update ( (i, s1, s2, s3, s4),
                      (b1),
-                     (xs, xxs2, xxs3, xxs4, s9, s10, (s11, s12, s13, s14))
+                     --(xs, xxs2, xxs3, xxs4, s9, s10, (s11, s12, s13, s14))
+                     results
                    ) =
   let
     createModel i s1 s2 s3 s4 b1 =
       let
-        inner     = circleNumsFromString s1
-        answers   = circleNumsFromString s4
+        inner     = wheelFromString s1
+        answers   = wheelFromString s4
       in
         ((i, s1, s2, s3, s4), (b1),
           (inner, secPerms s2, thrPerms s3, ansPerms s4,
@@ -205,8 +219,8 @@ updateModel update ( (i, s1, s2, s3, s4),
       Circle3Field s -> createModel  i      s1 s2 s  s4 (b1)
       Circle4Field s -> createModel  i      s1 s2 s3 s  (b1)
 
-circleNumsFromString : String -> List Int
-circleNumsFromString s =
+wheelFromString : String -> Wheel
+wheelFromString s =
   List.map
     strToNum
       (String.split "," s)
@@ -234,25 +248,25 @@ listLoops lists seed count =
     otherwise ->
       listLoops ([listLoopItem seed count] ++ lists) seed (count-1)
 
-wheelPerms : List Int -> List (List Int)
+wheelPerms : Wheel -> WheelLoop
 wheelPerms xs = listLoops [] xs ( (length xs) - 1 )
 
-secPerms : String -> List (List Int)
-secPerms  = (\s2 -> wheelPerms <| circleNumsFromString s2)
+secPerms : String -> WheelLoop
+secPerms  = (\s2 -> wheelPerms <| wheelFromString s2)
 
-thrPerms : String -> List (List Int)
-thrPerms = (\s3 -> wheelPerms <| circleNumsFromString s3)
+thrPerms : String -> WheelLoop
+thrPerms = (\s3 -> wheelPerms <| wheelFromString s3)
 
-ansPerms : String -> List (List Int)
-ansPerms = (\s4 -> wheelPerms <| circleNumsFromString s4)
+ansPerms : String -> WheelLoop
+ansPerms = (\s4 -> wheelPerms <| wheelFromString s4)
 
-twoListPerms : List Int -> String -> List (List (List Int ))
+twoListPerms : Wheel -> String -> List LoopsPermutation
 twoListPerms inner s2 = List.map (\sec -> inner :: sec :: []) (secPerms s2)
 
-appendTwoListPerms : List Int -> String -> List Int -> List (List (List Int))
+appendTwoListPerms : Wheel -> String -> List Int -> List LoopsPermutation
 appendTwoListPerms inner s2 thr = map (\xs ->  xs ++ [thr]) (twoListPerms inner s2)
 
-threeListPerms : List Int -> String -> String -> List (List (List Int))
+threeListPerms : Wheel -> String -> String -> List LoopsPermutation
 threeListPerms inner s2 s3 = concat <| map (appendTwoListPerms inner s2) (thrPerms s3)
 
 sumTriple : (Int, Int, Int) -> Int
@@ -281,35 +295,37 @@ headLLI xs =
 sumPlusLists : List (List Int) -> List (List Int, List (List Int))
 sumPlusLists lists = [(map sumTriple <| tuplesFromLists lists, lists)]
 
--- NOTE can factor some later steps by comparing list to loop of answers
-answersPlusList : List Int -> String -> String -> List (List Int, List (List Int))
+-- NOTE this refactors out two later steps by comparing list to loop of answers
+answersPlusList : Wheel -> String -> String -> List (LoopsAnswer, LoopsPermutation)
 answersPlusList inner s2 s3 = concat <| map sumPlusLists (threeListPerms inner s2 s3)
 
-findSpecificAnswer : List Int -> String -> String ->
+findSpecificAnswer : Wheel -> String -> String ->
                               List (List Int) ->
-                              List (List Int, List (List Int))
+                              List (LoopsAnswer, LoopsPermutation)
 findSpecificAnswer inner s2 s3 answersPerms =
     filter (\(answer, lists) -> elem2 answer answersPerms) <| answersPlusList inner s2 s3
 
 answersPermsLoop2 : (List Int, t) -> (List (List Int), t)
 answersPermsLoop2 (ans, lists) = (wheelPerms ans, lists)
 
-answersPermsPlusList : List Int -> String -> String -> List ((List (List Int), List (List Int)))
+answersPermsPlusList : Wheel -> String -> String ->
+                        List (LoopsAnswerLoop, LoopsPermutation)
 answersPermsPlusList inner s2 s3 = map answersPermsLoop2 <| answersPlusList inner s2 s3
 
 -- finds solution
-findSpecificAnswerPlusList : List Int -> String -> String -> List Int ->
-                              List (List (List Int), List (List Int))
+findSpecificAnswerPlusList : Wheel -> String -> String -> Wheel ->
+                              List (LoopsAnswerLoop, LoopsPermutation)
 findSpecificAnswerPlusList inner s2 s3 answers =
     filter (\(ans, lists) -> elem2 answers ans) <| answersPermsPlusList inner s2 s3
 
 -- display solution
-displaySpecificAnswers : List Int -> String -> String -> List Int ->
+displaySpecificAnswers : Wheel -> String -> String -> Wheel ->
                           List (List (List Int), List (List Int))
 displaySpecificAnswers inner s2 s3 answers =
   -- snd <|
   -- headX <|
   findSpecificAnswerPlusList inner s2 s3 answers
+
 
 headX : List (List (List Int), List (List Int)) -> (List (List Int), List (List Int))
 headX xs =
