@@ -210,8 +210,10 @@ updateModel update ( (i, s1, s2, s3, s4),
         ((i, s1, s2, s3, s4), (b1),
           (inner, secLoop, thrLoop, ansLoop,
             twoListPerms inner secLoop, threeListPerms inner secLoop thrLoop,
-            (answersPlusList inner s2 s3, findSpecificAnswer inner s2 s3 ansLoop,
-              answersPermsPlusList inner s2 s3, displaySpecificAnswers inner s2 s3 answers)))
+            (answersPlusList      inner secLoop thrLoop,
+              findSpecificAnswer  inner secLoop thrLoop ansLoop,
+              answersPermsPlusList inner secLoop thrLoop,
+              displaySpecificAnswers inner secLoop thrLoop answers)))
   in
     case update of
       NoOp        ->    createModel  i      s1 s2 s3 s4 b1
@@ -303,36 +305,40 @@ sumPlusLists : List (List Int) -> List (List Int, List (List Int))
 sumPlusLists lists = [(map sumTriple <| tuplesFromLists lists, lists)]
 
 -- NOTE this refactors out two later steps by comparing list to loop of answers
-answersPlusList : WheelPosition -> String -> String -> List (LoopsAnswer, LoopsPermutation)
-answersPlusList inner s2 s3 =
-  concat <| map sumPlusLists (threeListPerms inner (secPerms s2) (thrPerms s3))
+answersPlusList : WheelPosition -> WheelLoop -> WheelLoop ->
+                    List (LoopsAnswer, LoopsPermutation)
+answersPlusList inner secLoop thrLoop =
+  concat <| map sumPlusLists (threeListPerms inner secLoop thrLoop)
 
-findSpecificAnswer : WheelPosition -> String -> String ->
+findSpecificAnswer : WheelPosition -> WheelLoop -> WheelLoop ->
                               WheelLoop ->
                               List (LoopsAnswer, LoopsPermutation)
-findSpecificAnswer inner s2 s3 answersLoop =
-    filter (\(answer, lists) -> elem2 answer answersLoop) <| answersPlusList inner s2 s3
+findSpecificAnswer inner secLoop thrLoop answersLoop =
+    filter (\(answer, lists) -> elem2 answer answersLoop)
+                <| answersPlusList inner secLoop thrLoop
 
 answersPermsLoop2 : (List Int, t) -> (List (List Int), t)
 answersPermsLoop2 (ans, lists) = (wheelPerms ans, lists)
 
-answersPermsPlusList : WheelPosition -> String -> String ->
+answersPermsPlusList : WheelPosition -> WheelLoop -> WheelLoop ->
                         List (LoopsAnswerLoop, LoopsPermutation)
-answersPermsPlusList inner s2 s3 = map answersPermsLoop2 <| answersPlusList inner s2 s3
+answersPermsPlusList inner secLoop thrLoop =
+  map answersPermsLoop2 <| answersPlusList inner secLoop thrLoop
 
 -- finds solution
-findSpecificAnswerPlusList : WheelPosition -> String -> String -> WheelPosition ->
+findSpecificAnswerPlusList : WheelPosition -> WheelLoop -> WheelLoop -> WheelPosition ->
                               List (LoopsAnswerLoop, LoopsPermutation)
-findSpecificAnswerPlusList inner s2 s3 answers =
-    filter (\(ans, lists) -> elem2 answers ans) <| answersPermsPlusList inner s2 s3
+findSpecificAnswerPlusList inner secLoop thrLoop answers =
+    filter (\(ans, lists) -> elem2 answers ans)
+              <| answersPermsPlusList inner secLoop thrLoop
 
 -- display solution
-displaySpecificAnswers : WheelPosition -> String -> String -> WheelPosition ->
+displaySpecificAnswers : WheelPosition -> WheelLoop -> WheelLoop -> WheelPosition ->
                           List (LoopsAnswerLoop, LoopsPermutation)
-displaySpecificAnswers inner s2 s3 answers =
+displaySpecificAnswers inner secLoop thrLoop answers =
   -- snd <|
   -- headX <|
-  findSpecificAnswerPlusList inner s2 s3 answers
+  findSpecificAnswerPlusList inner secLoop thrLoop answers
 
 
 headX : List (List (List Int), List (List Int)) -> (List (List Int), List (List Int))
