@@ -21,9 +21,9 @@ import List exposing (..)
 type alias WheelPosition    = List Int           -- a single position of a wheel
 type alias WheelLoop        = List WheelPosition -- all positions of a wheel
 type alias LoopsPermutation = List (List Int) -- combo of one or more loops
-type alias LoopsPermAnswer  = List Int        -- results of combo addition
-type alias LoopsAnswerLoop  = List WheelPosition      -- all turns of combo addition
 type alias LoopsPermColumn  = (Int, Int, Int)  -- values from a single loops perm
+type alias LoopsPermAnswers  = List Int        -- results of combo addition
+type alias LoopsAnswerLoop  = List WheelPosition      -- all positions of combo addition
 
 -- values received from UI
 type alias ModelInputs  = (Int, String, String, String, String)
@@ -32,7 +32,7 @@ type alias ModelInputs  = (Int, String, String, String, String)
 type alias ModelResults =
   (WheelPosition, WheelLoop, WheelLoop, WheelLoop,
     List LoopsPermutation,                       List LoopsPermutation,
-    (List (LoopsPermAnswer, LoopsPermutation),       List (LoopsPermAnswer, LoopsPermutation),
+    (List (LoopsPermAnswers, LoopsPermutation),       List (LoopsPermAnswers, LoopsPermutation),
       List (LoopsAnswerLoop, LoopsPermutation), List (LoopsAnswerLoop, LoopsPermutation)))
 
   --(firstList, secList, thrList, ansList, twoListPerms, threeListPerms,
@@ -121,7 +121,7 @@ view : Signal.Address Update -> Model -> Html
 view updatesChnlAddress (
                           (i, s1, s2, s3, s4),
                           (b1),
-                          (firstList, secList, thrList, ansList, twoListPerms, threeListPerms,
+                          (firstList, secLoop, thrList, ansList, twoListPerms, threeListPerms,
                             (ansPlusList, specificAnswer, ansPermsPlusList, specificAnswerPlusList))
                         ) =
   div [class "container"]
@@ -145,12 +145,12 @@ view updatesChnlAddress (
     [
       inputField "Files Query" s4 updatesChnlAddress Circle4Field myStyle
     ],
-    div [ style textStyle] [ text ("first xxxxx - " ++ (toString firstList)) ],
-    div [ style textStyle] [ text ("secPerms - " ++ (toString secList)) ],
-    div [ style textStyle] [ text ("triPermsx - " ++ (toString thrList)) ],
-    div [ style textStyle] [ text ("ansPermsx - " ++ (toString ansList)) ],
-    div [ style textStyle] [ text ("2listPermsx - " ++ (toString twoListPerms)) ],
-    div [ style textStyle] [ text ("3listPermsx - " ++ (toString threeListPerms)) ],
+    div [ style textStyle] [ text ("first  - " ++ (toString firstList)) ],
+    div [ style textStyle] [ text ("secLoop - " ++ (toString secLoop)) ],
+    div [ style textStyle] [ text ("thrLoop - " ++ (toString thrList)) ],
+    div [ style textStyle] [ text ("ansLoop - " ++ (toString ansList)) ],
+    div [ style textStyle] [ text ("2loopPerms - " ++ (toString twoListPerms)) ],
+    div [ style textStyle] [ text ("3loopPerms - " ++ (toString threeListPerms)) ],
     div [ style <| textStyle ++ (displayStyle b1)] [ text ("answersPlus - " ++ (toString ansPlusList)) ],
     div [ style <| textStyle ++ (displayStyle b1)] [ text ("findAnswers - " ++ (toString specificAnswer)) ],
     div [ style <| textStyle ++ (displayStyle b1)] [ text ("answersPerms - " ++ (toString ansPermsPlusList)) ],
@@ -161,21 +161,21 @@ view updatesChnlAddress (
 --
 
 --secPermsShow : String -> String
---secPermsShow  = (\s2 -> s2 ++ " " ++ (toString <| secPerms s2) )
+--secPermsShow  = (\s2 -> s2 ++ " " ++ (toString <| getSecLoop s2) )
 
 --thrPermsShow : String -> String
---thrPermsShow = (\s3 -> s3 ++ " " ++ (toString <| thrPerms s3) )
+--thrPermsShow = (\s3 -> s3 ++ " " ++ (toString <| makeThrLoop s3) )
 
 --ansPermsShow : String -> String
---ansPermsShow = (\s4 -> s4 ++ " " ++ (toString <| ansPerms s4) )
+--ansPermsShow = (\s4 -> s4 ++ " " ++ (toString <| getAnsLoop s4) )
 
--- innerShow = s1 ++ " " ++ (toString inner)
--- twoListPermsShow =            toString <| twoListPerms            inner s2
--- threeListPermsShow =          toString <| threeListPerms          inner s2 s3
--- answersPlusListShow =         toString <| answersPlusList         inner s2 s3
--- findSpecificAnswerShow =      toString <| findSpecificAnswer      inner s2 s3 <| ansPerms s4
--- answersPermsPlusListShow =    toString <| answersPermsPlusList    inner s2 s3
--- displaySpecificAnswersShow =  toString <| displaySpecificAnswers  inner s2 s3 answers
+-- innerShow = s1 ++ " " ++ (toString first)
+-- twoListPermsShow =            toString <| twoListPerms            first s2
+-- threeListPermsShow =          toString <| threeListPerms          first s2 s3
+-- answersPlusListShow =         toString <| answersPlusList         first s2 s3
+-- findSpecificAnswerShow =      toString <| findSpecificAnswer      first s2 s3 <| getAnsLoop s4
+-- answersPermsPlusListShow =    toString <| answersPermsPlusList    first s2 s3
+-- displaySpecificAnswersShow =  toString <| displaySpecificAnswers  first s2 s3 answers
 
 
 -- converts Signal Update (from updatesChnl) to Signal Model, 
@@ -201,19 +201,19 @@ updateModel update ( (i, s1, s2, s3, s4),
   let
     createModel i s1 s2 s3 s4 b1 =
       let
-        inner     = wheelPositionFromString s1
+        first     = wheelPositionFromString s1
         answers   = wheelPositionFromString s4
-        secLoop   = secPerms s2
-        thrLoop   = thrPerms s3
-        ansLoop   = ansPerms s4
+        secLoop   = makeSecLoop s2
+        thrLoop   = makeThrLoop s3
+        ansLoop   = makeAnsLoop s4
       in
         ((i, s1, s2, s3, s4), (b1),
-          (inner, secLoop, thrLoop, ansLoop,
-            twoLoopPerms inner secLoop, threeLoopPerms inner secLoop thrLoop,
-            (answersPlusList      inner secLoop thrLoop,
-              findSpecificAnswer  inner secLoop thrLoop ansLoop,
-              answersPermsPlusList inner secLoop thrLoop,
-              displaySpecificAnswers inner secLoop thrLoop answers)))
+          (first, secLoop, thrLoop, ansLoop,
+            twoWheelPerms first secLoop, threeLoopPerms first secLoop thrLoop,
+            (answersPlusList      first secLoop thrLoop,
+              findSpecificAnswer  first secLoop thrLoop ansLoop,
+              answersPermsPlusList first secLoop thrLoop,
+              displaySpecificAnswers first secLoop thrLoop answers)))
   in
     case update of
       NoOp        ->    createModel  i      s1 s2 s3 s4 b1
@@ -264,36 +264,39 @@ generateWheelLoop : String -> WheelLoop
 generateWheelLoop s = createWheelLoop <| wheelPositionFromString s
 
 -- M
-secPerms  = generateWheelLoop
-thrPerms  = generateWheelLoop
-ansPerms  = generateWheelLoop
+makeSecLoop  = generateWheelLoop
+makeThrLoop  = generateWheelLoop
+makeAnsLoop  = generateWheelLoop
 
 -- M
-twoLoopPerms : WheelPosition -> WheelLoop -> List LoopsPermutation
-twoLoopPerms inner secLoop = List.map (\sec -> inner :: sec :: []) secLoop
+twoWheelPerms : WheelPosition -> WheelLoop -> List LoopsPermutation
+twoWheelPerms first secLoop = map (\secPosition -> first :: secPosition :: []) secLoop
 
-appendTwoLoopPerms : WheelPosition -> WheelLoop -> WheelPosition -> List LoopsPermutation
-appendTwoLoopPerms inner secLoop thrPermsItem =
-  map (\xs ->  xs ++ [thrPermsItem]) (twoLoopPerms inner secLoop)
+appendTwoWheelPerms : WheelPosition -> WheelLoop -> WheelPosition -> List LoopsPermutation
+appendTwoWheelPerms first secLoop thrPos =
+  map (\twoLoopsPerm -> twoLoopsPerm ++ [thrPos]) (twoWheelPerms first secLoop)
 
 -- M
 threeLoopPerms : WheelPosition -> WheelLoop -> WheelLoop -> List LoopsPermutation
-threeLoopPerms inner secLoop thrLoop =
-  concat <| map (appendTwoLoopPerms inner secLoop) thrLoop
+threeLoopPerms first secLoop thrLoop =
+  let
+    addPosToTwoWheelPerms = appendTwoWheelPerms first secLoop
+  in
+    concat <| map addPosToTwoWheelPerms thrLoop
 
 sumColumn : LoopsPermColumn -> Int
 sumColumn (a, b, c) = a + b + c
 
-columnsFromLists : LoopsPermutation -> List LoopsPermColumn
-columnsFromLists lists =
-    let list1   = headLLI lists
-        list2   = headLLI <| drop 1 lists
-        list3   = headLLI <| drop 2 lists
+columnsFromPermutation : LoopsPermutation -> List LoopsPermColumn
+columnsFromPermutation perm =
+    let firstPos  = headLLI perm
+        secPos    = headLLI <| drop 1 perm
+        thrPos    = headLLI <| drop 2 perm
     in
-        zip3 list1 list2 list3
+        zip3 firstPos secPos thrPos
 
 zip3 : WheelPosition -> WheelPosition -> WheelPosition -> List LoopsPermColumn
-zip3 pos1 pos2 pos3 = List.map3 (,,) pos1 pos2 pos3
+zip3 pos1 pos2 pos3 = map3 (,,) pos1 pos2 pos3
 
 headLLI : LoopsPermutation -> WheelPosition
 headLLI = foldr (\h t -> h) []
@@ -307,51 +310,55 @@ headLLIxx xs =
       Nothing -> []
 
 
-sumPlusLists : LoopsPermutation -> List (LoopsPermAnswer, LoopsPermutation)
-sumPlusLists perm = [(map sumColumn <| columnsFromLists perm, perm)]
+sumPlusLists : LoopsPermutation -> List (LoopsPermAnswers, LoopsPermutation)
+sumPlusLists perm = [(map sumColumn <| columnsFromPermutation perm, perm)]
 
 -- NOTE this refactors out two later steps by comparing list to loop of answers
 -- M
 answersPlusList : WheelPosition -> WheelLoop -> WheelLoop ->
-                    List (LoopsPermAnswer, LoopsPermutation)
-answersPlusList inner secLoop thrLoop =
-  concat <| map sumPlusLists (threeLoopPerms inner secLoop thrLoop)
+                    List (LoopsPermAnswers, LoopsPermutation)
+answersPlusList first secLoop thrLoop =
+  concat <| map sumPlusLists <| threeLoopPerms first secLoop thrLoop
 
 -- M
 findSpecificAnswer : WheelPosition ->
                        WheelLoop -> WheelLoop -> WheelLoop ->
-                         List (LoopsPermAnswer, LoopsPermutation)
-findSpecificAnswer inner secLoop thrLoop answersLoop =
-    filter (\(answer, lists) -> elem2 answer answersLoop)
-                <| answersPlusList inner secLoop thrLoop
+                         List (LoopsPermAnswers, LoopsPermutation)
+findSpecificAnswer first secLoop thrLoop answersLoop =
+    filter (\(answer, _) -> elem2 answer answersLoop)
+                <| answersPlusList first secLoop thrLoop
 
-answersPermsLoop2 : (LoopsPermAnswer, t) -> (LoopsPermutation, t)
+answersPermsLoop2 : (LoopsPermAnswers, t) -> (LoopsPermutation, t)
 answersPermsLoop2 (ans, lists) = (createWheelLoop ans, lists)
 
 answersPermsPlusList : WheelPosition -> WheelLoop -> WheelLoop ->
                         List (LoopsAnswerLoop, LoopsPermutation)
-answersPermsPlusList inner secLoop thrLoop =
-  map answersPermsLoop2 <| answersPlusList inner secLoop thrLoop
+answersPermsPlusList first secLoop thrLoop =
+  map answersPermsLoop2 <| answersPlusList first secLoop thrLoop
 
 -- finds solution
 findSpecificAnswerPlusList : WheelPosition -> WheelLoop -> WheelLoop -> WheelPosition ->
                               List (LoopsAnswerLoop, LoopsPermutation)
-findSpecificAnswerPlusList inner secLoop thrLoop answers =
+findSpecificAnswerPlusList first secLoop thrLoop answers =
     filter (\(ans, lists) -> elem2 answers ans)
-              <| answersPermsPlusList inner secLoop thrLoop
+              <| answersPermsPlusList first secLoop thrLoop
 
 -- display solution
 displaySpecificAnswers : WheelPosition -> WheelLoop -> WheelLoop -> WheelPosition ->
                           List (LoopsAnswerLoop, LoopsPermutation)
                           -- (LoopsAnswerLoop, LoopsPermutation) -- head
-displaySpecificAnswers inner secLoop thrLoop answers =
+displaySpecificAnswers first secLoop thrLoop answers =
   -- snd <|
   -- headX <|
-  findSpecificAnswerPlusList inner secLoop thrLoop answers
+  (\h -> [h]) <| headX <|
+  findSpecificAnswerPlusList first secLoop thrLoop answers
 
 
---headX : List (LoopsAnswerLoop, LoopsPermutation) -> (LoopsAnswerLoop, LoopsPermutation)
-headXY = foldr (\h t -> h) []
+-- headXY : List (LoopsAnswerLoop, LoopsPermutation) -> (LoopsAnswerLoop, LoopsPermutation)
+--headXY : List (a, b) -> (a, b)
+--headXY = foldr (\h t -> h) ()
+
+headX : List (LoopsAnswerLoop, LoopsPermutation) -> (LoopsAnswerLoop, LoopsPermutation)
 headX xs =
   let
     h = head xs
@@ -360,7 +367,7 @@ headX xs =
       Just x  -> x
       Nothing -> ([[0]], [[0]])
 
-elem2 : LoopsPermAnswer -> LoopsAnswerLoop -> Bool
+elem2 : LoopsPermAnswers -> LoopsAnswerLoop -> Bool
 elem2 a (x::xs) =
   case (x == a) of
     True -> True
