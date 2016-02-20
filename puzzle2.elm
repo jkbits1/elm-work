@@ -18,11 +18,10 @@ import Graphics.Element exposing (..)
 import String
 import List exposing (..)
 
-type alias WheelPosition    = List Int
-type alias WheelLoop        = List (List Int) -- all turns/position of wheel
-type alias LoopItem         = List Int        -- a single turn/position of a wheel
+type alias WheelPosition    = List Int           -- a single position of a wheel
+type alias WheelLoop        = List WheelPosition -- all positions of a wheel
 type alias LoopsPermutation = List (List Int) -- combo of one or more loops
-type alias LoopsAnswer      = List Int        -- results of combo addition
+type alias LoopsPermAnswer  = List Int        -- results of combo addition
 type alias LoopsAnswerLoop  = List WheelPosition      -- all turns of combo addition
 type alias LoopsPermColumn  = (Int, Int, Int)  -- values from a single loops perm
 
@@ -33,7 +32,7 @@ type alias ModelInputs  = (Int, String, String, String, String)
 type alias ModelResults =
   (WheelPosition, WheelLoop, WheelLoop, WheelLoop,
     List LoopsPermutation,                       List LoopsPermutation,
-    (List (LoopsAnswer, LoopsPermutation),       List (LoopsAnswer, LoopsPermutation),
+    (List (LoopsPermAnswer, LoopsPermutation),       List (LoopsPermAnswer, LoopsPermutation),
       List (LoopsAnswerLoop, LoopsPermutation), List (LoopsAnswerLoop, LoopsPermutation)))
 
   --(firstList, secList, thrList, ansList, twoListPerms, threeListPerms,
@@ -210,7 +209,7 @@ updateModel update ( (i, s1, s2, s3, s4),
       in
         ((i, s1, s2, s3, s4), (b1),
           (inner, secLoop, thrLoop, ansLoop,
-            twoListPerms inner secLoop, threeListPerms inner secLoop thrLoop,
+            twoLoopPerms inner secLoop, threeLoopPerms inner secLoop thrLoop,
             (answersPlusList      inner secLoop thrLoop,
               findSpecificAnswer  inner secLoop thrLoop ansLoop,
               answersPermsPlusList inner secLoop thrLoop,
@@ -226,12 +225,6 @@ updateModel update ( (i, s1, s2, s3, s4),
       Circle3Field s -> createModel  i      s1 s2 s  s4 (b1)
       Circle4Field s -> createModel  i      s1 s2 s3 s  (b1)
 
-wheelPositionFromString : String -> WheelPosition
-wheelPositionFromString s =
-  List.map
-    strToNum
-      (String.split "," s)
-
 strToNum : String -> Int
 strToNum s = resToNum (String.toInt s)
 
@@ -241,43 +234,52 @@ resToNum r =
     Ok x -> x
     Err s -> 0
 
+--M
+wheelPositionFromString : String -> WheelPosition
+wheelPositionFromString s =
+  List.map
+    strToNum
+      (String.split "," s)
 
 -- PUZZLE SOLUTIONS
 
-listLoopItem : WheelPosition -> Int -> WheelPosition
-listLoopItem wheel chunk = (drop chunk wheel) ++ (take chunk wheel)
+turnWheel : WheelPosition -> Int -> WheelPosition
+turnWheel wheel turns = (drop turns wheel) ++ (take turns wheel)
 
-listLoops : List WheelPosition -> WheelPosition -> Int -> WheelLoop
-listLoops lists wheel count =
+getWheelLoop : List WheelPosition -> WheelPosition -> Int -> WheelLoop
+getWheelLoop positions pos count =
   case count of
     0 ->
       --lists ++ [seed]
-      [wheel] ++ lists
+      [pos] ++ positions
     otherwise ->
-      listLoops ([listLoopItem wheel count] ++ lists) wheel (count-1)
+      getWheelLoop ([turnWheel pos count] ++ positions) pos (count-1)
 
-wheelPerms : WheelPosition -> WheelLoop
-wheelPerms wheel = listLoops [] wheel ( (length wheel) - 1 )
+-- M
+createWheelLoop : WheelPosition -> WheelLoop
+createWheelLoop initialPos = getWheelLoop [] initialPos ( (length initialPos) - 1 )
 
-secPerms : String -> WheelLoop
-secPerms  = (\s2 -> wheelPerms <| wheelPositionFromString s2)
+-- M
+generateWheelLoop : String -> WheelLoop
+generateWheelLoop s = createWheelLoop <| wheelPositionFromString s
 
-thrPerms : String -> WheelLoop
-thrPerms = (\s3 -> wheelPerms <| wheelPositionFromString s3)
+-- M
+secPerms  = generateWheelLoop
+thrPerms  = generateWheelLoop
+ansPerms  = generateWheelLoop
 
-ansPerms : String -> WheelLoop
-ansPerms = (\s4 -> wheelPerms <| wheelPositionFromString s4)
+-- M
+twoLoopPerms : WheelPosition -> WheelLoop -> List LoopsPermutation
+twoLoopPerms inner secLoop = List.map (\sec -> inner :: sec :: []) secLoop
 
-twoListPerms : WheelPosition -> WheelLoop -> List LoopsPermutation
-twoListPerms inner secLoop = List.map (\sec -> inner :: sec :: []) secLoop
+appendTwoLoopPerms : WheelPosition -> WheelLoop -> WheelPosition -> List LoopsPermutation
+appendTwoLoopPerms inner secLoop thrPermsItem =
+  map (\xs ->  xs ++ [thrPermsItem]) (twoLoopPerms inner secLoop)
 
-appendTwoListPerms : WheelPosition -> WheelLoop -> LoopItem -> List LoopsPermutation
-appendTwoListPerms inner secLoop thrPermsItem =
-  map (\xs ->  xs ++ [thrPermsItem]) (twoListPerms inner secLoop)
-
-threeListPerms : WheelPosition -> WheelLoop -> WheelLoop -> List LoopsPermutation
-threeListPerms inner secLoop thrLoop =
-  concat <| map (appendTwoListPerms inner secLoop) thrLoop
+-- M
+threeLoopPerms : WheelPosition -> WheelLoop -> WheelLoop -> List LoopsPermutation
+threeLoopPerms inner secLoop thrLoop =
+  concat <| map (appendTwoLoopPerms inner secLoop) thrLoop
 
 sumColumn : LoopsPermColumn -> Int
 sumColumn (a, b, c) = a + b + c
@@ -293,8 +295,10 @@ columnsFromLists lists =
 zip3 : WheelPosition -> WheelPosition -> WheelPosition -> List LoopsPermColumn
 zip3 pos1 pos2 pos3 = List.map3 (,,) pos1 pos2 pos3
 
-headLLI : List (List Int) -> List Int
-headLLI xs =
+headLLI : LoopsPermutation -> WheelPosition
+headLLI = foldr (\h t -> h) []
+
+headLLIxx xs =
   let
     h = head xs
   in
@@ -302,24 +306,27 @@ headLLI xs =
       Just x  -> x
       Nothing -> []
 
-sumPlusLists : LoopsPermutation -> List (LoopsAnswer, LoopsPermutation)
+
+sumPlusLists : LoopsPermutation -> List (LoopsPermAnswer, LoopsPermutation)
 sumPlusLists perm = [(map sumColumn <| columnsFromLists perm, perm)]
 
 -- NOTE this refactors out two later steps by comparing list to loop of answers
+-- M
 answersPlusList : WheelPosition -> WheelLoop -> WheelLoop ->
-                    List (LoopsAnswer, LoopsPermutation)
+                    List (LoopsPermAnswer, LoopsPermutation)
 answersPlusList inner secLoop thrLoop =
-  concat <| map sumPlusLists (threeListPerms inner secLoop thrLoop)
+  concat <| map sumPlusLists (threeLoopPerms inner secLoop thrLoop)
 
-findSpecificAnswer : WheelPosition -> WheelLoop -> WheelLoop ->
-                              WheelLoop ->
-                              List (LoopsAnswer, LoopsPermutation)
+-- M
+findSpecificAnswer : WheelPosition ->
+                       WheelLoop -> WheelLoop -> WheelLoop ->
+                         List (LoopsPermAnswer, LoopsPermutation)
 findSpecificAnswer inner secLoop thrLoop answersLoop =
     filter (\(answer, lists) -> elem2 answer answersLoop)
                 <| answersPlusList inner secLoop thrLoop
 
-answersPermsLoop2 : (LoopsAnswer, t) -> (LoopsPermutation, t)
-answersPermsLoop2 (ans, lists) = (wheelPerms ans, lists)
+answersPermsLoop2 : (LoopsPermAnswer, t) -> (LoopsPermutation, t)
+answersPermsLoop2 (ans, lists) = (createWheelLoop ans, lists)
 
 answersPermsPlusList : WheelPosition -> WheelLoop -> WheelLoop ->
                         List (LoopsAnswerLoop, LoopsPermutation)
@@ -336,13 +343,15 @@ findSpecificAnswerPlusList inner secLoop thrLoop answers =
 -- display solution
 displaySpecificAnswers : WheelPosition -> WheelLoop -> WheelLoop -> WheelPosition ->
                           List (LoopsAnswerLoop, LoopsPermutation)
+                          -- (LoopsAnswerLoop, LoopsPermutation) -- head
 displaySpecificAnswers inner secLoop thrLoop answers =
   -- snd <|
   -- headX <|
   findSpecificAnswerPlusList inner secLoop thrLoop answers
 
 
-headX : List (LoopsAnswerLoop, LoopsPermutation) -> (LoopsAnswerLoop, LoopsPermutation)
+--headX : List (LoopsAnswerLoop, LoopsPermutation) -> (LoopsAnswerLoop, LoopsPermutation)
+headXY = foldr (\h t -> h) []
 headX xs =
   let
     h = head xs
@@ -351,7 +360,7 @@ headX xs =
       Just x  -> x
       Nothing -> ([[0]], [[0]])
 
-elem2 : LoopsAnswer -> LoopsAnswerLoop -> Bool
+elem2 : LoopsPermAnswer -> LoopsAnswerLoop -> Bool
 elem2 a (x::xs) =
   case (x == a) of
     True -> True
