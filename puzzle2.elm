@@ -380,13 +380,16 @@ headX xs =
       Nothing -> ([[0]], [[0]])
 
 elem2 : LoopsPermAnswers -> LoopsAnswerLoop -> Bool
-elem2 a (x::xs) =
-  case (x == a) of
-    True -> True
-    False ->
-      case (xs == []) of
-        True -> False
-        False -> elem2 a xs
+elem2 a answerLoop =
+  case answerLoop of
+    (x::xs) ->
+      case (x == a) of
+        True -> True
+        False ->
+          case (xs == []) of
+            True -> False
+            False -> elem2 a xs
+    [] -> False
 
 
 -- haskell foldr map
