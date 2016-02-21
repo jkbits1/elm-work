@@ -35,7 +35,7 @@ type alias ModelResults =
     List LoopsPermutation,                      List LoopsPermutation,
     (List (LoopsPermAnswers, LoopsPermutation), List (LoopsPermAnswers, LoopsPermutation),
       List (LoopsAnswerLoop, LoopsPermutation), List (LoopsAnswerLoop, LoopsPermutation)
-      , LoopsPermutation
+      , (LoopsPermAnswers, LoopsPermutation)
       ))
 
   --(firstList, secList, thrList, ansList, twoListPerms, threeListPerms,
@@ -190,10 +190,12 @@ updateModelLift = Signal.foldp
                     updateModel
                     (
                       (0, "1,2,3", "4,5,6", "7,8,9", "12,15,18"),
+                      --(0, "6,5,5,6,5,4,5,4", "4,2,2,2,4,3,3,1", "1,3,2,3,3,2,4,3",
+                        --    "12,8,12,10,10,12,10,8"),
                       (True),
                       ([1,2,3], [[4,5,6]], [[7,8,9]], [[12,15,18]], [[[2]]], [[[3]]],
                         ([([1], [[1]])], [([1], [[1]])], [([[1]], [[1]])], [([[1]], [[1]])]
-                        ,[[1]]
+                        ,([1], [[1]])
                         )
                       )
                     )
@@ -459,16 +461,19 @@ getWheelsPermAnswers first secLoop thrLoop n =
         <| getCounter n
 
 findAnswerLazy3 : WheelPosition -> WheelLoop -> WheelLoop -> WheelLoop ->
-                    LoopsPermutation
+                    (LoopsPermAnswers, LoopsPermutation)
 findAnswerLazy3 first secLoop thrLoop ansLoop =
   let
     ansIdx = headCounter <|
       map (\(i, _) -> i) <|
         filter (\(i, b) -> b == True) <|
-          map (\i -> (i, elem2 (getWheelsPermAnswers first secLoop thrLoop i) ansLoop)) [1..512]
+          map (\i -> (i, elem2 (getWheelsPermAnswers first secLoop thrLoop i) ansLoop))
+            -- [1..5000000] - elm can't cope, as it doesn't do lazy eval
+            [1..512]
+    answers = getWheelsPermAnswers first secLoop thrLoop ansIdx
+    loopsPerm = threeWheelsPermsItemByCounter first secLoop thrLoop <| getCounter ansIdx
   in
-    (threeWheelsPermsItemByCounter first secLoop thrLoop) <| getCounter ansIdx
-
+    (answers, loopsPerm)
 
 initCounter : Counter
 initCounter = [0, 0, 0]
