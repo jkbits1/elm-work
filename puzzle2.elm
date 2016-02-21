@@ -20,10 +20,11 @@ import List exposing (..)
 
 type alias WheelPosition    = List Int           -- a single position of a wheel
 type alias WheelLoop        = List WheelPosition -- all positions of a wheel
-type alias LoopsPermutation = List (List Int) -- combo of one or more loops
+type alias LoopsPermutation = List WheelPosition -- item from combo of one or more loops
 type alias LoopsPermColumn  = (Int, Int, Int)  -- values from a single loops perm
-type alias LoopsPermAnswers  = List Int        -- results of combo addition
+type alias LoopsPermAnswers = List Int        -- results of combo addition
 type alias LoopsAnswerLoop  = List WheelPosition      -- all positions of combo addition
+type alias Counter          = List Int
 
 -- values received from UI
 type alias ModelInputs  = (Int, String, String, String, String)
@@ -31,9 +32,11 @@ type alias ModelInputs  = (Int, String, String, String, String)
 -- values generated from UI input
 type alias ModelResults =
   (WheelPosition, WheelLoop, WheelLoop, WheelLoop,
-    List LoopsPermutation,                       List LoopsPermutation,
-    (List (LoopsPermAnswers, LoopsPermutation),       List (LoopsPermAnswers, LoopsPermutation),
-      List (LoopsAnswerLoop, LoopsPermutation), List (LoopsAnswerLoop, LoopsPermutation)))
+    List LoopsPermutation,                      List LoopsPermutation,
+    (List (LoopsPermAnswers, LoopsPermutation), List (LoopsPermAnswers, LoopsPermutation),
+      List (LoopsAnswerLoop, LoopsPermutation), List (LoopsAnswerLoop, LoopsPermutation)
+      , LoopsPermutation
+      ))
 
   --(firstList, secList, thrList, ansList, twoListPerms, threeListPerms,
    --(ansPlusList, specificAnswer, ansPermsPlusList, specificAnswerPlusList))
@@ -122,7 +125,8 @@ view updatesChnlAddress (
                           (i, s1, s2, s3, s4),
                           (b1),
                           (firstList, secLoop, thrList, ansList, twoListPerms, threeListPerms,
-                            (ansPlusList, specificAnswer, ansPermsPlusList, specificAnswerPlusList))
+                            (ansPlusList, specificAnswer, ansPermsPlusList, specificAnswerPlusList
+                              , findAnswerLazy3))
                         ) =
   div [class "container"]
   [
@@ -155,6 +159,7 @@ view updatesChnlAddress (
     div [ style <| textStyle ++ (displayStyle b1)] [ text ("findAnswers - " ++ (toString specificAnswer)) ],
     div [ style <| textStyle ++ (displayStyle b1)] [ text ("answersPerms - " ++ (toString ansPermsPlusList)) ],
     div [ style <| textStyle ++ (displayStyle b1)] [ text ("displayAnswer - " ++ (toString specificAnswerPlusList)) ]
+    , div [ style <| textStyle ++ (displayStyle b1)] [ text ("lazyAnswer - " ++ (toString findAnswerLazy3)) ]
   ]
 
 -- candidates for viewHelperFns
@@ -187,7 +192,10 @@ updateModelLift = Signal.foldp
                       (0, "1,2,3", "4,5,6", "7,8,9", "12,15,18"),
                       (True),
                       ([1,2,3], [[4,5,6]], [[7,8,9]], [[12,15,18]], [[[2]]], [[[3]]],
-                        ([([1], [[1]])], [([1], [[1]])], [([[1]], [[1]])], [([[1]], [[1]])]))
+                        ([([1], [[1]])], [([1], [[1]])], [([[1]], [[1]])], [([[1]], [[1]])]
+                        ,[[1]]
+                        )
+                      )
                     )
                     updatesChnl.signal
 
@@ -213,7 +221,8 @@ updateModel update ( (i, s1, s2, s3, s4),
             (answersPlusList      first secLoop thrLoop,
               findSpecificAnswer  first secLoop thrLoop ansLoop,
               answersPermsPlusList first secLoop thrLoop,
-              displaySpecificAnswers first secLoop thrLoop answers)))
+              displaySpecificAnswers first secLoop thrLoop answers
+              , findAnswerLazy3 first secLoop thrLoop ansLoop)))
   in
     case update of
       NoOp        ->    createModel  i      s1 s2 s3 s4 b1
@@ -272,15 +281,15 @@ makeAnsLoop  = generateWheelLoop
 twoWheelPerms : WheelPosition -> WheelLoop -> List LoopsPermutation
 twoWheelPerms first secLoop = map (\secPosition -> first :: secPosition :: []) secLoop
 
-appendTwoWheelPerms : WheelPosition -> WheelLoop -> WheelPosition -> List LoopsPermutation
-appendTwoWheelPerms first secLoop thrPos =
-  map (\twoLoopsPerm -> twoLoopsPerm ++ [thrPos]) (twoWheelPerms first secLoop)
+appendTwoWheelPerms : List LoopsPermutation -> WheelPosition -> List LoopsPermutation
+appendTwoWheelPerms twoWheelPermsLocal thrPos =
+  map (\twoLoopsPerm -> twoLoopsPerm ++ [thrPos]) twoWheelPermsLocal
 
 -- M
 threeLoopPerms : WheelPosition -> WheelLoop -> WheelLoop -> List LoopsPermutation
 threeLoopPerms first secLoop thrLoop =
   let
-    addPosToTwoWheelPerms = appendTwoWheelPerms first secLoop
+    addPosToTwoWheelPerms = appendTwoWheelPerms <| twoWheelPerms first secLoop
   in
     concat <| map addPosToTwoWheelPerms thrLoop
 
@@ -298,7 +307,8 @@ columnsFromPermutation perm =
 zip3 : WheelPosition -> WheelPosition -> WheelPosition -> List LoopsPermColumn
 zip3 pos1 pos2 pos3 = map3 (,,) pos1 pos2 pos3
 
-headLLI : LoopsPermutation -> WheelPosition
+-- headLLI : LoopsPermutation -> WheelPosition
+headLLI : List WheelPosition -> WheelPosition
 headLLI = foldr (\h t -> h) []
 
 headLLIxx xs =
@@ -310,15 +320,15 @@ headLLIxx xs =
       Nothing -> []
 
 
-sumPlusLists : LoopsPermutation -> List (LoopsPermAnswers, LoopsPermutation)
-sumPlusLists perm = [(map sumColumn <| columnsFromPermutation perm, perm)]
+sumPlusPerm : LoopsPermutation -> List (LoopsPermAnswers, LoopsPermutation)
+sumPlusPerm perm = [(map sumColumn <| columnsFromPermutation perm, perm)]
 
 -- NOTE this refactors out two later steps by comparing list to loop of answers
 -- M
 answersPlusList : WheelPosition -> WheelLoop -> WheelLoop ->
                     List (LoopsPermAnswers, LoopsPermutation)
 answersPlusList first secLoop thrLoop =
-  concat <| map sumPlusLists <| threeLoopPerms first secLoop thrLoop
+  concat <| map sumPlusPerm <| threeLoopPerms first secLoop thrLoop
 
 -- M
 findSpecificAnswer : WheelPosition ->
@@ -378,3 +388,88 @@ elem2 a (x::xs) =
 
 
 -- haskell foldr map
+
+
+-- Lazy solution
+
+quotRem : Int -> Int -> (Int, Int)
+quotRem a b =
+  let
+    quot = (//) a b
+  in
+    (quot, rem a b)
+
+digitsRev base n =
+  case n of
+    0 -> []
+    _ ->
+      let
+        (rest, lastDigit) = quotRem n base
+      in
+        lastDigit :: digitsRev base rest
+
+digits base = (reverse) << (digitsRev base)
+
+getCounter : Int -> (Int, Counter)
+getCounter x =
+  case x >= 512 of
+    True  -> getCounter 0
+    False ->
+      let
+        xs = digits 8 x
+      in
+        case length xs of
+          0 -> (x, [0,0,0])
+          1 -> (x, [0,0] ++ xs)
+          2 -> (x, [0] ++ xs)
+          otherwise -> (x, xs)
+
+wheelPermsItem : Int -> WheelLoop -> WheelPosition
+wheelPermsItem idx loop = headLLI <| drop idx loop
+
+headCounter : List Int -> Int
+headCounter = foldr (\h t -> h) 0
+
+threeWheelsPermsItemByCounter : WheelPosition -> WheelLoop -> WheelLoop ->
+                                  (a, Counter) -> LoopsPermutation
+threeWheelsPermsItemByCounter first secLoop thrLoop (_, counter) =
+  let
+    sec_idx = headCounter counter
+    thr_idx = headCounter <| drop 1 counter
+  in
+    [first]
+    ++
+    [wheelPermsItem sec_idx secLoop] ++
+    [wheelPermsItem thr_idx thrLoop]
+
+wheelsTuple : LoopsPermutation -> List LoopsPermColumn
+wheelsTuple xxs =
+  let
+    inn = headLLI xxs
+    sec = headLLI <| drop 1 xxs
+    thr = headLLI <| drop 2 xxs
+  in
+    zip3 inn sec thr
+
+getWheelsPermAnswers : WheelPosition -> WheelLoop -> WheelLoop -> Int ->
+                        LoopsPermAnswers
+getWheelsPermAnswers first secLoop thrLoop n =
+  map sumColumn <| wheelsTuple <|
+        threeWheelsPermsItemByCounter first secLoop thrLoop
+        <| getCounter n
+
+findAnswerLazy3 : WheelPosition -> WheelLoop -> WheelLoop -> WheelLoop ->
+                    LoopsPermutation
+findAnswerLazy3 first secLoop thrLoop ansLoop =
+  let
+    ansIdx = headCounter <|
+      map (\(i, _) -> i) <|
+        filter (\(i, b) -> b == True) <|
+          map (\i -> (i, elem2 (getWheelsPermAnswers first secLoop thrLoop i) ansLoop)) [1..512]
+  in
+    (threeWheelsPermsItemByCounter first secLoop thrLoop) <| getCounter ansIdx
+
+
+initCounter : Counter
+initCounter = [0, 0, 0]
+
