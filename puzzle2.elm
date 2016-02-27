@@ -177,7 +177,7 @@ view updatesChnlAddress (
 -- innerShow = s1 ++ " " ++ (toString first)
 -- twoListPermsShow =            toString <| twoListPerms            first s2
 -- threeListPermsShow =          toString <| threeListPerms          first s2 s3
--- answersPlusListShow =         toString <| answersPlusList         first s2 s3
+-- answersPlusPermShow =         toString <| answersPlusPerm         first s2 s3
 -- findSpecificAnswerShow =      toString <| findSpecificAnswer      first s2 s3 <| getAnsLoop s4
 -- answersPermsPlusListShow =    toString <| answersPermsPlusList    first s2 s3
 -- displaySpecificAnswersShow =  toString <| displaySpecificAnswers  first s2 s3 answers
@@ -220,7 +220,7 @@ updateModel update ( (i, s1, s2, s3, s4),
         ((i, s1, s2, s3, s4), (b1),
           (first, secLoop, thrLoop, ansLoop,
             twoWheelPerms first secLoop, threeLoopPerms first secLoop thrLoop,
-            (answersPlusList      first secLoop thrLoop,
+            (answersPlusPerm      first secLoop thrLoop,
               findSpecificAnswer  first secLoop thrLoop ansLoop,
               answersPermsPlusList first secLoop thrLoop,
               displaySpecificAnswers first secLoop thrLoop answers
@@ -331,9 +331,9 @@ sumPlusPerm perm = [(map sumColumn <| columnsFromPermutation perm, perm)]
 
 -- NOTE this refactors out two later steps by comparing list to loop of answers
 -- M
-answersPlusList : WheelPosition -> WheelLoop -> WheelLoop ->
+answersPlusPerm : WheelPosition -> WheelLoop -> WheelLoop ->
                     List (LoopsPermAnswers, LoopsPermutation)
-answersPlusList first secLoop thrLoop =
+answersPlusPerm first secLoop thrLoop =
   concat <| map sumPlusPerm <| threeLoopPerms first secLoop thrLoop
 
 -- M
@@ -342,7 +342,7 @@ findSpecificAnswer : WheelPosition ->
                          List (LoopsPermAnswers, LoopsPermutation)
 findSpecificAnswer first secLoop thrLoop answersLoop =
     filter (\(answer, _) -> elem2 answer answersLoop)
-                <| answersPlusList first secLoop thrLoop
+                <| answersPlusPerm first secLoop thrLoop
 
 answersPermsLoop2 : (LoopsPermAnswers, t) -> (LoopsPermutation, t)
 answersPermsLoop2 (ans, lists) = (createWheelLoop ans, lists)
@@ -350,7 +350,7 @@ answersPermsLoop2 (ans, lists) = (createWheelLoop ans, lists)
 answersPermsPlusList : WheelPosition -> WheelLoop -> WheelLoop ->
                         List (LoopsAnswerLoop, LoopsPermutation)
 answersPermsPlusList first secLoop thrLoop =
-  map answersPermsLoop2 <| answersPlusList first secLoop thrLoop
+  map answersPermsLoop2 <| answersPlusPerm first secLoop thrLoop
 
 -- finds solution
 findSpecificAnswerPlusList : WheelPosition -> WheelLoop -> WheelLoop -> WheelPosition ->
