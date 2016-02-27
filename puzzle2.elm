@@ -298,11 +298,15 @@ threeLoopPerms first secLoop thrLoop =
 sumColumn : LoopsPermColumn -> Int
 sumColumn (a, b, c) = a + b + c
 
+getSpecificPos : Int -> LoopsPermutation -> WheelPosition
+getSpecificPos pos = headLLI << drop pos
+
 columnsFromPermutation : LoopsPermutation -> List LoopsPermColumn
 columnsFromPermutation perm =
-    let firstPos  = headLLI perm
-        secPos    = headLLI <| drop 1 perm
-        thrPos    = headLLI <| drop 2 perm
+    let
+      firstPos  = getSpecificPos 0 perm
+      secPos    = headLLI <| drop 1 perm
+      thrPos    = headLLI <| drop 2 perm
     in
         zip3 firstPos secPos thrPos
 
@@ -450,9 +454,9 @@ threeWheelsPermsItemByCounter first secLoop thrLoop (_, counter) =
 wheelsTuple : LoopsPermutation -> List LoopsPermColumn
 wheelsTuple xxs =
   let
-    inn = headLLI xxs
-    sec = headLLI <| drop 1 xxs
-    thr = headLLI <| drop 2 xxs
+    inn = getSpecificPos 0 xxs
+    sec = getSpecificPos 1 xxs
+    thr = getSpecificPos 2 xxs
   in
     zip3 inn sec thr
 
