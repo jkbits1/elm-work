@@ -128,7 +128,22 @@ view updatesChnlAddress (
                             (ansPlusList, specificAnswer, ansPermsPlusList, specificAnswerPlusList
                               , findAnswerLazy3))
                         ) =
+  div [] [
   div [class "container"]
+  [
+    div [class "row"] [
+
+      -- , style "background-color: #00b3ee"
+      div [class "col-sm-2"] [
+        text  "Wheel 1"
+      ]
+      ,
+      div [class "col-sm-2"] [
+        text  "1,2,3"
+      ]
+    ]
+  ]
+  , div [class "container"]
   [
     addButton,    
     div [] [ text (toString i) ],
@@ -160,7 +175,52 @@ view updatesChnlAddress (
     div [ style <| textStyle ++ (displayStyle False)] [ text ("answersPerms - " ++ (toString ansPermsPlusList)) ],
     div [ style <| textStyle ++ (displayStyle False)] [ text ("displayAnswer - " ++ (toString specificAnswerPlusList)) ]
     , div [ style <| textStyle ++ (displayStyle b1)] [ text ("lazyAnswer - " ++ (toString findAnswerLazy3)) ]
+
+    , div [class "row"] [
+    ]
+
+
+  --    [div class "col-sm-2"] [
+        -- <button type="button" class="btn btn-default">Hide</button>
+    --  ]
+
+      -- [div class "col-sm-2"] [
+--        "Loop 1"
+  --    ]
+
+    --  [div class "col-sm-2"] [
+      --  [1,2,3] [2,3,1]
+--      ]
+
+
+--    [div class "row"] [
+  --    [div class "col-sm-2", style "background-color: #00b3ee"]
+    --    [
+      --    "Wheel 2"
+        --]
+--      [div class "col-sm-2"] [
+  --      4,5,6
+    --  ]
+      --[div class "col-sm-2"] [
+        -- <a class="btn btn-default">Hide</a>
+--      ]
+  --    [div class "col-sm-2"] [
+    --    "Loop 2"
+      --]
+--      [div class "col-sm-2"] [
+  --      [4,5,6] [5,6,4]
+    --  ]
+--    ]
+
   ]
+  ]
+
+      -- <input type="text" placeholder="wheel1">
+      -- <input type="text" placeholder="wheel2">
+      -- <input type="text" placeholder="wheel3">
+      -- <input type="text" placeholder="wheelAns">
+
+
 
 -- candidates for viewHelperFns
 --
