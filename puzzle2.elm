@@ -157,8 +157,8 @@ view updatesChnlAddress (
     div [ style textStyle] [ text ("3loopPerms - " ++ (toString threeListPerms)) ],
     div [ style <| textStyle ++ (displayStyle b1)] [ text ("answersPlus - " ++ (toString ansPlusList)) ],
     div [ style <| textStyle ++ (displayStyle b1)] [ text ("findAnswers - " ++ (toString specificAnswer)) ],
-    div [ style <| textStyle ++ (displayStyle b1)] [ text ("answersPerms - " ++ (toString ansPermsPlusList)) ],
-    div [ style <| textStyle ++ (displayStyle b1)] [ text ("displayAnswer - " ++ (toString specificAnswerPlusList)) ]
+    div [ style <| textStyle ++ (displayStyle False)] [ text ("answersPerms - " ++ (toString ansPermsPlusList)) ],
+    div [ style <| textStyle ++ (displayStyle False)] [ text ("displayAnswer - " ++ (toString specificAnswerPlusList)) ]
     , div [ style <| textStyle ++ (displayStyle b1)] [ text ("lazyAnswer - " ++ (toString findAnswerLazy3)) ]
   ]
 
