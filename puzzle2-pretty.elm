@@ -1,6 +1,8 @@
 -- NOTE: code comes from Signal.send package example
 -- have changed fn names to show lifting fns (not sure if it is clearer)
 
+--  <link rel="stylesheet" href="css/tidy.css">
+
 --import Signal (channel)
 import Signal 
 --import Html
@@ -86,6 +88,46 @@ inputField default text chnlAddress updateItem inputStyle =
     ]
     []
 
+wheelOnlyRow idx wheelLabel wheelData =
+    div [class "row"] [
+
+      -- , style "background-color: #00b3ee"
+      div [class "col-sm-2"] [
+        text wheelLabel
+      ]
+      ,
+      div [class "col-sm-2"] [
+        text <| wheelData
+      ]
+
+    ]
+
+wheelRow idx wheelLabel loopLabel wheelData loopData =
+    div [class "row"] [
+
+      -- , style "background-color: #00b3ee"
+      div [class "col-sm-2"] [
+        text wheelLabel
+      ]
+      ,
+      div [class "col-sm-2"] [
+        text <| wheelData
+      ]
+      ,
+      div [class "col-sm-2"] [
+        -- <button type="button" class="btn btn-default">Hide</button>
+      ]
+      ,
+      div [class "col-sm-2"] [
+        text loopLabel
+      ]
+
+      ,
+      div [class "col-sm-2"] [
+        text loopData
+      ]
+    ]
+
 myStyle : List (String, String)
 myStyle =
   [ ("width", "100%")
@@ -124,25 +166,19 @@ view : Signal.Address Update -> Model -> Html
 view updatesChnlAddress (
                           (i, s1, s2, s3, s4),
                           (b1),
-                          (firstList, secLoop, thrList, ansList, twoListPerms, threeListPerms,
+                          (firstList, secLoop, thrLoop, ansLoop, twoListPerms, threeListPerms,
                             (ansPlusList, specificAnswer, ansPermsPlusList, specificAnswerPlusList
                               , findAnswerLazy3))
                         ) =
   div [] [
   div [class "container"]
   [
-    div [class "row"] [
-
-      -- , style "background-color: #00b3ee"
-      div [class "col-sm-2"] [
-        text  "Wheel 1"
-      ]
-      ,
-      div [class "col-sm-2"] [
-        text  "1,2,3"
-      ]
-    ]
+      wheelOnlyRow  1 "Wheel 1"   (toString firstList)
+    , wheelRow      2 "Wheel 2"   "Loop 2"    s2 (toString secLoop)
+    , wheelRow      3 "Wheel 3"   "Loop 3"    s3 (toString thrLoop)
+    , wheelRow      4 "Wheel Ans" "Loop Ans"  s4 (toString ansLoop)
   ]
+
   , div [class "container"]
   [
     addButton,    
@@ -166,8 +202,8 @@ view updatesChnlAddress (
     ],
     div [ style textStyle] [ text ("first  - " ++ (toString firstList)) ],
     div [ style textStyle] [ text ("secLoop - " ++ (toString secLoop)) ],
-    div [ style textStyle] [ text ("thrLoop - " ++ (toString thrList)) ],
-    div [ style textStyle] [ text ("ansLoop - " ++ (toString ansList)) ],
+    div [ style textStyle] [ text ("thrLoop - " ++ (toString thrLoop)) ],
+    div [ style textStyle] [ text ("ansLoop - " ++ (toString ansLoop)) ],
     div [ style textStyle] [ text ("2loopPerms - " ++ (toString twoListPerms)) ],
     div [ style textStyle] [ text ("3loopPerms - " ++ (toString threeListPerms)) ],
     div [ style <| textStyle ++ (displayStyle b1)] [ text ("answersPlus - " ++ (toString ansPlusList)) ],
@@ -178,40 +214,6 @@ view updatesChnlAddress (
 
     , div [class "row"] [
     ]
-
-
-  --    [div class "col-sm-2"] [
-        -- <button type="button" class="btn btn-default">Hide</button>
-    --  ]
-
-      -- [div class "col-sm-2"] [
---        "Loop 1"
-  --    ]
-
-    --  [div class "col-sm-2"] [
-      --  [1,2,3] [2,3,1]
---      ]
-
-
---    [div class "row"] [
-  --    [div class "col-sm-2", style "background-color: #00b3ee"]
-    --    [
-      --    "Wheel 2"
-        --]
---      [div class "col-sm-2"] [
-  --      4,5,6
-    --  ]
-      --[div class "col-sm-2"] [
-        -- <a class="btn btn-default">Hide</a>
---      ]
-  --    [div class "col-sm-2"] [
-    --    "Loop 2"
-      --]
---      [div class "col-sm-2"] [
-  --      [4,5,6] [5,6,4]
-    --  ]
---    ]
-
   ]
   ]
 
