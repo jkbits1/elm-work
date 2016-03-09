@@ -75,6 +75,18 @@ addButton = Html.button
   [ Html.Events.onClick updatesChnl.address (Add 1)]
   [ Html.text "Show Answers" ]
 
+--showLoopButton : Html
+showLoopButton label action =
+  Html.button
+    [ classList [
+               ("btn", True),
+               ("btn-default", True)
+             ]
+      , Html.Events.onClick updatesChnl.address action
+      ]
+    [ Html.text label ]
+
+
 inputField : String -> String ->
               Signal.Address Update -> (String -> Update) ->
               List (String, String) -> Html
@@ -87,6 +99,34 @@ inputField default text chnlAddress updateItem inputStyle =
     , style inputStyle
     ]
     []
+
+inputField2 : String -> String -> String ->
+              Signal.Address Update -> (String -> Update) ->
+              List (String, String) -> Html
+inputField2 idVal default text chnlAddress updateItem inputStyle =
+  input
+    [ placeholder default, Attr.value text
+    , on "input" targetValue
+    --, on "change" targetValue
+        (Signal.message chnlAddress << updateItem)
+    --, style inputStyle
+      , style wheelStyle
+      , id idVal
+      , class "form-control col-sm-2"
+    ]
+    []
+
+formGroup lbl idVal val chnlAddress updateItem style =
+  div [class "form-group"] [
+    --div [class "col-sm-2"] [
+        label [ for idVal,
+                classList [("control-label", True),("col-sm-4", True)]
+                ]
+                [text lbl]
+      , inputField2 idVal lbl val chnlAddress updateItem style
+    --]
+  ]
+
 
 wheelOnlyRow idx wheelLabel wheelData =
     div [class "row"] [
@@ -116,6 +156,7 @@ wheelRow idx wheelLabel loopLabel wheelData loopData =
       ,
       div [class "col-sm-2"] [
         -- <button type="button" class="btn btn-default">Hide</button>
+        showLoopButton ("Show ") (Add 1)
       ]
       ,
       div [class "col-sm-2"] [
@@ -127,6 +168,13 @@ wheelRow idx wheelLabel loopLabel wheelData loopData =
         text loopData
       ]
     ]
+
+wheelStyle : List (String, String)
+wheelStyle =
+  [
+    -- ("width", "100px")
+    ("width", "200px")
+  ]
 
 myStyle : List (String, String)
 myStyle =
@@ -173,11 +221,23 @@ view updatesChnlAddress (
   div [] [
   div [class "container"]
   [
-      wheelOnlyRow  1 "Wheel 1"   (toString firstList)
+    Html.form [class "form-inline"][
+      --div [class "row"] [
+        formGroup "Wheel 1" "wheel1input"     s1 updatesChnlAddress UpdateField myStyle
+      , formGroup "Wheel 2" "wheel2input"     s2 updatesChnlAddress Circle2Field myStyle
+      , formGroup "Wheel 3" "wheel3input"     s3 updatesChnlAddress Circle3Field myStyle
+      , formGroup "Wheel Ans" "wheelAnsInput" s4 updatesChnlAddress Circle4Field myStyle
+    ]
+
+    , br [] []
+
+    , wheelOnlyRow  1 "Wheel 1"   (toString firstList)
     , wheelRow      2 "Wheel 2"   "Loop 2"    s2 (toString secLoop)
     , wheelRow      3 "Wheel 3"   "Loop 3"    s3 (toString thrLoop)
     , wheelRow      4 "Wheel Ans" "Loop Ans"  s4 (toString ansLoop)
   ]
+
+  , br [] []
 
   , div [class "container"]
   [
