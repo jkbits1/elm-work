@@ -30,6 +30,7 @@ type alias Counter          = List Int
 
 -- values received from UI
 type alias ModelInputs  = (Int, String, String, String, String)
+type alias ModelButtons = (Bool, Bool, Bool, Bool, Bool)
 
 -- values generated from UI input
 type alias ModelResults =
@@ -43,12 +44,13 @@ type alias ModelResults =
   --(firstList, secList, thrList, ansList, twoListPerms, threeListPerms,
    --(ansPlusList, specificAnswer, ansPermsPlusList, specificAnswerPlusList))
 
-type alias Model = (ModelInputs, (Bool), ModelResults)
+type alias Model = (ModelInputs, ModelButtons, ModelResults)
 
 type Update =
       NoOp | Add Int | Remove Int |
       UpdateField String |
-      Circle2Field String | Circle3Field String | Circle4Field String
+      Circle2Field String | Circle3Field String | Circle4Field String |
+      ShowLoop2 | ShowLoop3 | ShowLoopAns
 
 type CircleChange = String
 
@@ -120,6 +122,7 @@ formGroup lbl idVal val chnlAddress updateItem style =
   div [class "form-group"] [
     --div [class "col-sm-2"] [
         label [ for idVal,
+                --classList [("control-label", True),("col-sm-4", True)]
                 classList [("control-label", True),("col-sm-4", True)]
                 ]
                 [text lbl]
@@ -142,8 +145,8 @@ wheelOnlyRow idx wheelLabel wheelData =
 
     ]
 
-wheelRow idx wheelLabel loopLabel wheelData loopData =
-    div [class "row"] [
+wheelRow idx wheelLabel loopLabel wheelData loopData action hide =
+    div [class "row", style [("min-height", "50px")]] [
 
       -- , style "background-color: #00b3ee"
       div [class "col-sm-2"] [
@@ -156,15 +159,15 @@ wheelRow idx wheelLabel loopLabel wheelData loopData =
       ,
       div [class "col-sm-2"] [
         -- <button type="button" class="btn btn-default">Hide</button>
-        showLoopButton ("Show ") (Add 1)
+        showLoopButton ("Show ") action
       ]
       ,
-      div [class "col-sm-2"] [
+      div [class "col-sm-2", style <| displayStyle hide ] [
         text loopLabel
       ]
 
       ,
-      div [class "col-sm-2"] [
+      div [class "col-sm-2", style <| displayStyle hide ] [
         text loopData
       ]
     ]
@@ -173,7 +176,7 @@ wheelStyle : List (String, String)
 wheelStyle =
   [
     -- ("width", "100px")
-    ("width", "200px")
+    ("min-width", "200px")
   ]
 
 myStyle : List (String, String)
@@ -213,7 +216,7 @@ viewLift = Signal.map (view updatesChnl.address) updateModelLift
 view : Signal.Address Update -> Model -> Html
 view updatesChnlAddress (
                           (i, s1, s2, s3, s4),
-                          (b1),
+                          (b1, b2, b3, b4, b5),
                           (firstList, secLoop, thrLoop, ansLoop, twoListPerms, threeListPerms,
                             (ansPlusList, specificAnswer, ansPermsPlusList, specificAnswerPlusList
                               , findAnswerLazy3))
@@ -231,10 +234,10 @@ view updatesChnlAddress (
 
     , br [] []
 
-    , wheelOnlyRow  1 "Wheel 1"   (toString firstList)
-    , wheelRow      2 "Wheel 2"   "Loop 2"    s2 (toString secLoop)
-    , wheelRow      3 "Wheel 3"   "Loop 3"    s3 (toString thrLoop)
-    , wheelRow      4 "Wheel Ans" "Loop Ans"  s4 (toString ansLoop)
+    , wheelOnlyRow  1 "Wheel 1"               s1 -- (toString firstList)
+    , wheelRow      2 "Wheel 2"   "Loop 2"    s2 (toString secLoop) ShowLoop2   b2
+    , wheelRow      3 "Wheel 3"   "Loop 3"    s3 (toString thrLoop) ShowLoop3   b3
+    , wheelRow      4 "Wheel Ans" "Loop Ans"  s4 (toString ansLoop) ShowLoopAns b4
   ]
 
   , br [] []
@@ -244,28 +247,28 @@ view updatesChnlAddress (
     addButton,    
     div [] [ text (toString i) ],
     div [] [ text (toString b1) ],
-    div []
-    [
-      inputField "Files Query" s1 updatesChnlAddress UpdateField myStyle
-    ],
-    div []
-    [
-      inputField "Files Query" s2 updatesChnlAddress Circle2Field myStyle
-    ],
-    div []
-    [
-      inputField "Files Query" s3 updatesChnlAddress Circle3Field myStyle
-    ],
-    div []
-    [
-      inputField "Files Query" s4 updatesChnlAddress Circle4Field myStyle
-    ],
-    div [ style textStyle] [ text ("first  - " ++ (toString firstList)) ],
-    div [ style textStyle] [ text ("secLoop - " ++ (toString secLoop)) ],
-    div [ style textStyle] [ text ("thrLoop - " ++ (toString thrLoop)) ],
-    div [ style textStyle] [ text ("ansLoop - " ++ (toString ansLoop)) ],
-    div [ style textStyle] [ text ("2loopPerms - " ++ (toString twoListPerms)) ],
-    div [ style textStyle] [ text ("3loopPerms - " ++ (toString threeListPerms)) ],
+    --div []
+    --[
+    --  inputField "Files Query" s1 updatesChnlAddress UpdateField myStyle
+    --],
+    --div []
+    --[
+    --  inputField "Files Query" s2 updatesChnlAddress Circle2Field myStyle
+    --],
+    --div []
+    --[
+    --  inputField "Files Query" s3 updatesChnlAddress Circle3Field myStyle
+    --],
+    --div []
+    --[
+    --  inputField "Files Query" s4 updatesChnlAddress Circle4Field myStyle
+    --],
+    -- div [ style textStyle] [ text ("first  - " ++ (toString firstList)) ],
+    -- div [ style textStyle] [ text ("secLoop - " ++ (toString secLoop)) ],
+    -- div [ style textStyle] [ text ("thrLoop - " ++ (toString thrLoop)) ],
+    -- div [ style textStyle] [ text ("ansLoop - " ++ (toString ansLoop)) ],
+    -- div [ style textStyle] [ text ("2loopPerms - " ++ (toString twoListPerms)) ],
+    -- div [ style textStyle] [ text ("3loopPerms - " ++ (toString threeListPerms)) ],
     div [ style <| textStyle ++ (displayStyle b1)] [ text ("answersPlus - " ++ (toString ansPlusList)) ],
     div [ style <| textStyle ++ (displayStyle b1)] [ text ("findAnswers - " ++ (toString specificAnswer)) ],
     div [ style <| textStyle ++ (displayStyle False)] [ text ("answersPerms - " ++ (toString ansPermsPlusList)) ],
@@ -314,7 +317,7 @@ updateModelLift = Signal.foldp
                       (0, "1,2,3", "4,5,6", "7,8,9", "12,15,18"),
                       --(0, "6,5,5,6,5,4,5,4", "4,2,2,2,4,3,3,1", "1,3,2,3,3,2,4,3",
                         --    "12,8,12,10,10,12,10,8"),
-                      (True),
+                      (True, True, True, True, True),
                       ([1,2,3], [[4,5,6]], [[7,8,9]], [[12,15,18]], [[[2]]], [[[3]]],
                         ([([1], [[1]])], [([1], [[1]])], [([[1]], [[1]])], [([[1]], [[1]])]
                         ,([1], [[1]])
@@ -326,12 +329,12 @@ updateModelLift = Signal.foldp
 -- converts Update to new Model
 updateModel : Update -> Model -> Model
 updateModel update ( (i, s1, s2, s3, s4),
-                     (b1),
+                     (b1, b2, b3, b4, b5),
                      --(xs, xxs2, xxs3, xxs4, s9, s10, (s11, s12, s13, s14))
                      results
                    ) =
   let
-    createModel i s1 s2 s3 s4 b1 =
+    createModel i s1 s2 s3 s4 buttonStates =
       let
         first     = wheelPositionFromString s1
         answers   = wheelPositionFromString s4
@@ -339,7 +342,7 @@ updateModel update ( (i, s1, s2, s3, s4),
         thrLoop   = makeThrLoop s3
         ansLoop   = makeAnsLoop s4
       in
-        ((i, s1, s2, s3, s4), (b1),
+        ((i, s1, s2, s3, s4), buttonStates,
           (first, secLoop, thrLoop, ansLoop,
             twoWheelPerms first secLoop, threeLoopPerms first secLoop thrLoop,
             (answersPlusPerm      first secLoop thrLoop,
@@ -349,14 +352,18 @@ updateModel update ( (i, s1, s2, s3, s4),
               , findAnswerLazy3 first secLoop thrLoop ansLoop)))
   in
     case update of
-      NoOp        ->    createModel  i      s1 s2 s3 s4 b1
-      Add val     ->    createModel (i + 1) s1 s2 s3 s4 (not b1)
-      Remove val  ->    createModel (i - 1) s1 s2 s3 s4 (True)
+      NoOp        ->    createModel  i      s1 s2 s3 s4 (b1, b2, b3, b4, b5)
+      Add val     ->    createModel (i + 1) s1 s2 s3 s4 (not b1, b2, b3, b4, b5)
+      Remove val  ->    createModel (i - 1) s1 s2 s3 s4 (True, b2, b3, b4, b5)
 
-      UpdateField s ->  createModel  i      s  s2 s3 s4 (b1)
-      Circle2Field s -> createModel  i      s1 s  s3 s4 (b1)
-      Circle3Field s -> createModel  i      s1 s2 s  s4 (b1)
-      Circle4Field s -> createModel  i      s1 s2 s3 s  (b1)
+      UpdateField s ->  createModel  i      s  s2 s3 s4 (b1, b2, b3, b4, b5)
+      Circle2Field s -> createModel  i      s1 s  s3 s4 (b1, b2, b3, b4, b5)
+      Circle3Field s -> createModel  i      s1 s2 s  s4 (b1, b2, b3, b4, b5)
+      Circle4Field s -> createModel  i      s1 s2 s3 s  (b1, b2, b3, b4, b5)
+
+      ShowLoop2   ->    createModel (i + 1) s1 s2 s3 s4 (b1, not b2, b3, b4, b5)
+      ShowLoop3   ->    createModel (i + 1) s1 s2 s3 s4 (b1, b2, not b3, b4, b5)
+      ShowLoopAns ->    createModel (i + 1) s1 s2 s3 s4 (b1, b2, b3, not b4, b5)
 
 strToNum : String -> Int
 strToNum s = resToNum (String.toInt s)
