@@ -3,6 +3,8 @@
 
 --  <link rel="stylesheet" href="css/tidy.css">
 
+module PuzzleModule where
+
 --import Signal (channel)
 import Signal 
 --import Html
