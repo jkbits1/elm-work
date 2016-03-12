@@ -41,6 +41,7 @@ type alias ModelList = List (ModelInputs, ModelButtons, ModelResults)
 
 type Update =
       NoOp | Add Int | Remove Int |
+      Back |
       UpdateField String |
       Circle2Field String | Circle3Field String | Circle4Field String |
       ShowLoop2 | ShowLoop3 | ShowLoopAns
@@ -69,6 +70,11 @@ addButton : Html
 addButton = Html.button
   [ Html.Events.onClick updatesChnl.address (Add 1)]
   [ Html.text "Show Answers" ]
+
+backButton : Html
+backButton = Html.button
+  [ Html.Events.onClick updatesChnl.address (Back)]
+  [ Html.text "Back" ]
 
 --showLoopButton : Html
 showLoopButton labels hide action =
@@ -244,7 +250,8 @@ view updatesChnlAddress ( stateHistory,
 
   , div [class "container"]
   [
-    addButton,    
+    addButton,
+    backButton,
     div [] [ text (toString i) ],
     div [] [ text (toString b1) ],
     --div []
@@ -274,6 +281,10 @@ view updatesChnlAddress ( stateHistory,
     div [ style <| textStyle ++ (displayStyle False)] [ text ("answersPerms - " ++ (toString ansPermsPlusList)) ],
     div [ style <| textStyle ++ (displayStyle False)] [ text ("displayAnswer - " ++ (toString specificAnswerPlusList)) ]
     , div [ style <| textStyle ++ (displayStyle b1)] [ text ("lazyAnswer - " ++ (toString findAnswerLazy3)) ]
+
+    , div [class "row"] [
+      text <| toString stateHistory
+    ]
 
     , div [class "row"] [
     ]
@@ -307,18 +318,22 @@ view updatesChnlAddress ( stateHistory,
 -- answersPermsPlusListShow =    toString <| answersPermsPlusList    first s2 s3
 -- displaySpecificAnswersShow =  toString <| displaySpecificAnswers  first s2 s3 answers
 
-
-initialModelState =
-  ([],
-    (0, "1,2,3", "4,5,6", "7,8,9", "12,15,18"),
-    --(0, "6,5,5,6,5,4,5,4", "4,2,2,2,4,3,3,1", "1,3,2,3,3,2,4,3",
-      --    "12,8,12,10,10,12,10,8"),
-    (False, False, False, False, False),
+initialInputs = (0, "1,2,3", "4,5,6", "7,8,9", "12,15,18")
+initialStates = (False, False, False, False, False)
+initialCalcs  =
     ([1,2,3], [[4,5,6]], [[7,8,9]], [[12,15,18]], [[[2]]], [[[3]]],
       ([([1], [[1]])], [([1], [[1]])], [([[1]], [[1]])], [([[1]], [[1]])]
       ,([1], [[1]])
       )
     )
+
+initialModelState =
+  ([],
+      initialInputs,
+    --(0, "6,5,5,6,5,4,5,4", "4,2,2,2,4,3,3,1", "1,3,2,3,3,2,4,3",
+      --    "12,8,12,10,10,12,10,8"),
+    initialStates,
+    initialCalcs
   )
 
 -- converts Signal Update (from updatesChnl) to Signal Model, 
@@ -337,7 +352,12 @@ updateModel update (stateHistory, (i, s1, s2, s3, s4),
                      results
                    ) =
   let
-    createModel i s1 s2 s3 s4 buttonStates =
+    -- headState = foldr (\h t -> h) []
+    --prevState = Maybe.withDefault
+    (inputs, states, calcs) = Maybe.withDefault
+                  (initialInputs, initialStates, initialCalcs)
+                  (head stateHistory)
+    createModel (i, s1, s2, s3, s4) buttonStates =
       let
         first     = wheelPositionFromString s1
         answers   = wheelPositionFromString s4
@@ -356,17 +376,20 @@ updateModel update (stateHistory, (i, s1, s2, s3, s4),
         ((inputs, buttonStates, newCalcs) :: stateHistory, inputs, buttonStates, newCalcs)
   in
     case update of
-      NoOp        ->    createModel  i      s1 s2 s3 s4 (b1, b2, b3, b4, b5)
-      Add val     ->    createModel (i + 1) s1 s2 s3 s4 (not b1, b2, b3, b4, b5)
-      Remove val  ->    createModel (i - 1) s1 s2 s3 s4 (True, b2, b3, b4, b5)
+      NoOp        ->    createModel  (i,      s1, s2, s3, s4) (b1, b2, b3, b4, b5)
+      Add val     ->    createModel ((i + 1), s1, s2, s3, s4) (not b1, b2, b3, b4, b5)
+      Remove val  ->    createModel ((i - 1), s1, s2, s3, s4) (True, b2, b3, b4, b5)
 
-      UpdateField s ->  createModel  i      s  s2 s3 s4 (b1, b2, b3, b4, b5)
-      Circle2Field s -> createModel  i      s1 s  s3 s4 (b1, b2, b3, b4, b5)
-      Circle3Field s -> createModel  i      s1 s2 s  s4 (b1, b2, b3, b4, b5)
-      Circle4Field s -> createModel  i      s1 s2 s3 s  (b1, b2, b3, b4, b5)
+      --Back        ->    createModel (fst prevState) (True, b2, b3, b4, b5)
+      Back        ->    createModel inputs states
 
-      ShowLoop2   ->    createModel (i + 1) s1 s2 s3 s4 (b1, not b2, b3, b4, b5)
-      ShowLoop3   ->    createModel (i + 1) s1 s2 s3 s4 (b1, b2, not b3, b4, b5)
-      ShowLoopAns ->    createModel (i + 1) s1 s2 s3 s4 (b1, b2, b3, not b4, b5)
+      UpdateField s ->  createModel  (i,      s,  s2, s3, s4) (b1, b2, b3, b4, b5)
+      Circle2Field s -> createModel  (i,      s1, s,  s3, s4) (b1, b2, b3, b4, b5)
+      Circle3Field s -> createModel  (i,      s1, s2, s,  s4) (b1, b2, b3, b4, b5)
+      Circle4Field s -> createModel  (i,      s1, s2, s3, s)  (b1, b2, b3, b4, b5)
+
+      ShowLoop2   ->    createModel ((i + 1), s1, s2, s3, s4) (b1, not b2, b3, b4, b5)
+      ShowLoop3   ->    createModel ((i + 1), s1, s2, s3, s4) (b1, b2, not b3, b4, b5)
+      ShowLoopAns ->    createModel ((i + 1), s1, s2, s3, s4) (b1, b2, b3, not b4, b5)
 
 stateHistory = []
