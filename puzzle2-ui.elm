@@ -64,16 +64,20 @@ updatesChnl = Signal.mailbox NoOp
 --circle4Chnl : Signal.Mailbox Update
 --circle4Chnl = Signal.mailbox (Circle4Field "")
 
+buttonClassList = classList [("btn", True), ("btn-default", True)]
 
 -- created by view, returns Html and sends Updates to updatesChnl
 addButton : Html
 addButton = Html.button
-  [ Html.Events.onClick updatesChnl.address (Add 1)]
+  [   buttonClassList
+    , Html.Events.onClick updatesChnl.address (Add 1)]
   [ Html.text "Show Answers" ]
 
 backButton : Html
 backButton = Html.button
-  [ Html.Events.onClick updatesChnl.address (Back)]
+  [
+      buttonClassList
+    , Html.Events.onClick updatesChnl.address (Back)]
   [ Html.text "Back" ]
 
 --showLoopButton : Html
@@ -86,12 +90,9 @@ showLoopButton labels hide action =
         fst labels
   in
     Html.button
-      [ classList [
-                 ("btn", True),
-                 ("btn-default", True)
-               ]
+      [   buttonClassList
         , Html.Events.onClick updatesChnl.address action
-        ]
+      ]
       [ Html.text label ]
 
 
@@ -165,7 +166,8 @@ wheelRow idx wheelLabel loopLabel wheelData loopData action hide =
       ,
       div [class "col-sm-2"] [
         -- <button type="button" class="btn btn-default">Hide</button>
-        showLoopButton ("Show", "Hide") hide action
+        -- showLoopButton ("Show", "Hide") hide action
+        showLoopButton ("+", "-") hide action
       ]
       ,
       div [class "col-sm-2", style <| displayStyle hide ] [
