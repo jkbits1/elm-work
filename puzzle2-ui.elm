@@ -21,7 +21,6 @@ import List exposing (..)
 
 -- values received from UI
 type alias ModelInputs  = (Int, String, String, String, String)
--- type alias ModelButtons = (Bool, Bool, Bool, Bool, Bool, Bool, Bool)
 type alias ModelButtons = List Bool
 
 buttonVal : List Bool -> Int -> Bool
@@ -32,6 +31,10 @@ buttonVal list num =
     case h of
       Just x  -> x
       Nothing -> False
+
+-- max buttons is 9, 10 items in list
+maxButton = 10
+buttonListToggle list num = take (num-1) list ++ [not <| buttonVal list num] ++ take (maxButton - num) (drop num list)
 
 -- values generated from UI input
 type alias ModelResults =
@@ -57,7 +60,8 @@ type Update =
       Circle2Field String | Circle3Field String | Circle4Field String |
       ShowLoop2 | ShowLoop3 | ShowLoopAns |
       ShowPerms2 | ShowPerms3 |
-      ShowAns | ShowLazyAns
+      ShowAns | ShowLazyAns |
+      ShowState
 
 --type CircleChange = String
 
@@ -81,13 +85,13 @@ buttonClassList = classList [("btn", True), ("btn-default", True)]
 
 -- created by view, returns Html and sends Updates to updatesChnl
 answersButton : Html
-answersButton = uiButton ShowAns  "Show Answers"
+answersButton = uiButton ShowAns    "Show Answers"
 
 backButton : Html
-backButton    = uiButton Back     "Step Back"
+backButton    = uiButton Back       "Step Back"
 
 stateButton : Html
-stateButton   = uiButton Back     "Show State"
+stateButton   = uiButton ShowState  "Show State"
 
 perms2Button : Html
 perms2Button  = uiButton ShowPerms2 "Show Perms 2"
@@ -180,9 +184,10 @@ wheelRow idx wheelLabel loopLabel wheelData loopData action hide =
     div [class "row", style [("min-height", "50px"), ("margin-top", "10px")]] [
 
       -- , style "background-color: #00b3ee"
-      div [class "col-sm-2"] [
+      div [class "col-sm-2", style [("font-weight", "700")] ] [
         text wheelLabel
       ]
+
       ,
       div [class "col-sm-2"] [
         text <| wheelData
@@ -194,7 +199,7 @@ wheelRow idx wheelLabel loopLabel wheelData loopData action hide =
         showLoopButton ("+", "-") hide action
       ]
       ,
-      div [class "col-sm-2", style <| displayStyle hide ] [
+      div [class "col-sm-2", style <| (displayStyle hide) ++ [("font-weight", "700")] ] [
         text loopLabel
       ]
 
@@ -269,14 +274,15 @@ view updatesChnlAddress ( stateHistory,
   div [] [
   div [class "container"]
   [
-      div [class "row"] [
-        div [class "btn-group"] [
-            text <| toString <| buttonVal buttonList 1
-          ,  answersButton
-          , backButton
+       div [class "row"] [
+          div [class "btn-group"] [
+              perms2Button
+            , perms3Button
+            , answersButton
+          ]
+        , div [class "btn-group"] [
+            backButton
           , stateButton
-          , perms2Button
-          , perms3Button
         ]
       ]
     , br [] []
@@ -326,12 +332,8 @@ view updatesChnlAddress ( stateHistory,
         ]
       ]
     , br [] []
-    , div [class "row"] [
-        text <| toString stateHistory
-      ]
 
-    , div [] [ text (toString i) ]
-    , div [] [ text (toString <| buttonVal buttonList 1) ]
+    -- , div [] [ text (toString <| buttonVal buttonList 1) ]
     --div []
     --[
     --  inputField "Files Query" s1 updatesChnlAddress UpdateField myStyle
@@ -357,8 +359,9 @@ view updatesChnlAddress ( stateHistory,
     , div [ style <| textStyle ++ (displayStyle <| buttonVal buttonList 1)] [
         text ("lazyAnswer - " ++ (toString findAnswerLazy3)) ]
 
-    , div [class "row"] [
-      text <| toString stateHistory
+    , div [class "row", style <| displayStyle <| buttonVal buttonList 7] [
+        div [] [ text <| "State change count: " ++ (toString i) ]
+      , text <| toString stateHistory
     ]
 
     , div [class "row"] [
@@ -392,10 +395,6 @@ view updatesChnlAddress ( stateHistory,
 -- findSpecificAnswerShow =      toString <| findSpecificAnswer      first s2 s3 <| getAnsLoop s4
 -- answersPermsPlusListShow =    toString <| answersPermsPlusList    first s2 s3
 -- displaySpecificAnswersShow =  toString <| displaySpecificAnswers  first s2 s3 answers
-
--- max buttons is 9, 10 items in list
-buttonListToggle list num = take (num-1) list ++ [not <| buttonVal list num] ++ take (10-num) (drop num list)
-
 
 initialInputs = (0, "1,2,3", "4,5,6", "7,8,9", "12,15,18")
 -- initialStates = (False, False, False, False, False, False, False)
@@ -478,7 +477,8 @@ updateModel update (stateHistory, (i, s1, s2, s3, s4),
       ShowLoop3   ->    createModel ((i + 1), s1, s2, s3, s4) (buttonListToggle buttonList 3) True
       ShowLoopAns ->    createModel ((i + 1), s1, s2, s3, s4) (buttonListToggle buttonList 4) True
 
-      ShowPerms2 ->    createModel ((i + 1), s1, s2, s3, s4) (buttonListToggle buttonList 5) True
-      ShowPerms3 ->    createModel ((i + 1), s1, s2, s3, s4) (buttonListToggle buttonList 6) True
+      ShowPerms2 ->     createModel ((i + 1), s1, s2, s3, s4) (buttonListToggle buttonList 5) True
+      ShowPerms3 ->     createModel ((i + 1), s1, s2, s3, s4) (buttonListToggle buttonList 6) True
 
+      ShowState ->      createModel ((i + 1), s1, s2, s3, s4) (buttonListToggle buttonList 7) True
 
