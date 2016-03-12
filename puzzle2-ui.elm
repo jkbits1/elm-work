@@ -255,6 +255,15 @@ displayStyle show =
     True ->   [("display", "block")]
     False ->  [("display", "none")]
 
+infoRow label info displayState =
+  div [class "row", style <| -- textStyle
+                      [("margin-top", "10px")] ++
+                      (displayStyle displayState)] [
+      div [class "col-sm-2"] [ text label ]
+    , div [class "col-sm-8"] [ text <| info ]
+  ]
+
+
 -- converts Signal Model to Signal Html, using non-signal view
 main : Signal Html
 main = viewLift
@@ -307,31 +316,37 @@ view updatesChnlAddress ( stateHistory,
 
   , div [class "container"]
   [
-      div [class "row", style -- textStyle
-                          (displayStyle <| buttonVal buttonList 5)] [
-          div [class "col-sm-2"] [ text "2loopPerms" ]
-        , div [class "col-sm-2"] [ text <| toString twoListPerms ]
-      ]
-    , div [class "row", style -- textStyle
-                          (displayStyle <| buttonVal buttonList 6)] [
-          div [ class "col-sm-2" ] [ text "3loopPerms - " ]
-        , div [ class "col-sm-2" ] [ text <| toString threeListPerms ]
-      ]
-    , div [class "row"] [
-        div [ --style textStyle
-        ] [
-            div [ style
-                  -- <| textStyle ++
-                  (displayStyle <| buttonVal buttonList 1)]
-            [ text ("answersPlus - " ++ (toString ansPlusList)) ]
-          , foundAnswerIndicator specificAnswer <| buttonVal buttonList 1
-          , div [ style
-                  -- <| textStyle ++
-                  (displayStyle <| buttonVal buttonList 1)]
-            [ text ("findAnswers - " ++ (toString specificAnswer)) ]
-        ]
+      infoRow "2loopPerms"     (toString twoListPerms)   <| buttonVal buttonList 5
+    , infoRow "3loopPerms - "  (toString threeListPerms) <| buttonVal buttonList 6
+    , infoRow "answersPlus - "  (toString ansPlusList ) <| buttonVal buttonList 1
+
+    --, div [class "row", style -- <| textStyle ++
+      --                    (displayStyle <| buttonVal buttonList 1)] [
+        --div [ --style textStyle
+--        ] [
+  --        div [ class "col-sm-2" ] [ text "answersPlus - " ]
+    --    , div [ class "col-sm-8" ] [ text <| toString ansPlusList ]
+      --  ]
+     -- ]
+    , br [] []
+    , div [class "row", style -- <| textStyle ++
+                          (displayStyle <| buttonVal buttonList 1)] [
+          div [ class "col-sm-12" ] [ foundAnswerIndicator specificAnswer <| buttonVal buttonList 1 ]
+        , div [ class "col-sm-2" ] [ text "findAnswers - " ]
+        , div [ class "col-sm-8" ] [ text <| toString specificAnswer ]
       ]
     , br [] []
+
+    , div [class "row", style -- <| textStyle ++
+                          (displayStyle <| buttonVal buttonList 1)] [
+          div [ class "col-sm-2" ] [ text "lazyAnswer - " ]
+        , div [ class "col-sm-4" ] [ text <| toString findAnswerLazy3 ]
+      ]
+      , div [class "row", style <| displayStyle <| buttonVal buttonList 7] [
+          div [] [ text <| "State change count: " ++ (toString i) ]
+        , text <| toString stateHistory
+      ]
+
 
     -- , div [] [ text (toString <| buttonVal buttonList 1) ]
     --div []
@@ -356,13 +371,6 @@ view updatesChnlAddress ( stateHistory,
     -- div [ style textStyle] [ text ("ansLoop - " ++ (toString ansLoop)) ],
     , div [ style <| textStyle ++ (displayStyle False)] [ text ("answersPerms - " ++ (toString ansPermsPlusList)) ]
     , div [ style <| textStyle ++ (displayStyle False)] [ text ("displayAnswer - " ++ (toString specificAnswerPlusList)) ]
-    , div [ style <| textStyle ++ (displayStyle <| buttonVal buttonList 1)] [
-        text ("lazyAnswer - " ++ (toString findAnswerLazy3)) ]
-
-    , div [class "row", style <| displayStyle <| buttonVal buttonList 7] [
-        div [] [ text <| "State change count: " ++ (toString i) ]
-      , text <| toString stateHistory
-    ]
 
     , div [class "row"] [
     ]
