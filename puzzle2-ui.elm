@@ -69,15 +69,22 @@ addButton = Html.button
   [ Html.text "Show Answers" ]
 
 --showLoopButton : Html
-showLoopButton label action =
-  Html.button
-    [ classList [
-               ("btn", True),
-               ("btn-default", True)
-             ]
-      , Html.Events.onClick updatesChnl.address action
-      ]
-    [ Html.text label ]
+showLoopButton labels hide action =
+  let
+    label =
+      if hide == True then
+        snd labels
+      else
+        fst labels
+  in
+    Html.button
+      [ classList [
+                 ("btn", True),
+                 ("btn-default", True)
+               ]
+        , Html.Events.onClick updatesChnl.address action
+        ]
+      [ Html.text label ]
 
 
 inputField : String -> String ->
@@ -150,7 +157,7 @@ wheelRow idx wheelLabel loopLabel wheelData loopData action hide =
       ,
       div [class "col-sm-2"] [
         -- <button type="button" class="btn btn-default">Hide</button>
-        showLoopButton ("Show ") action
+        showLoopButton ("Show", "Hide") hide action
       ]
       ,
       div [class "col-sm-2", style <| displayStyle hide ] [
@@ -299,22 +306,25 @@ view updatesChnlAddress (
 -- displaySpecificAnswersShow =  toString <| displaySpecificAnswers  first s2 s3 answers
 
 
+initialModelState =
+  (
+    (0, "1,2,3", "4,5,6", "7,8,9", "12,15,18"),
+    --(0, "6,5,5,6,5,4,5,4", "4,2,2,2,4,3,3,1", "1,3,2,3,3,2,4,3",
+      --    "12,8,12,10,10,12,10,8"),
+    (False, False, False, False, False),
+    ([1,2,3], [[4,5,6]], [[7,8,9]], [[12,15,18]], [[[2]]], [[[3]]],
+      ([([1], [[1]])], [([1], [[1]])], [([[1]], [[1]])], [([[1]], [[1]])]
+      ,([1], [[1]])
+      )
+    )
+  )
+
 -- converts Signal Update (from updatesChnl) to Signal Model, 
 -- using non-signal updateModel
 updateModelLift : Signal Model
 updateModelLift = Signal.foldp
                     updateModel
-                    (
-                      (0, "1,2,3", "4,5,6", "7,8,9", "12,15,18"),
-                      --(0, "6,5,5,6,5,4,5,4", "4,2,2,2,4,3,3,1", "1,3,2,3,3,2,4,3",
-                        --    "12,8,12,10,10,12,10,8"),
-                      (True, True, True, True, True),
-                      ([1,2,3], [[4,5,6]], [[7,8,9]], [[12,15,18]], [[[2]]], [[[3]]],
-                        ([([1], [[1]])], [([1], [[1]])], [([[1]], [[1]])], [([[1]], [[1]])]
-                        ,([1], [[1]])
-                        )
-                      )
-                    )
+                    initialModelState
                     updatesChnl.signal
 
 -- converts Update to new Model
