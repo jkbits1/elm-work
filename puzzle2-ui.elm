@@ -21,7 +21,17 @@ import List exposing (..)
 
 -- values received from UI
 type alias ModelInputs  = (Int, String, String, String, String)
-type alias ModelButtons = (Bool, Bool, Bool, Bool, Bool, Bool, Bool)
+-- type alias ModelButtons = (Bool, Bool, Bool, Bool, Bool, Bool, Bool)
+type alias ModelButtons = List Bool
+
+buttonVal : List Bool -> Int -> Bool
+buttonVal list num =
+  let
+    h = head (drop (num - 1) list)
+  in
+    case h of
+      Just x  -> x
+      Nothing -> False
 
 -- values generated from UI input
 type alias ModelResults =
@@ -251,7 +261,7 @@ viewLift = Signal.map (view updatesChnl.address) updateModelLift
 view : Signal.Address Update -> Model -> Html
 view updatesChnlAddress ( stateHistory,
                           (i, s1, s2, s3, s4),
-                          (b1, b2, b3, b4, b5, b6, b7),
+                          buttonList,
                           (firstList, secLoop, thrLoop, ansLoop, twoListPerms, threeListPerms,
                             (ansPlusList, specificAnswer, ansPermsPlusList, specificAnswerPlusList
                               , findAnswerLazy3))
@@ -261,7 +271,8 @@ view updatesChnlAddress ( stateHistory,
   [
       div [class "row"] [
         div [class "btn-group"] [
-            answersButton
+            text <| toString <| buttonVal buttonList 1
+          ,  answersButton
           , backButton
           , stateButton
           , perms2Button
@@ -281,9 +292,9 @@ view updatesChnlAddress ( stateHistory,
     , br [] []
 
     , wheelOnlyRow  1 "Wheel 1"               s1 -- (toString firstList)
-    , wheelRow      2 "Wheel 2"   "Loop 2"    s2 (toString secLoop) ShowLoop2   b2
-    , wheelRow      3 "Wheel 3"   "Loop 3"    s3 (toString thrLoop) ShowLoop3   b3
-    , wheelRow      4 "Wheel Ans" "Loop Ans"  s4 (toString ansLoop) ShowLoopAns b4
+    , wheelRow      2 "Wheel 2"   "Loop 2"    s2 (toString secLoop) ShowLoop2   <| buttonVal buttonList 2
+    , wheelRow      3 "Wheel 3"   "Loop 3"    s3 (toString thrLoop) ShowLoop3   <| buttonVal buttonList 3
+    , wheelRow      4 "Wheel Ans" "Loop Ans"  s4 (toString ansLoop) ShowLoopAns <| buttonVal buttonList 4
   ]
 
   , br [] []
@@ -292,12 +303,12 @@ view updatesChnlAddress ( stateHistory,
   [
       div [class "row"] [
           div [ style -- textStyle
-                  (displayStyle b5)
-          ] [ text ("2loopPerms - " ++ (toString twoListPerms) ++ (toString b5)) ]
+                  (displayStyle <| buttonVal buttonList 5)
+          ] [ text ("2loopPerms - " ++ (toString twoListPerms) ++ (toString <| buttonVal buttonList 5)) ]
       ]
     , div [class "row"] [
         div [ style -- textStyle
-                (displayStyle b6)
+                (displayStyle <| buttonVal buttonList 6)
         ] [ text ("3loopPerms - " ++ (toString threeListPerms)) ]
       ]
     , div [class "row"] [
@@ -305,12 +316,12 @@ view updatesChnlAddress ( stateHistory,
         ] [
             div [ style
                   -- <| textStyle ++
-                  (displayStyle b1)]
+                  (displayStyle <| buttonVal buttonList 1)]
             [ text ("answersPlus - " ++ (toString ansPlusList)) ]
-          , foundAnswerIndicator specificAnswer b1
+          , foundAnswerIndicator specificAnswer <| buttonVal buttonList 1
           , div [ style
                   -- <| textStyle ++
-                  (displayStyle b1)]
+                  (displayStyle <| buttonVal buttonList 1)]
             [ text ("findAnswers - " ++ (toString specificAnswer)) ]
         ]
       ]
@@ -320,7 +331,7 @@ view updatesChnlAddress ( stateHistory,
       ]
 
     , div [] [ text (toString i) ]
-    , div [] [ text (toString b1) ]
+    , div [] [ text (toString <| buttonVal buttonList 1) ]
     --div []
     --[
     --  inputField "Files Query" s1 updatesChnlAddress UpdateField myStyle
@@ -343,7 +354,8 @@ view updatesChnlAddress ( stateHistory,
     -- div [ style textStyle] [ text ("ansLoop - " ++ (toString ansLoop)) ],
     , div [ style <| textStyle ++ (displayStyle False)] [ text ("answersPerms - " ++ (toString ansPermsPlusList)) ]
     , div [ style <| textStyle ++ (displayStyle False)] [ text ("displayAnswer - " ++ (toString specificAnswerPlusList)) ]
-    , div [ style <| textStyle ++ (displayStyle b1)] [ text ("lazyAnswer - " ++ (toString findAnswerLazy3)) ]
+    , div [ style <| textStyle ++ (displayStyle <| buttonVal buttonList 1)] [
+        text ("lazyAnswer - " ++ (toString findAnswerLazy3)) ]
 
     , div [class "row"] [
       text <| toString stateHistory
@@ -381,8 +393,13 @@ view updatesChnlAddress ( stateHistory,
 -- answersPermsPlusListShow =    toString <| answersPermsPlusList    first s2 s3
 -- displaySpecificAnswersShow =  toString <| displaySpecificAnswers  first s2 s3 answers
 
+-- max buttons is 9, 10 items in list
+buttonListToggle list num = take (num-1) list ++ [not <| buttonVal list num] ++ take (10-num) (drop num list)
+
+
 initialInputs = (0, "1,2,3", "4,5,6", "7,8,9", "12,15,18")
-initialStates = (False, False, False, False, False, False, False)
+-- initialStates = (False, False, False, False, False, False, False)
+initialStates = [False, False, False, False, False, False, False, False, False, False]
 initialCalcs  =
     ([1,2,3], [[4,5,6]], [[7,8,9]], [[12,15,18]], [[[2]]], [[[3]]],
       ([([1], [[1]])], [([1], [[1]])], [([[1]], [[1]])], [([[1]], [[1]])]
@@ -410,7 +427,7 @@ updateModelLift = Signal.foldp
 -- converts Update to new Model
 updateModel : Update -> Model -> Model
 updateModel update (stateHistory, (i, s1, s2, s3, s4),
-                     (b1, b2, b3, b4, b5, b6, b7),
+                     buttonList,
                      --(xs, xxs2, xxs3, xxs4, s9, s10, (s11, s12, s13, s14))
                      results
                    ) =
@@ -443,23 +460,25 @@ updateModel update (stateHistory, (i, s1, s2, s3, s4),
         (newHistory, inputs, buttonStates, newCalcs)
   in
     case update of
-      NoOp        ->    createModel  (i,      s1, s2, s3, s4) (b1, b2, b3, b4, b5, b6, b7) True
+      -- NoOp        ->    createModel  (i,      s1, s2, s3, s4) (b1, b2, b3, b4, b5, b6, b7) True
       -- Add val     ->    createModel ((i + 1), s1, s2, s3, s4) (not b1, b2, b3, b4, b5)  True
       -- Remove val  ->    createModel ((i - 1), s1, s2, s3, s4) (True, b2, b3, b4, b5)    True
 
       Back        ->    createModel inputs states False
 
-      Circle1Field s -> createModel  (i,      s,  s2, s3, s4) (b1, b2, b3, b4, b5, b6, b7) True
-      Circle2Field s -> createModel  (i,      s1, s,  s3, s4) (b1, b2, b3, b4, b5, b6, b7) True
-      Circle3Field s -> createModel  (i,      s1, s2, s,  s4) (b1, b2, b3, b4, b5, b6, b7) True
-      Circle4Field s -> createModel  (i,      s1, s2, s3, s)  (b1, b2, b3, b4, b5, b6, b7) True
+      --Circle1Field s -> createModel  (i,      s,  s2, s3, s4) (b1, b2, b3, b4, b5, b6, b7) True
+      Circle1Field s -> createModel  (i,      s,  s2, s3, s4) buttonList True
+      Circle2Field s -> createModel  (i,      s1, s,  s3, s4) buttonList True
+      Circle3Field s -> createModel  (i,      s1, s2, s,  s4) buttonList True
+      Circle4Field s -> createModel  (i,      s1, s2, s3, s)  buttonList True
 
-      ShowAns     ->    createModel ((i + 1), s1, s2, s3, s4) (not b1, b2, b3, b4, b5, b6, b7) True
-      ShowLoop2   ->    createModel ((i + 1), s1, s2, s3, s4) (b1, not b2, b3, b4, b5, b6, b7) True
-      ShowLoop3   ->    createModel ((i + 1), s1, s2, s3, s4) (b1, b2, not b3, b4, b5, b6, b7) True
-      ShowLoopAns ->    createModel ((i + 1), s1, s2, s3, s4) (b1, b2, b3, not b4, b5, b6, b7) True
+      --ShowAns     ->    createModel ((i + 1), s1, s2, s3, s4) (not b1, b2, b3, b4, b5, b6, b7) True
+      ShowAns     ->    createModel ((i + 1), s1, s2, s3, s4) (buttonListToggle buttonList 1) True
+      ShowLoop2   ->    createModel ((i + 1), s1, s2, s3, s4) (buttonListToggle buttonList 2) True
+      ShowLoop3   ->    createModel ((i + 1), s1, s2, s3, s4) (buttonListToggle buttonList 3) True
+      ShowLoopAns ->    createModel ((i + 1), s1, s2, s3, s4) (buttonListToggle buttonList 4) True
 
-      ShowPerms2 ->    createModel ((i + 1), s1, s2, s3, s4) (b1, b2, b3, b4, not b5, b6, b7) True
-      ShowPerms3 ->    createModel ((i + 1), s1, s2, s3, s4) (b1, b2, b3, b4, b5, not b6, b7) True
+      ShowPerms2 ->    createModel ((i + 1), s1, s2, s3, s4) (buttonListToggle buttonList 5) True
+      ShowPerms3 ->    createModel ((i + 1), s1, s2, s3, s4) (buttonListToggle buttonList 6) True
 
 
