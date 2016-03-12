@@ -258,7 +258,27 @@ view updatesChnlAddress ( stateHistory,
 
   , div [class "container"]
   [
-      div [] [ text (toString i) ]
+      div [class "row"] [
+          div [ --style textStyle
+          ] [ text ("2loopPerms - " ++ (toString twoListPerms)) ]
+      ]
+    , div [class "row"] [
+        div [ --style textStyle
+        ] [ text ("3loopPerms - " ++ (toString threeListPerms)) ]
+      ]
+    , div [class "row"] [
+        div [ --style textStyle
+        ] [
+            div [ style <| textStyle ++ (displayStyle b1)] [ text ("answersPlus - " ++ (toString ansPlusList)) ]
+          , div [ style <| textStyle ++ (displayStyle b1)] [ text ("findAnswers - " ++ (toString specificAnswer)) ]
+        ]
+      ]
+    , br [] []
+    , div [class "row"] [
+        text <| toString stateHistory
+      ]
+
+    , div [] [ text (toString i) ]
     , div [] [ text (toString b1) ]
     --div []
     --[
@@ -280,10 +300,6 @@ view updatesChnlAddress ( stateHistory,
     -- div [ style textStyle] [ text ("secLoop - " ++ (toString secLoop)) ],
     -- div [ style textStyle] [ text ("thrLoop - " ++ (toString thrLoop)) ],
     -- div [ style textStyle] [ text ("ansLoop - " ++ (toString ansLoop)) ],
-    -- div [ style textStyle] [ text ("2loopPerms - " ++ (toString twoListPerms)) ],
-    -- div [ style textStyle] [ text ("3loopPerms - " ++ (toString threeListPerms)) ],
-    , div [ style <| textStyle ++ (displayStyle b1)] [ text ("answersPlus - " ++ (toString ansPlusList)) ]
-    , div [ style <| textStyle ++ (displayStyle b1)] [ text ("findAnswers - " ++ (toString specificAnswer)) ]
     , div [ style <| textStyle ++ (displayStyle False)] [ text ("answersPerms - " ++ (toString ansPermsPlusList)) ]
     , div [ style <| textStyle ++ (displayStyle False)] [ text ("displayAnswer - " ++ (toString specificAnswerPlusList)) ]
     , div [ style <| textStyle ++ (displayStyle b1)] [ text ("lazyAnswer - " ++ (toString findAnswerLazy3)) ]
