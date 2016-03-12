@@ -307,15 +307,15 @@ view updatesChnlAddress ( stateHistory,
 
   , div [class "container"]
   [
-      div [class "row"] [
-          div [ style -- textStyle
-                  (displayStyle <| buttonVal buttonList 5)
-          ] [ text ("2loopPerms - " ++ (toString twoListPerms) ++ (toString <| buttonVal buttonList 5)) ]
+      div [class "row", style -- textStyle
+                          (displayStyle <| buttonVal buttonList 5)] [
+          div [class "col-sm-2"] [ text "2loopPerms" ]
+        , div [class "col-sm-2"] [ text <| toString twoListPerms ]
       ]
-    , div [class "row"] [
-        div [ style -- textStyle
-                (displayStyle <| buttonVal buttonList 6)
-        ] [ text ("3loopPerms - " ++ (toString threeListPerms)) ]
+    , div [class "row", style -- textStyle
+                          (displayStyle <| buttonVal buttonList 6)] [
+          div [ class "col-sm-2" ] [ text "3loopPerms - " ]
+        , div [ class "col-sm-2" ] [ text <| toString threeListPerms ]
       ]
     , div [class "row"] [
         div [ --style textStyle
