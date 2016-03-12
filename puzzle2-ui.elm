@@ -35,7 +35,9 @@ type alias ModelResults =
   --(firstList, secList, thrList, ansList, twoListPerms, threeListPerms,
    --(ansPlusList, specificAnswer, ansPermsPlusList, specificAnswerPlusList))
 
-type alias Model = (ModelInputs, ModelButtons, ModelResults)
+type alias Model = (ModelList, ModelInputs, ModelButtons, ModelResults)
+
+type alias ModelList = List (ModelInputs, ModelButtons, ModelResults)
 
 type Update =
       NoOp | Add Int | Remove Int |
@@ -212,7 +214,7 @@ viewLift = Signal.map (view updatesChnl.address) updateModelLift
 
 -- used by main, as a non-signal function, to convert a Model to Html
 view : Signal.Address Update -> Model -> Html
-view updatesChnlAddress (
+view updatesChnlAddress ( stateHistory,
                           (i, s1, s2, s3, s4),
                           (b1, b2, b3, b4, b5),
                           (firstList, secLoop, thrLoop, ansLoop, twoListPerms, threeListPerms,
@@ -307,7 +309,7 @@ view updatesChnlAddress (
 
 
 initialModelState =
-  (
+  ([],
     (0, "1,2,3", "4,5,6", "7,8,9", "12,15,18"),
     --(0, "6,5,5,6,5,4,5,4", "4,2,2,2,4,3,3,1", "1,3,2,3,3,2,4,3",
       --    "12,8,12,10,10,12,10,8"),
@@ -329,7 +331,7 @@ updateModelLift = Signal.foldp
 
 -- converts Update to new Model
 updateModel : Update -> Model -> Model
-updateModel update ( (i, s1, s2, s3, s4),
+updateModel update (stateHistory, (i, s1, s2, s3, s4),
                      (b1, b2, b3, b4, b5),
                      --(xs, xxs2, xxs3, xxs4, s9, s10, (s11, s12, s13, s14))
                      results
@@ -342,15 +344,16 @@ updateModel update ( (i, s1, s2, s3, s4),
         secLoop   = makeSecLoop s2
         thrLoop   = makeThrLoop s3
         ansLoop   = makeAnsLoop s4
+        inputs    = (i, s1, s2, s3, s4)
+        newCalcs  = (first, secLoop, thrLoop, ansLoop,
+                      twoWheelPerms first secLoop, threeLoopPerms first secLoop thrLoop,
+                      (answersPlusPerm      first secLoop thrLoop,
+                        findSpecificAnswer  first secLoop thrLoop ansLoop,
+                        answersPermsPlusList first secLoop thrLoop,
+                        displaySpecificAnswers first secLoop thrLoop answers
+                        , findAnswerLazy3 first secLoop thrLoop ansLoop))
       in
-        ((i, s1, s2, s3, s4), buttonStates,
-          (first, secLoop, thrLoop, ansLoop,
-            twoWheelPerms first secLoop, threeLoopPerms first secLoop thrLoop,
-            (answersPlusPerm      first secLoop thrLoop,
-              findSpecificAnswer  first secLoop thrLoop ansLoop,
-              answersPermsPlusList first secLoop thrLoop,
-              displaySpecificAnswers first secLoop thrLoop answers
-              , findAnswerLazy3 first secLoop thrLoop ansLoop)))
+        ((inputs, buttonStates, newCalcs) :: stateHistory, inputs, buttonStates, newCalcs)
   in
     case update of
       NoOp        ->    createModel  i      s1 s2 s3 s4 (b1, b2, b3, b4, b5)
@@ -366,3 +369,4 @@ updateModel update ( (i, s1, s2, s3, s4),
       ShowLoop3   ->    createModel (i + 1) s1 s2 s3 s4 (b1, b2, not b3, b4, b5)
       ShowLoopAns ->    createModel (i + 1) s1 s2 s3 s4 (b1, b2, b3, not b4, b5)
 
+stateHistory = []
