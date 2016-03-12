@@ -37,7 +37,6 @@ type alias ModelResults =
 
 type alias Model = (ModelList, ModelInputs, ModelButtons, ModelResults)
 
--- type alias ModelList = List (ModelInputs, ModelButtons, ModelResults)
 type alias ModelList = List (ModelInputs, ModelButtons)
 
 type Update =
@@ -231,7 +230,13 @@ view updatesChnlAddress ( stateHistory,
   div [] [
   div [class "container"]
   [
-    Html.form [class "form-inline"][
+      div [class "row"] [
+          addButton
+        , backButton
+      ]
+    , br [] []
+
+    , Html.form [class "form-inline"][
       --div [class "row"] [
         formGroup "Wheel 1" "wheel1input"     s1 updatesChnlAddress UpdateField myStyle
       , formGroup "Wheel 2" "wheel2input"     s2 updatesChnlAddress Circle2Field myStyle
@@ -251,10 +256,8 @@ view updatesChnlAddress ( stateHistory,
 
   , div [class "container"]
   [
-    addButton,
-    backButton,
-    div [] [ text (toString i) ],
-    div [] [ text (toString b1) ],
+      div [] [ text (toString i) ]
+    , div [] [ text (toString b1) ]
     --div []
     --[
     --  inputField "Files Query" s1 updatesChnlAddress UpdateField myStyle
@@ -277,10 +280,10 @@ view updatesChnlAddress ( stateHistory,
     -- div [ style textStyle] [ text ("ansLoop - " ++ (toString ansLoop)) ],
     -- div [ style textStyle] [ text ("2loopPerms - " ++ (toString twoListPerms)) ],
     -- div [ style textStyle] [ text ("3loopPerms - " ++ (toString threeListPerms)) ],
-    div [ style <| textStyle ++ (displayStyle b1)] [ text ("answersPlus - " ++ (toString ansPlusList)) ],
-    div [ style <| textStyle ++ (displayStyle b1)] [ text ("findAnswers - " ++ (toString specificAnswer)) ],
-    div [ style <| textStyle ++ (displayStyle False)] [ text ("answersPerms - " ++ (toString ansPermsPlusList)) ],
-    div [ style <| textStyle ++ (displayStyle False)] [ text ("displayAnswer - " ++ (toString specificAnswerPlusList)) ]
+    , div [ style <| textStyle ++ (displayStyle b1)] [ text ("answersPlus - " ++ (toString ansPlusList)) ]
+    , div [ style <| textStyle ++ (displayStyle b1)] [ text ("findAnswers - " ++ (toString specificAnswer)) ]
+    , div [ style <| textStyle ++ (displayStyle False)] [ text ("answersPerms - " ++ (toString ansPermsPlusList)) ]
+    , div [ style <| textStyle ++ (displayStyle False)] [ text ("displayAnswer - " ++ (toString specificAnswerPlusList)) ]
     , div [ style <| textStyle ++ (displayStyle b1)] [ text ("lazyAnswer - " ++ (toString findAnswerLazy3)) ]
 
     , div [class "row"] [
@@ -353,15 +356,13 @@ updateModel update (stateHistory, (i, s1, s2, s3, s4),
                      results
                    ) =
   let
-    -- headState = foldr (\h t -> h) []
-    --prevState = Maybe.withDefault
     (inputs, states) = Maybe.withDefault
                   (initialInputs, initialStates)
                   (head stateHistory)
     tailHistory     = Maybe.withDefault [] (tail stateHistory)
     createModel (i, s1, s2, s3, s4) buttonStates forward =
       let
-        createNewHist =
+        newHistory =
           if forward == True then
             (inputs, buttonStates) :: stateHistory
           else
@@ -380,14 +381,13 @@ updateModel update (stateHistory, (i, s1, s2, s3, s4),
                         displaySpecificAnswers first secLoop thrLoop answers
                         , findAnswerLazy3 first secLoop thrLoop ansLoop))
       in
-        (createNewHist, inputs, buttonStates, newCalcs)
+        (newHistory, inputs, buttonStates, newCalcs)
   in
     case update of
-      NoOp        ->    createModel  (i,      s1, s2, s3, s4) (b1, b2, b3, b4, b5) True
-      Add val     ->    createModel ((i + 1), s1, s2, s3, s4) (not b1, b2, b3, b4, b5) True
-      Remove val  ->    createModel ((i - 1), s1, s2, s3, s4) (True, b2, b3, b4, b5) True
+      NoOp        ->    createModel  (i,      s1, s2, s3, s4) (b1, b2, b3, b4, b5)      True
+      Add val     ->    createModel ((i + 1), s1, s2, s3, s4) (not b1, b2, b3, b4, b5)  True
+      Remove val  ->    createModel ((i - 1), s1, s2, s3, s4) (True, b2, b3, b4, b5)    True
 
-      --Back        ->    createModel (fst prevState) (True, b2, b3, b4, b5)
       Back        ->    createModel inputs states False
 
       UpdateField s ->  createModel  (i,      s,  s2, s3, s4) (b1, b2, b3, b4, b5) True
@@ -399,4 +399,4 @@ updateModel update (stateHistory, (i, s1, s2, s3, s4),
       ShowLoop3   ->    createModel ((i + 1), s1, s2, s3, s4) (b1, b2, not b3, b4, b5) True
       ShowLoopAns ->    createModel ((i + 1), s1, s2, s3, s4) (b1, b2, b3, not b4, b5) True
 
-stateHistory = []
+-- stateHistory = []
