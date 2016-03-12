@@ -37,7 +37,8 @@ type alias ModelResults =
 
 type alias Model = (ModelList, ModelInputs, ModelButtons, ModelResults)
 
-type alias ModelList = List (ModelInputs, ModelButtons, ModelResults)
+-- type alias ModelList = List (ModelInputs, ModelButtons, ModelResults)
+type alias ModelList = List (ModelInputs, ModelButtons)
 
 type Update =
       NoOp | Add Int | Remove Int |
@@ -354,11 +355,17 @@ updateModel update (stateHistory, (i, s1, s2, s3, s4),
   let
     -- headState = foldr (\h t -> h) []
     --prevState = Maybe.withDefault
-    (inputs, states, calcs) = Maybe.withDefault
-                  (initialInputs, initialStates, initialCalcs)
+    (inputs, states) = Maybe.withDefault
+                  (initialInputs, initialStates)
                   (head stateHistory)
-    createModel (i, s1, s2, s3, s4) buttonStates =
+    tailHistory     = Maybe.withDefault [] (tail stateHistory)
+    createModel (i, s1, s2, s3, s4) buttonStates forward =
       let
+        createNewHist =
+          if forward == True then
+            (inputs, buttonStates) :: stateHistory
+          else
+            tailHistory
         first     = wheelPositionFromString s1
         answers   = wheelPositionFromString s4
         secLoop   = makeSecLoop s2
@@ -373,23 +380,23 @@ updateModel update (stateHistory, (i, s1, s2, s3, s4),
                         displaySpecificAnswers first secLoop thrLoop answers
                         , findAnswerLazy3 first secLoop thrLoop ansLoop))
       in
-        ((inputs, buttonStates, newCalcs) :: stateHistory, inputs, buttonStates, newCalcs)
+        (createNewHist, inputs, buttonStates, newCalcs)
   in
     case update of
-      NoOp        ->    createModel  (i,      s1, s2, s3, s4) (b1, b2, b3, b4, b5)
-      Add val     ->    createModel ((i + 1), s1, s2, s3, s4) (not b1, b2, b3, b4, b5)
-      Remove val  ->    createModel ((i - 1), s1, s2, s3, s4) (True, b2, b3, b4, b5)
+      NoOp        ->    createModel  (i,      s1, s2, s3, s4) (b1, b2, b3, b4, b5) True
+      Add val     ->    createModel ((i + 1), s1, s2, s3, s4) (not b1, b2, b3, b4, b5) True
+      Remove val  ->    createModel ((i - 1), s1, s2, s3, s4) (True, b2, b3, b4, b5) True
 
       --Back        ->    createModel (fst prevState) (True, b2, b3, b4, b5)
-      Back        ->    createModel inputs states
+      Back        ->    createModel inputs states False
 
-      UpdateField s ->  createModel  (i,      s,  s2, s3, s4) (b1, b2, b3, b4, b5)
-      Circle2Field s -> createModel  (i,      s1, s,  s3, s4) (b1, b2, b3, b4, b5)
-      Circle3Field s -> createModel  (i,      s1, s2, s,  s4) (b1, b2, b3, b4, b5)
-      Circle4Field s -> createModel  (i,      s1, s2, s3, s)  (b1, b2, b3, b4, b5)
+      UpdateField s ->  createModel  (i,      s,  s2, s3, s4) (b1, b2, b3, b4, b5) True
+      Circle2Field s -> createModel  (i,      s1, s,  s3, s4) (b1, b2, b3, b4, b5) True
+      Circle3Field s -> createModel  (i,      s1, s2, s,  s4) (b1, b2, b3, b4, b5) True
+      Circle4Field s -> createModel  (i,      s1, s2, s3, s)  (b1, b2, b3, b4, b5) True
 
-      ShowLoop2   ->    createModel ((i + 1), s1, s2, s3, s4) (b1, not b2, b3, b4, b5)
-      ShowLoop3   ->    createModel ((i + 1), s1, s2, s3, s4) (b1, b2, not b3, b4, b5)
-      ShowLoopAns ->    createModel ((i + 1), s1, s2, s3, s4) (b1, b2, b3, not b4, b5)
+      ShowLoop2   ->    createModel ((i + 1), s1, s2, s3, s4) (b1, not b2, b3, b4, b5) True
+      ShowLoop3   ->    createModel ((i + 1), s1, s2, s3, s4) (b1, b2, not b3, b4, b5) True
+      ShowLoopAns ->    createModel ((i + 1), s1, s2, s3, s4) (b1, b2, b3, not b4, b5) True
 
 stateHistory = []
