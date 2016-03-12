@@ -180,6 +180,19 @@ wheelRow idx wheelLabel loopLabel wheelData loopData action hide =
       ]
     ]
 
+foundAnswerIndicator answerList show =
+  let found =
+    if (length answerList == 0) then
+      "No"
+    else
+      "Yes"
+  in
+    div [ style <| (displayStyle show) ++ [("font-weight", "700")] ]
+    [
+      text <| "foundAnswer? - " ++ found
+    ]
+
+
 wheelStyle : List (String, String)
 wheelStyle =
   [
@@ -269,8 +282,15 @@ view updatesChnlAddress ( stateHistory,
     , div [class "row"] [
         div [ --style textStyle
         ] [
-            div [ style <| textStyle ++ (displayStyle b1)] [ text ("answersPlus - " ++ (toString ansPlusList)) ]
-          , div [ style <| textStyle ++ (displayStyle b1)] [ text ("findAnswers - " ++ (toString specificAnswer)) ]
+            div [ style
+                  -- <| textStyle ++
+                  (displayStyle b1)]
+            [ text ("answersPlus - " ++ (toString ansPlusList)) ]
+          , foundAnswerIndicator specificAnswer b1
+          , div [ style
+                  -- <| textStyle ++
+                  (displayStyle b1)]
+            [ text ("findAnswers - " ++ (toString specificAnswer)) ]
         ]
       ]
     , br [] []
