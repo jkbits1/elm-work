@@ -283,13 +283,17 @@ view updatesChnlAddress ( stateHistory,
   div [] [
   div [class "container"]
   [
-       div [class "row"] [
+         div [class "row"] [
+          h2 [] [text "Elm Calculations"]
+         ]
+
+       , div [class "row"] [
           div [class "btn-group"] [
               perms2Button
             , perms3Button
             , answersButton
           ]
-        , div [class "btn-group"] [
+        , div [class "btn-group", style [("margin-left", "5px")] ] [
             backButton
           , stateButton
         ]
@@ -337,15 +341,19 @@ view updatesChnlAddress ( stateHistory,
       ]
     , br [] []
 
-    , div [class "row", style -- <| textStyle ++
-                          (displayStyle <| buttonVal buttonList 1)] [
-          div [ class "col-sm-2" ] [ text "lazyAnswer - " ]
-        , div [ class "col-sm-4" ] [ text <| toString findAnswerLazy3 ]
-      ]
-      , div [class "row", style <| displayStyle <| buttonVal buttonList 7] [
-          div [] [ text <| "State change count: " ++ (toString i) ]
-        , text <| toString stateHistory
-      ]
+    , infoRow "lazyAnswer - " (toString findAnswerLazy3) <| buttonVal buttonList 1
+--    , div [class "row", style -- <| textStyle ++
+  --                        (displayStyle <| buttonVal buttonList 1)] [
+    --      div [ class "col-sm-2" ] [ text "lazyAnswer - " ]
+      --  , div [ class "col-sm-4" ] [ text <| toString findAnswerLazy3 ]
+     -- ]
+    , infoRow ("State change count: " ++ (toString i)) (toString stateHistory) <| buttonVal buttonList 7
+
+    --, div [class "row", style <| displayStyle <| buttonVal buttonList 7] [
+    --      div [] [ text <| "State change count: " ++ (toString i) ]
+    --    , text <| toString stateHistory
+    -- ]
+
 
 
     -- , div [] [ text (toString <| buttonVal buttonList 1) ]
@@ -439,6 +447,7 @@ updateModel update (stateHistory, (i, s1, s2, s3, s4),
                      results
                    ) =
   let
+    newCount   = i + 1
     (inputs, states) = Maybe.withDefault
                   (initialInputs, initialStates)
                   (head stateHistory)
@@ -474,19 +483,19 @@ updateModel update (stateHistory, (i, s1, s2, s3, s4),
       Back        ->    createModel inputs states False
 
       --Circle1Field s -> createModel  (i,      s,  s2, s3, s4) (b1, b2, b3, b4, b5, b6, b7) True
-      Circle1Field s -> createModel  (i,      s,  s2, s3, s4) buttonList True
-      Circle2Field s -> createModel  (i,      s1, s,  s3, s4) buttonList True
-      Circle3Field s -> createModel  (i,      s1, s2, s,  s4) buttonList True
-      Circle4Field s -> createModel  (i,      s1, s2, s3, s)  buttonList True
+      Circle1Field s -> createModel (newCount, s,  s2, s3, s4) buttonList True
+      Circle2Field s -> createModel (newCount, s1, s,  s3, s4) buttonList True
+      Circle3Field s -> createModel (newCount, s1, s2, s,  s4) buttonList True
+      Circle4Field s -> createModel (newCount, s1, s2, s3, s)  buttonList True
 
       --ShowAns     ->    createModel ((i + 1), s1, s2, s3, s4) (not b1, b2, b3, b4, b5, b6, b7) True
-      ShowAns     ->    createModel ((i + 1), s1, s2, s3, s4) (buttonListToggle buttonList 1) True
-      ShowLoop2   ->    createModel ((i + 1), s1, s2, s3, s4) (buttonListToggle buttonList 2) True
-      ShowLoop3   ->    createModel ((i + 1), s1, s2, s3, s4) (buttonListToggle buttonList 3) True
-      ShowLoopAns ->    createModel ((i + 1), s1, s2, s3, s4) (buttonListToggle buttonList 4) True
+      ShowAns     ->    createModel (newCount, s1, s2, s3, s4) (buttonListToggle buttonList 1) True
+      ShowLoop2   ->    createModel (newCount, s1, s2, s3, s4) (buttonListToggle buttonList 2) True
+      ShowLoop3   ->    createModel (newCount, s1, s2, s3, s4) (buttonListToggle buttonList 3) True
+      ShowLoopAns ->    createModel (newCount, s1, s2, s3, s4) (buttonListToggle buttonList 4) True
 
-      ShowPerms2 ->     createModel ((i + 1), s1, s2, s3, s4) (buttonListToggle buttonList 5) True
-      ShowPerms3 ->     createModel ((i + 1), s1, s2, s3, s4) (buttonListToggle buttonList 6) True
+      ShowPerms2 ->     createModel (newCount, s1, s2, s3, s4) (buttonListToggle buttonList 5) True
+      ShowPerms3 ->     createModel (newCount, s1, s2, s3, s4) (buttonListToggle buttonList 6) True
 
-      ShowState ->      createModel ((i + 1), s1, s2, s3, s4) (buttonListToggle buttonList 7) True
+      ShowState ->      createModel (newCount, s1, s2, s3, s4) (buttonListToggle buttonList 7) True
 

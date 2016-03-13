@@ -27,7 +27,7 @@ type alias Counter          = List Int
 
 
 strToNum : String -> Int
-strToNum s = resToNum (String.toInt s)
+strToNum s = resToNum <| String.toInt <| String.trim s
 
 resToNum : Result e Int -> Int
 resToNum r =
@@ -40,7 +40,7 @@ wheelPositionFromString : String -> WheelPosition
 wheelPositionFromString s =
   List.map
     strToNum
-      (String.split "," s)
+      <| String.split "," s
 
 -- PUZZLE SOLUTIONS
 
