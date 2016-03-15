@@ -84,20 +84,20 @@ updatesChnl = Signal.mailbox NoOp
 buttonClassList = classList [("btn", True), ("btn-default", True)]
 
 -- created by view, returns Html and sends Updates to updatesChnl
-answersButton : Html
-answersButton = uiButton ShowAns    "Show Answers"
-
 backButton : Html
 backButton    = uiButton Back       "Step Back"
 
-stateButton : Html
-stateButton   = uiButton ShowState  "Show State"
+answersButton : Bool -> Html
+answersButton hide  = showLoopButton ("Show Answers", "Hide Answers") hide ShowAns
 
-perms2Button : Html
-perms2Button  = uiButton ShowPerms2 "Show Perms 2"
+stateButton : Bool -> Html
+stateButton  hide   = showLoopButton ("Show State", "Hide State")     hide ShowState
 
-perms3Button : Html
-perms3Button  = uiButton ShowPerms3 "Show Perms 3"
+perms2Button : Bool -> Html
+perms2Button hide   = showLoopButton ("Show Perms 2", "Hide Perms 2") hide ShowPerms2
+
+perms3Button : Bool -> Html
+perms3Button hide   = showLoopButton ("Show Perms 3", "Hide Perms 3") hide ShowPerms3
 
 
 uiButton : Update -> String -> Html
@@ -106,7 +106,6 @@ uiButton action label = Html.button
       buttonClassList
     , Html.Events.onClick updatesChnl.address action]
   [ Html.text label ]
-
 
 --showLoopButton : Html
 showLoopButton labels hide action =
@@ -289,13 +288,13 @@ view updatesChnlAddress ( stateHistory,
 
        , div [class "row"] [
           div [class "btn-group"] [
-              perms2Button
-            , perms3Button
-            , answersButton
+              perms2Button  <| buttonVal buttonList 5
+            , perms3Button  <| buttonVal buttonList 6
+            , answersButton <| buttonVal buttonList 1
           ]
         , div [class "btn-group", style [("margin-left", "5px")] ] [
             backButton
-          , stateButton
+          , stateButton <| buttonVal buttonList 7
         ]
       ]
     , br [] []
@@ -320,7 +319,14 @@ view updatesChnlAddress ( stateHistory,
 
   , div [class "container"]
   [
-      infoRow "2loopPerms"     (toString twoListPerms)   <| buttonVal buttonList 5
+      div [class "row"
+             , style (displayStyle <| buttonVal buttonList 1)
+      ] [
+          div [ class "col-sm-12" ] [ foundAnswerIndicator specificAnswer <| buttonVal buttonList 1 ]
+      ]
+
+    , br [] []
+    ,  infoRow "2loopPerms"     (toString twoListPerms)   <| buttonVal buttonList 5
     , infoRow "3loopPerms - "  (toString threeListPerms) <| buttonVal buttonList 6
     , infoRow "answersPlus - "  (toString ansPlusList ) <| buttonVal buttonList 1
 
@@ -333,13 +339,12 @@ view updatesChnlAddress ( stateHistory,
       --  ]
      -- ]
     , br [] []
+
     , div [class "row", style -- <| textStyle ++
                           (displayStyle <| buttonVal buttonList 1)] [
-          div [ class "col-sm-12" ] [ foundAnswerIndicator specificAnswer <| buttonVal buttonList 1 ]
-        , div [ class "col-sm-2" ] [ text "findAnswers - " ]
+          div [ class "col-sm-2" ] [ text "findAnswers - " ]
         , div [ class "col-sm-8" ] [ text <| toString specificAnswer ]
       ]
-    , br [] []
 
     , infoRow "lazyAnswer - " (toString findAnswerLazy3) <| buttonVal buttonList 1
 --    , div [class "row", style -- <| textStyle ++
