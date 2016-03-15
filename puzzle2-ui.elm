@@ -1,6 +1,3 @@
--- NOTE: code comes from Signal.send package example
--- have changed fn names to show lifting fns (not sure if it is clearer)
-
 --  <link rel="stylesheet" href="css/tidy.css">
 -- <link rel="stylesheet" href="css/bootstrap.css">
 
@@ -19,22 +16,8 @@ import String
 import List exposing (..)
 
 
--- values received from UI
 type alias ModelInputs  = (Int, String, String, String, String)
 type alias ModelButtons = List Bool
-
-buttonVal : List Bool -> Int -> Bool
-buttonVal list num =
-  let
-    h = head (drop (num - 1) list)
-  in
-    case h of
-      Just x  -> x
-      Nothing -> False
-
--- max buttons is 9, 10 items in list
-maxButton = 10
-buttonListToggle list num = take (num-1) list ++ [not <| buttonVal list num] ++ take (maxButton - num) (drop num list)
 
 -- values generated from UI input
 type alias ModelResults =
@@ -44,9 +27,6 @@ type alias ModelResults =
       List (LoopsAnswerLoop, LoopsPermutation), List (LoopsAnswerLoop, LoopsPermutation)
       , (LoopsPermAnswers, LoopsPermutation)
       ))
-
-  --(firstList, secList, thrList, ansList, twoListPerms, threeListPerms,
-   --(ansPlusList, specificAnswer, ansPermsPlusList, specificAnswerPlusList))
 
 type alias Model = (ModelList, ModelInputs, ModelButtons, ModelResults)
 
@@ -63,27 +43,26 @@ type Update =
       ShowAns | ShowLazyAns |
       ShowState
 
---type CircleChange = String
-
 updatesChnl : Signal.Mailbox Update
 updatesChnl = Signal.mailbox NoOp
 
---circle1Chnl : Signal.Mailbox String
---circle1Chnl : Signal.Mailbox Update
---circle1Chnl = Signal.mailbox (UpdateField "")
 
---circle2Chnl : Signal.Mailbox Update
---circle2Chnl = Signal.mailbox (Circle2Field "")
+buttonVal : List Bool -> Int -> Bool
+buttonVal list num =
+  let
+    h = head (drop (num - 1) list)
+  in
+    case h of
+      Just x  -> x
+      Nothing -> False
 
---circle3Chnl : Signal.Mailbox Update
---circle3Chnl = Signal.mailbox (Circle3Field "")
+-- max buttons is 9, 10 items in list
+maxButton = 10
+buttonListToggle list num = take (num-1) list ++ [not <| buttonVal list num] ++ take (maxButton - num) (drop num list)
 
---circle4Chnl : Signal.Mailbox Update
---circle4Chnl = Signal.mailbox (Circle4Field "")
 
 buttonClassList = classList [("btn", True), ("btn-default", True)]
 
--- created by view, returns Html and sends Updates to updatesChnl
 backButton : Html
 backButton    = uiButton Back       "Step Back"
 
@@ -130,7 +109,6 @@ inputField default text chnlAddress updateItem inputStyle =
   input
     [ placeholder default, Attr.value text
     , on "input" targetValue
-    --, on "change" targetValue
         (Signal.message chnlAddress << updateItem)
     , style inputStyle
     ]
@@ -143,9 +121,7 @@ inputField2 idVal default text chnlAddress updateItem inputStyle =
   input
     [ placeholder default, Attr.value text
     , on "input" targetValue
-    --, on "change" targetValue
         (Signal.message chnlAddress << updateItem)
-    --, style inputStyle
       , style wheelStyle
       , id idVal
       , class "form-control col-sm-2"
@@ -154,58 +130,33 @@ inputField2 idVal default text chnlAddress updateItem inputStyle =
 
 formGroup lbl idVal val chnlAddress updateItem style =
   div [class "form-group"] [
-    --div [class "col-sm-2"] [
         label [ for idVal,
                 --classList [("control-label", True),("col-sm-4", True)]
                 classList [("control-label", True),("col-sm-4", True)]
                 ]
                 [text lbl]
       , inputField2 idVal lbl val chnlAddress updateItem style
-    --]
   ]
 
 
 wheelOnlyRow idx wheelLabel wheelData =
     div [class "row"] [
-
-      -- , style "background-color: #00b3ee"
-      div [class "col-sm-2"] [
-        text wheelLabel
-      ]
+      div [class "col-sm-2"] [ text wheelLabel ]
       ,
-      div [class "col-sm-2"] [
-        text <| wheelData
-      ]
-
+      div [class "col-sm-2"] [ text <| wheelData ]
     ]
 
 wheelRow idx wheelLabel loopLabel wheelData loopData action hide =
     div [class "row", style [("min-height", "50px"), ("margin-top", "10px")]] [
 
-      -- , style "background-color: #00b3ee"
-      div [class "col-sm-2", style [("font-weight", "700")] ] [
-        text wheelLabel
-      ]
-
-      ,
-      div [class "col-sm-2"] [
-        text <| wheelData
-      ]
-      ,
-      div [class "col-sm-2"] [
-        -- <button type="button" class="btn btn-default">Hide</button>
-        -- showLoopButton ("Show", "Hide") hide action
-        showLoopButton ("+", "-") hide action
-      ]
-      ,
-      div [class "col-sm-2", style <| (displayStyle hide) ++ [("font-weight", "700")] ] [
+        div [class "col-sm-2", style [("font-weight", "700")] ] [ text wheelLabel ]
+      , div [class "col-sm-2"] [ text <| wheelData ]
+      , div [class "col-sm-2"] [ showLoopButton ("+", "-") hide action ]
+      , div [class "col-sm-2", style <| (displayStyle hide) ++ [("font-weight", "700")] ] [
         text loopLabel
       ]
 
-      ,
-      div [class "col-sm-2", style <| displayStyle hide ] [
-        text loopData
-      ]
+      , div [class "col-sm-2", style <| displayStyle hide ] [ text loopData ]
     ]
 
 foundAnswerIndicator answerList show =
@@ -216,24 +167,18 @@ foundAnswerIndicator answerList show =
       "Yes"
   in
     div [ style <| (displayStyle show) ++ [("font-weight", "700")] ]
-    [
-      text <| "foundAnswer? - " ++ found
-    ]
+    [ text <| "foundAnswer? - " ++ found ]
 
 
 wheelStyle : List (String, String)
 wheelStyle =
-  [
-    -- ("width", "100px")
-    ("min-width", "200px")
-  ]
+  [ ("min-width", "200px") ]
 
 myStyle : List (String, String)
 myStyle =
   [ ("width", "100%")
   , ("height", "40px")
   , ("padding", "10px 0")
-  --, ("font-size", "2em")
   , ("font-size", "1.8em")
   , ("text-align", "center")
   ]
@@ -241,9 +186,7 @@ myStyle =
 textStyle : List (String, String)
 textStyle =
   [ ("width", "100%")
-  --, ("height", "70px")
   , ("padding", "10px 0")
-  --, ("font-size", "2em")
   , ("font-size", "1.8em")
   , ("text-align", "left")
   ]
@@ -300,7 +243,6 @@ view updatesChnlAddress ( stateHistory,
     , br [] []
 
     , Html.form [class "form-inline"][
-      --div [class "row"] [
         formGroup "Wheel 1" "wheel1input"     s1 updatesChnlAddress Circle1Field myStyle
       , formGroup "Wheel 2" "wheel2input"     s2 updatesChnlAddress Circle2Field myStyle
       , formGroup "Wheel 3" "wheel3input"     s3 updatesChnlAddress Circle3Field myStyle
@@ -309,7 +251,7 @@ view updatesChnlAddress ( stateHistory,
 
     , br [] []
 
-    , wheelOnlyRow  1 "Wheel 1"               s1 -- (toString firstList)
+    , wheelOnlyRow  1 "Wheel 1"               s1
     , wheelRow      2 "Wheel 2"   "Loop 2"    s2 (toString secLoop) ShowLoop2   <| buttonVal buttonList 2
     , wheelRow      3 "Wheel 3"   "Loop 3"    s3 (toString thrLoop) ShowLoop3   <| buttonVal buttonList 3
     , wheelRow      4 "Wheel Ans" "Loop Ans"  s4 (toString ansLoop) ShowLoopAns <| buttonVal buttonList 4
@@ -330,58 +272,16 @@ view updatesChnlAddress ( stateHistory,
     , infoRow "3loopPerms - "  (toString threeListPerms) <| buttonVal buttonList 6
     , infoRow "answersPlus - "  (toString ansPlusList ) <| buttonVal buttonList 1
 
-    --, div [class "row", style -- <| textStyle ++
-      --                    (displayStyle <| buttonVal buttonList 1)] [
-        --div [ --style textStyle
---        ] [
-  --        div [ class "col-sm-2" ] [ text "answersPlus - " ]
-    --    , div [ class "col-sm-8" ] [ text <| toString ansPlusList ]
-      --  ]
-     -- ]
     , br [] []
 
-    , div [class "row", style -- <| textStyle ++
-                          (displayStyle <| buttonVal buttonList 1)] [
+    , div [class "row", style (displayStyle <| buttonVal buttonList 1)] [
           div [ class "col-sm-2" ] [ text "findAnswers - " ]
         , div [ class "col-sm-8" ] [ text <| toString specificAnswer ]
       ]
 
     , infoRow "lazyAnswer - " (toString findAnswerLazy3) <| buttonVal buttonList 1
---    , div [class "row", style -- <| textStyle ++
-  --                        (displayStyle <| buttonVal buttonList 1)] [
-    --      div [ class "col-sm-2" ] [ text "lazyAnswer - " ]
-      --  , div [ class "col-sm-4" ] [ text <| toString findAnswerLazy3 ]
-     -- ]
     , infoRow ("State change count: " ++ (toString i)) (toString stateHistory) <| buttonVal buttonList 7
 
-    --, div [class "row", style <| displayStyle <| buttonVal buttonList 7] [
-    --      div [] [ text <| "State change count: " ++ (toString i) ]
-    --    , text <| toString stateHistory
-    -- ]
-
-
-
-    -- , div [] [ text (toString <| buttonVal buttonList 1) ]
-    --div []
-    --[
-    --  inputField "Files Query" s1 updatesChnlAddress UpdateField myStyle
-    --],
-    --div []
-    --[
-    --  inputField "Files Query" s2 updatesChnlAddress Circle2Field myStyle
-    --],
-    --div []
-    --[
-    --  inputField "Files Query" s3 updatesChnlAddress Circle3Field myStyle
-    --],
-    --div []
-    --[
-    --  inputField "Files Query" s4 updatesChnlAddress Circle4Field myStyle
-    --],
-    -- div [ style textStyle] [ text ("first  - " ++ (toString firstList)) ],
-    -- div [ style textStyle] [ text ("secLoop - " ++ (toString secLoop)) ],
-    -- div [ style textStyle] [ text ("thrLoop - " ++ (toString thrLoop)) ],
-    -- div [ style textStyle] [ text ("ansLoop - " ++ (toString ansLoop)) ],
     , div [ style <| textStyle ++ (displayStyle False)] [ text ("answersPerms - " ++ (toString ansPermsPlusList)) ]
     , div [ style <| textStyle ++ (displayStyle False)] [ text ("displayAnswer - " ++ (toString specificAnswerPlusList)) ]
 
@@ -390,51 +290,6 @@ view updatesChnlAddress ( stateHistory,
   ]
   ]
 
-      -- <input type="text" placeholder="wheel1">
-      -- <input type="text" placeholder="wheel2">
-      -- <input type="text" placeholder="wheel3">
-      -- <input type="text" placeholder="wheelAns">
-
-
-
--- candidates for viewHelperFns
---
-
---secPermsShow : String -> String
---secPermsShow  = (\s2 -> s2 ++ " " ++ (toString <| getSecLoop s2) )
-
---thrPermsShow : String -> String
---thrPermsShow = (\s3 -> s3 ++ " " ++ (toString <| makeThrLoop s3) )
-
---ansPermsShow : String -> String
---ansPermsShow = (\s4 -> s4 ++ " " ++ (toString <| getAnsLoop s4) )
-
--- innerShow = s1 ++ " " ++ (toString first)
--- twoListPermsShow =            toString <| twoListPerms            first s2
--- threeListPermsShow =          toString <| threeListPerms          first s2 s3
--- answersPlusPermShow =         toString <| answersPlusPerm         first s2 s3
--- findSpecificAnswerShow =      toString <| findSpecificAnswer      first s2 s3 <| getAnsLoop s4
--- answersPermsPlusListShow =    toString <| answersPermsPlusList    first s2 s3
--- displaySpecificAnswersShow =  toString <| displaySpecificAnswers  first s2 s3 answers
-
-initialInputs = (0, "1,2,3", "4,5,6", "7,8,9", "12,15,18")
--- initialStates = (False, False, False, False, False, False, False)
-initialStates = [False, False, False, False, False, False, False, False, False, False]
-initialCalcs  =
-    ([1,2,3], [[4,5,6]], [[7,8,9]], [[12,15,18]], [[[2]]], [[[3]]],
-      ([([1], [[1]])], [([1], [[1]])], [([[1]], [[1]])], [([[1]], [[1]])]
-      ,([1], [[1]])
-      )
-    )
-
-initialModelState =
-  ([],
-      initialInputs,
-    --(0, "6,5,5,6,5,4,5,4", "4,2,2,2,4,3,3,1", "1,3,2,3,3,2,4,3",
-      --    "12,8,12,10,10,12,10,8"),
-    initialStates,
-    initialCalcs
-  )
 
 -- converts Signal Update (from updatesChnl) to Signal Model, 
 -- using non-signal updateModel
@@ -457,6 +312,7 @@ updateModel update (stateHistory, (i, s1, s2, s3, s4),
                   (initialInputs, initialStates)
                   (head stateHistory)
     tailHistory     = Maybe.withDefault [] (tail stateHistory)
+
     createModel (i, s1, s2, s3, s4) buttonStates forward =
       let
         newHistory =
@@ -464,12 +320,15 @@ updateModel update (stateHistory, (i, s1, s2, s3, s4),
             (inputs, buttonStates) :: stateHistory
           else
             tailHistory
+
+        inputs    = (i, s1, s2, s3, s4)
+
         first     = wheelPositionFromString s1
         answers   = wheelPositionFromString s4
         secLoop   = makeSecLoop s2
         thrLoop   = makeThrLoop s3
         ansLoop   = makeAnsLoop s4
-        inputs    = (i, s1, s2, s3, s4)
+
         newCalcs  = (first, secLoop, thrLoop, ansLoop,
                       twoWheelPerms first secLoop, threeLoopPerms first secLoop thrLoop,
                       (answersPlusPerm      first secLoop thrLoop,
@@ -481,13 +340,10 @@ updateModel update (stateHistory, (i, s1, s2, s3, s4),
         (newHistory, inputs, buttonStates, newCalcs)
   in
     case update of
-      -- NoOp        ->    createModel  (i,      s1, s2, s3, s4) (b1, b2, b3, b4, b5, b6, b7) True
-      -- Add val     ->    createModel ((i + 1), s1, s2, s3, s4) (not b1, b2, b3, b4, b5)  True
-      -- Remove val  ->    createModel ((i - 1), s1, s2, s3, s4) (True, b2, b3, b4, b5)    True
+      NoOp        ->    createModel  (i,       s1, s2, s3, s4) buttonList True
 
       Back        ->    createModel inputs states False
 
-      --Circle1Field s -> createModel  (i,      s,  s2, s3, s4) (b1, b2, b3, b4, b5, b6, b7) True
       Circle1Field s -> createModel (newCount, s,  s2, s3, s4) buttonList True
       Circle2Field s -> createModel (newCount, s1, s,  s3, s4) buttonList True
       Circle3Field s -> createModel (newCount, s1, s2, s,  s4) buttonList True
@@ -504,3 +360,21 @@ updateModel update (stateHistory, (i, s1, s2, s3, s4),
 
       ShowState ->      createModel (newCount, s1, s2, s3, s4) (buttonListToggle buttonList 7) True
 
+
+initialInputs = (0, "1,2,3", "4,5,6", "7,8,9", "12,15,18")
+initialStates = [False, False, False, False, False, False, False, False, False, False]
+initialCalcs  =
+    ([1,2,3], [[4,5,6]], [[7,8,9]], [[12,15,18]], [[[2]]], [[[3]]],
+      ([([1], [[1]])], [([1], [[1]])], [([[1]], [[1]])], [([[1]], [[1]])]
+      ,([1], [[1]])
+      )
+    )
+
+initialModelState =
+  ([],
+      initialInputs,
+    --(0, "6,5,5,6,5,4,5,4", "4,2,2,2,4,3,3,1", "1,3,2,3,3,2,4,3",
+      --    "12,8,12,10,10,12,10,8"),
+    initialStates,
+    initialCalcs
+  )
