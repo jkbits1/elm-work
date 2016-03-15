@@ -51,7 +51,6 @@ getWheelLoop : List WheelPosition -> WheelPosition -> Int -> WheelLoop
 getWheelLoop positions pos count =
   case count of
     0 ->
-      --lists ++ [seed]
       [pos] ++ positions
     otherwise ->
       getWheelLoop ([turnWheel pos count] ++ positions) pos (count-1)
