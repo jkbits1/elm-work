@@ -254,7 +254,7 @@ view updatesChnlAddress ( stateHistory,
     , wheelOnlyRow  1 "Wheel 1"               s1
     , wheelRow      2 "Wheel 2"   "Loop 2"    s2 (toString secLoop) ShowLoop2   <| buttonVal buttonList 2
     , wheelRow      3 "Wheel 3"   "Loop 3"    s3 (toString thrLoop) ShowLoop3   <| buttonVal buttonList 3
-    , wheelRow      4 "Wheel Ans" "Loop Ans"  s4 (toString ansLoop) ShowLoopAns <| buttonVal buttonList 4
+    , wheelRow      4 "Wheel Answers" "Loop Answers"  s4 (toString ansLoop) ShowLoopAns <| buttonVal buttonList 4
   ]
 
   , br [] []
@@ -268,9 +268,9 @@ view updatesChnlAddress ( stateHistory,
       ]
 
     , br [] []
-    ,  infoRow "2loopPerms"     (toString twoListPerms)   <| buttonVal buttonList 5
-    , infoRow "3loopPerms - "  (toString threeListPerms) <| buttonVal buttonList 6
-    , infoRow "answersPlus - "  (toString ansPlusList ) <| buttonVal buttonList 1
+    ,  infoRow "2 Loop Perms"     (toString twoListPerms)   <| buttonVal buttonList 5
+    , infoRow "3 Loop Perms"  (toString threeListPerms) <| buttonVal buttonList 6
+    , infoRow "answersPlus"  (toString ansPlusList ) <| buttonVal buttonList 1
 
     , br [] []
 
