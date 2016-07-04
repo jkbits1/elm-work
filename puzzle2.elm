@@ -76,20 +76,24 @@ addButton = Html.button
   [ Html.Events.onClick (Add 1)]
   [ Html.text "Show Answers" ]
 
---inputField : String -> String ->
-----              Signal.Address Update -> (String -> Update) ->
---              List (String, String) -> Html Msg
---inputField default text
-----            chnlAddress updateItem
---            inputStyle =
---  input
---    [ placeholder default, Attr.value text
+inputField : String -> String -> (String -> Msg) ->
+--              Signal.Address Update -> (String -> Update) ->
+              List (String, String) -> Html Msg
+inputField default text
+--            chnlAddress
+            updateItem
+            inputStyle =
+--  input [ placeholder "Text to reverse", onInput UpdateField ] []
+
+  input
+    [ placeholder default, Attr.value text
 --    , on "input" targetValue
 --    --, on "change" targetValue
 ----        (Signal.message chnlAddress << updateItem)
---    , style inputStyle
---    ]
---    []
+    , onInput updateItem
+    , style inputStyle
+    ]
+    []
 
 myStyle : List (String, String)
 myStyle =
@@ -145,27 +149,27 @@ view (
     div [] [ text (toString b1) ],
     div []
     [
---      inputField "Files Query" s1
-----        UpdateField
---        myStyle
+      inputField "Files Query" s1
+        UpdateField
+        myStyle
     ],
     div []
     [
---      inputField "Files Query" s2
-----        Circle2Field
---        myStyle
+      inputField "Files Query" s2
+        Circle2Field
+        myStyle
     ],
     div []
     [
---      inputField "Files Query" s3
-----        Circle3Field
---        myStyle
+      inputField "Files Query" s3
+        Circle3Field
+        myStyle
     ],
     div []
     [
---      inputField "Files Query" s4
-----        Circle4Field
---        myStyle
+      inputField "Files Query" s4
+        Circle4Field
+        myStyle
     ],
     div [ style textStyle] [ text ("first  - " ++ (toString firstList)) ],
     div [ style textStyle] [ text ("secLoop - " ++ (toString secLoop)) ],
