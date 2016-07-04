@@ -2,7 +2,7 @@
 -- have changed fn names to show lifting fns (not sure if it is clearer)
 
 --import Signal (channel)
-import Signal 
+import Signal
 --import Html
 --import Html exposing (Html, div, text, input, placeholder)
 --import Html.Attributes exposing (class)
@@ -29,19 +29,6 @@ type CircleChange = String
 
 updatesChnl : Signal.Mailbox Update
 updatesChnl = Signal.mailbox NoOp
-
---circle1Chnl : Signal.Mailbox String
---circle1Chnl : Signal.Mailbox Update
---circle1Chnl = Signal.mailbox (UpdateField "")
-
---circle2Chnl : Signal.Mailbox Update
---circle2Chnl = Signal.mailbox (Circle2Field "")
-
---circle3Chnl : Signal.Mailbox Update
---circle3Chnl = Signal.mailbox (Circle3Field "")
-
---circle4Chnl : Signal.Mailbox Update
---circle4Chnl = Signal.mailbox (Circle4Field "")
 
 
 -- created by view, returns Html and sends Updates to updatesChnl
@@ -100,18 +87,6 @@ view updatesChnlAddress (i, s1, s2, s3, s4, s5, s6, s7) =
     [
       inputField "Files Query" s1 updatesChnlAddress UpdateField myStyle
     ],
-    div []
-    [
-      inputField "Files Query" s2 updatesChnlAddress Circle2Field myStyle
-    ],
-    div []
-    [
-      inputField "Files Query" s3 updatesChnlAddress Circle3Field myStyle
-    ],
-    div []
-    [
-      inputField "Files Query" s4 updatesChnlAddress Circle4Field myStyle
-    ],
     div [ style textStyle] [ text ("first - " ++ s5) ],
     div [ style textStyle] [ text ("secPerms - " ++ s6) ],
     div [ style textStyle] [ text ("triPerms - " ++ s7) ]
@@ -128,52 +103,14 @@ updateModelLift = Signal.foldp
 -- converts Update to new Model
 updateModel : Update -> Model -> Model
 updateModel update (i, s1, s2, s3, s4, s5, s6, s7) =
-  let
-    res       = s1 ++ ( toString ( circleNumsFromString s1 ) )
-    secPerms  = s2 ++ (toString <| wheelPerms <| circleNumsFromString s2)
-    thrPerms  = s3 ++ (toString <| wheelPerms <| circleNumsFromString s3)
-    --res = s
-  in
     case update of
-      NoOp        -> (i,      s1, s2, s3, s4, res, secPerms, thrPerms)
-      Add val     -> (i + 1,  s1, s2, s3, s4, res, secPerms, thrPerms)
-      Remove val  -> (i - 1,  s1, s2, s3, s4, res, secPerms, thrPerms)
+      NoOp        -> (i,      s1, s2, s3, s4, s1, s1, s1)
+      Add val     -> (i + 1,  s1, s2, s3, s4, s1, s1, s1)
+      Remove val  -> (i - 1,  s1, s2, s3, s4, s1, s1, s1)
 
-      UpdateField s ->  (i,   s, s2, s3, s4, res, secPerms, thrPerms)
-      Circle2Field s -> (i,   s1, s, s3, s4, res, secPerms, thrPerms)
-      Circle3Field s -> (i,   s1, s2, s, s4, res, secPerms, thrPerms)
-      Circle4Field s -> (i,   s1, s2, s3, s, res, secPerms, thrPerms)
-
-
-circleNumsFromString : String -> List Int
---circleNumsFromString : String -> List String
--- circleNumsFromString s = [1]
-circleNumsFromString s =
-  List.map
-    strToNum
-      (String.split "," s)
-
-strToNum : String -> Int
-strToNum s = resToNum (String.toInt s)
-
-resToNum : Result e Int -> Int
-resToNum r =
-  case r of
-    Ok x -> x
-    Err s -> 0
+      UpdateField s ->  (i + 2,   s, s2, s3, s4, s, s, s)
+      Circle2Field s -> (i,   s1, s, s3, s4, s1, s1, s1)
+      Circle3Field s -> (i,   s1, s2, s, s4, s1, s1, s1)
+      Circle4Field s -> (i,   s1, s2, s3, s, s1, s1, s1)
 
 
--- PUZZLE SOLUTIONS
-
-listLoopItem list chunk = (drop chunk list) ++ (take chunk list)
-
-listLoops : List (List Int) -> List Int -> Int -> List (List Int)
-listLoops lists seed count =
-  case count of
-    0 ->
-      lists ++ [seed]
-    otherwise ->
-      listLoops (lists ++ [listLoopItem seed count]) seed (count-1)
-
-wheelPerms : List Int -> List (List Int)
-wheelPerms xs = listLoops [] xs ( (length xs) - 1 )
