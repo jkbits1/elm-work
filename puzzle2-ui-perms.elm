@@ -3,14 +3,15 @@
 
 import PuzzleModule exposing (..)
 
-import Signal
+--import Signal
 
 import Html exposing (..)
+import Html.App as HtmlApp
 import Html.Attributes as Attr exposing (..)
 import Html.Events exposing (..)
 
-import Graphics.Input.Field as Field
-import Graphics.Element exposing (..)
+--import Graphics.Input.Field as Field
+--import Graphics.Element exposing (..)
 
 import String
 import List exposing (..)
@@ -32,19 +33,22 @@ type alias Model = (ModelList, ModelInputs, ModelButtons, ModelResults)
 
 type alias ModelList = List (ModelInputs, ModelButtons)
 
-type Update =
-      NoOp | Add Int | Remove Int |
+--type Update =
+type Msg =
+      NoOp |
+--      Add Int | Remove Int |
       Back |
-      UpdateField String |
+--      UpdateField String |
       Circle1Field String |
       Circle2Field String | Circle3Field String | Circle4Field String |
       ShowLoop2 | ShowLoop3 | ShowLoopAns |
       ShowPerms2 | ShowPerms3 |
-      ShowAns | ShowLazyAns |
+      ShowAns |
+--      ShowLazyAns |
       ShowState
 
-updatesChnl : Signal.Mailbox Update
-updatesChnl = Signal.mailbox NoOp
+--updatesChnl : Signal.Mailbox Update
+--updatesChnl = Signal.mailbox NoOp
 
 
 buttonVal : List Bool -> Int -> Bool
@@ -63,30 +67,30 @@ buttonListToggle list num = take (num-1) list ++ [not <| buttonVal list num] ++ 
 
 buttonClassList = classList [("btn", True), ("btn-default", True)]
 
-backButton : Html
+backButton : Html Msg
 backButton    = uiButton Back       "Step Back"
 
-answersButton : Bool -> Html
+answersButton : Bool -> Html Msg
 answersButton hide  = showLoopButton ("Show Answers", "Hide Answers") hide ShowAns
 
-stateButton : Bool -> Html
+stateButton : Bool -> Html Msg
 stateButton  hide   = showLoopButton ("Show State", "Hide State")     hide ShowState
 
-perms2Button : Bool -> Html
+perms2Button : Bool -> Html Msg
 perms2Button hide   = showLoopButton ("Show Perms 2", "Hide Perms 2") hide ShowPerms2
 
-perms3Button : Bool -> Html
+perms3Button : Bool -> Html Msg
 perms3Button hide   = showLoopButton ("Show Perms 3", "Hide Perms 3") hide ShowPerms3
 
 
-uiButton : Update -> String -> Html
+uiButton : Msg -> String -> Html Msg
 uiButton action label = Html.button
   [
       buttonClassList
-    , Html.Events.onClick updatesChnl.address action]
+    , Html.Events.onClick action]
   [ Html.text label ]
 
---showLoopButton : Html
+showLoopButton : (String, String) -> Bool -> Msg -> Html Msg
 showLoopButton labels hide action =
   let
     label =
@@ -97,45 +101,49 @@ showLoopButton labels hide action =
   in
     Html.button
       [   buttonClassList
-        , Html.Events.onClick updatesChnl.address action
+        , Html.Events.onClick action
       ]
       [ Html.text label ]
 
 
 inputField : String -> String ->
-              Signal.Address Update -> (String -> Update) ->
-              List (String, String) -> Html
-inputField default text chnlAddress updateItem inputStyle =
+--              Signal.Address Update ->
+--              (String -> Update) ->
+              (String -> Msg) ->
+              List (String, String) -> Html Msg
+--inputField default text chnlAddress updateItem inputStyle =
+inputField default text updateItem inputStyle =
   input
     [ placeholder default, Attr.value text
-    , on "input" targetValue
-        (Signal.message chnlAddress << updateItem)
+--    , on "input" targetValue
+
+--        (Signal.message chnlAddress << updateItem)
+    , onInput updateItem
     , style inputStyle
     ]
     []
 
 inputField2 : String -> String -> String ->
-              Signal.Address Update -> (String -> Update) ->
-              List (String, String) -> Html
-inputField2 idVal default text chnlAddress updateItem inputStyle =
+              (String -> Msg) ->
+              List (String, String) -> Html Msg
+inputField2 idVal default text updateItem inputStyle =
   input
     [ placeholder default, Attr.value text
-    , on "input" targetValue
-        (Signal.message chnlAddress << updateItem)
+    , onInput updateItem
       , style wheelStyle
       , id idVal
       , class "form-control col-sm-2"
     ]
     []
 
-formGroup lbl idVal val chnlAddress updateItem style =
+formGroup lbl idVal val updateItem style =
   div [class "form-group"] [
         label [ for idVal,
                 --classList [("control-label", True),("col-sm-4", True)]
                 classList [("control-label", True),("col-sm-4", True)]
                 ]
                 [text lbl]
-      , inputField2 idVal lbl val chnlAddress updateItem style
+      , inputField2 idVal lbl val updateItem style
   ]
 
 
@@ -207,15 +215,21 @@ infoRow label info displayState =
 
 
 -- converts Signal Model to Signal Html, using non-signal view
-main : Signal Html
-main = viewLift
+--main : Signal Html
+--main = viewLift
+main = HtmlApp.program { init = init, view = view, update = updateModel, subscriptions = subscriptions }
 
-viewLift : Signal Html
-viewLift = Signal.map (view updatesChnl.address) updateModelLift
+subscriptions : Model -> Sub Msg
+subscriptions model = Sub.none
 
+--viewLift : Signal Html
+--viewLift = Signal.map (view updatesChnl.address) updateModelLift
+--
 -- used by main, as a non-signal function, to convert a Model to Html
-view : Signal.Address Update -> Model -> Html
-view updatesChnlAddress ( stateHistory,
+view : Model -> Html Msg
+--view : Signal.Address Update -> Model -> Html Msg
+view                    ( stateHistory,
+--view updatesChnlAddress ( stateHistory,
                           (i, s1, s2, s3, s4),
                           buttonList,
                           (firstList, secLoop, thrLoop, ansLoop, twoListPerms, threeListPerms,
@@ -243,10 +257,10 @@ view updatesChnlAddress ( stateHistory,
     , br [] []
 
     , Html.form [class "form-inline"][
-        formGroup "Wheel 1" "wheel1input"     s1 updatesChnlAddress Circle1Field myStyle
-      , formGroup "Wheel 2" "wheel2input"     s2 updatesChnlAddress Circle2Field myStyle
-      , formGroup "Wheel 3" "wheel3input"     s3 updatesChnlAddress Circle3Field myStyle
-      , formGroup "Wheel Ans" "wheelAnsInput" s4 updatesChnlAddress Circle4Field myStyle
+        formGroup "Wheel 1" "wheel1input"     s1 Circle1Field myStyle
+      , formGroup "Wheel 2" "wheel2input"     s2 Circle2Field myStyle
+      , formGroup "Wheel 3" "wheel3input"     s3 Circle3Field myStyle
+      , formGroup "Wheel Ans" "wheelAnsInput" s4 Circle4Field myStyle
     ]
 
     , br [] []
@@ -290,17 +304,16 @@ view updatesChnlAddress ( stateHistory,
   ]
   ]
 
-
 -- converts Signal Update (from updatesChnl) to Signal Model, 
 -- using non-signal updateModel
-updateModelLift : Signal Model
-updateModelLift = Signal.foldp
-                    updateModel
-                    initialModelState
-                    updatesChnl.signal
+--updateModelLift : Signal Model
+--updateModelLift = Signal.foldp
+--                    updateModel
+--                    initialModelState
+--                    updatesChnl.signal
 
 -- converts Update to new Model
-updateModel : Update -> Model -> Model
+updateModel : Msg -> Model -> (Model, Cmd Msg)
 updateModel update (stateHistory, (i, s1, s2, s3, s4),
                      buttonList,
                      --(xs, xxs2, xxs3, xxs4, s9, s10, (s11, s12, s13, s14))
@@ -335,9 +348,13 @@ updateModel update (stateHistory, (i, s1, s2, s3, s4),
                         findSpecificAnswer  first secLoop thrLoop ansLoop,
                         answersPermsPlusList first secLoop thrLoop,
                         displaySpecificAnswers first secLoop thrLoop answers
-                        , findAnswerLazy3 first secLoop thrLoop ansLoop))
+--                        , findAnswerLazy3 first secLoop thrLoop ansLoop))
+                        , findAnswerCS first secLoop thrLoop ansLoop))
       in
-        (newHistory, inputs, buttonStates, newCalcs)
+        (
+          (newHistory, inputs, buttonStates, newCalcs)
+        , Cmd.none
+        )
   in
     case update of
       NoOp        ->    createModel  (i,       s1, s2, s3, s4) buttonList True
@@ -378,3 +395,75 @@ initialModelState =
     initialStates,
     initialCalcs
   )
+
+init = (initialModelState, Cmd.none)
+
+
+-- > permutations "abc" == ["abc","bac","cba","bca","cab","acb"]
+-- permutations            :: [a] -> [[a]]
+--permutations xs0        =  xs0 :: perms xs0 []
+  --where
+    --perms []     _  = []
+    --perms (t:ts) is = foldr interleave (perms ts (t:is)) (permutations is)
+
+
+--interleave xs r =
+  --let
+    --(_,zs) = interleave2 id xs r
+  --in
+    --zs
+
+--interleave2 _ [] r = (ts, r)
+--interleave2 f (y::ys) r =
+  --let
+    --(us,zs) = interleave2 (f . (y::)) ys r
+  --in
+    --(y::us, f (t::y::us) : zs)
+
+
+--permutations []  = [[]]
+--permutations xxs = [(y::ys) | (y,xs) <- picks xxs, ys <- permutations xs]
+  --where
+
+--picks (x::xs) = (x,xs) :: [(y,x::ys) | (y,ys) <- picks xs]
+
+--picks2 (x::xs) = --(x,xs) :: [(y,x::ys) |
+
+  --map (\xs -> xs) <| picks2 xs
+
+--subsequences            : [Int] -> [[Int]]
+subsequences xs =
+  case xs of
+    []  -> [[]]
+    x::xs     ->
+      let
+        s = subsequences xs
+      in
+        s ++ (map (x (::)) s)
+
+--permutations            : [Int] -> [[Int]]
+--permutations xs =
+  --case xs of
+
+--    []    -> [[]]
+  --  x::xs ->
+    --  let
+      --  interleave xxs =
+        --  case xxs of
+          --  []      ->  [[x]]
+--            y::ys   ->  (x :: y :: ys)
+            -- y::ys   ->  (1 :: 2)
+  --             :: map (y (::)) (interleave ys)
+    --  in
+      --  concatMap interleave <| permutations xs
+
+
+-- when upgrading to 0.17, these lines
+-- were not commented out, but seem iffy and
+-- fn is not used anyway
+--interleave2 x xxs =
+--  case xxs of
+--    -- []      ->  [[x]]
+--    y::ys   ->  (x :: y :: ys )
+--    --y::ys   ->  (x :: y :: ys :: [])
+--                  :: map (y (::)) (interleave2 ys)
