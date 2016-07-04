@@ -1,13 +1,13 @@
-module PuzzleModule where
+module PuzzleModule exposing (..)
 
-import Signal
+--import Signal
 
 import Html exposing (..)
 import Html.Attributes as Attr exposing (..)
 import Html.Events exposing (..)
 
-import Graphics.Input.Field as Field
-import Graphics.Element exposing (..)
+--import Graphics.Input.Field as Field
+--import Graphics.Element exposing (..)
 
 import String
 import List exposing (..)
