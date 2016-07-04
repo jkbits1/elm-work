@@ -37,7 +37,10 @@ view height searchString firstResult results details specifics =
             toString <| (firstSpecific specifics).titleNumber,
           text ",",
           text <| 
-            toString <| (firstSpecific specifics).length
+            Debug.log "length"
+              (
+                toString <| (firstSpecific specifics).length
+              )
         ]
     ]
     
@@ -94,7 +97,9 @@ main =
     resultsChnl.signal ~ detailsChnl.signal ~       
     specificDetailsChnl.signal
 
-  
+
+-- These functions were removed from the Signal package. 
+-- They allow the equivalent of map6 and beyond.
 (<~) : (a -> b) -> Signal a -> Signal b
 (<~) = Signal.map  
   
@@ -139,8 +144,10 @@ port getVidInfoFileDetails =
     |> Signal.map (\task -> task `andThen` 
                     Signal.send detailsChnl.address)
 
-port getVidInfoFileSpecifics : Signal (Task Http.Error ())        
-port getVidInfoFileSpecifics =
+--port
+getVidInfoFileSpecifics : Signal (Task Http.Error ())
+--port
+getVidInfoFileSpecifics =
   Signal.map getFileSpecifics queryChnl.signal
     |> Signal.sampleOn trigger
     |> Signal.map (\task -> task `andThen` 
@@ -177,15 +184,18 @@ getFileSpecifics : String -> Task Http.Error (List TitleDetail)
 getFileSpecifics string = 
   Http.get
     titleDetailsList
-    vidInfoURL `andThen` 
-      getTitleSpecifics
+--      (vidInfoURL ++ "\\" ++ string)
+      (vidInfoURL)
+        `andThen` getTitleSpecifics
 
 getFileDetails : String -> Task Http.Error (List String)
 getFileDetails string = 
   Http.get 
     titleDetailsList
-    vidInfoURL `andThen` 
-      getTitleDetails
+      (vidInfoURL ++ "\\" ++ string)
+      -- (vidInfoURL)
+      `andThen`
+        getTitleDetails
     
 --titleDetailsDecoder : Json.Decoder (List String)    
 --getDetails : List String -> Task Http.Error (List String)
@@ -333,15 +343,9 @@ getTitleSpecifics details =
   case details of
     detail :: _ -> succeed 
       details
---      (List.map (toString) details)
---      [
-----      Debug.log "files dets" "file details"
---        "dummy title dets"
---      ]
     [] ->
 --      fail (Http.UnexpectedPayload "expecting 1 or more strings from server")
         succeed 
---          ["no specifics found"]
           [TitleDetail 0 0.0]
 
 

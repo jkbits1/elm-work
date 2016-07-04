@@ -1,6 +1,6 @@
-import List ((::))
-import Text (asText)
-
+import List exposing ((::))
+import Html exposing (text)
+--import Graphics.Element(Element)
 
 length : List a -> Int
 length list =
@@ -10,6 +10,5 @@ length list =
     first :: rest ->
       1 + length rest
 
-
-main =
-  asText (length [1..9])
+--main : Element
+main = text <| toString (length [1..9])

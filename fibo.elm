@@ -1,4 +1,7 @@
-import Text(..)
+--import Text exposing (..)
+--import Graphics.Element(Element)
+import Html exposing (text)
+
 
 fibo : Int -> Int
 fibo a = 
@@ -12,6 +15,8 @@ fibo a =
 --  f11
 --  fn fn-1 plus fn-2
 
+--main : Element
 --main = asText [fibo 3, fibo 3, fibo 3]
-main = asText [fibo 0, fibo 1, fibo 2, fibo 3, fibo 4, fibo 5, fibo 6]
+--main = asText [fibo 0, fibo 1, fibo 2, fibo 3, fibo 4, fibo 5, fibo 6]
+main = text <| toString [fibo 0, fibo 1, fibo 2, fibo 3, fibo 4, fibo 5, fibo 6]
 
