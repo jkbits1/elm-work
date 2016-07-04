@@ -1,6 +1,3 @@
---  <link rel="stylesheet" href="css/tidy.css">
--- <link rel="stylesheet" href="css/bootstrap.css">
-
 import PuzzleModule exposing (..)
 
 import Signal
@@ -86,7 +83,6 @@ uiButton action label = Html.button
     , Html.Events.onClick updatesChnl.address action]
   [ Html.text label ]
 
---showLoopButton : Html
 showLoopButton labels hide action =
   let
     label =
@@ -213,14 +209,14 @@ main = viewLift
 viewLift : Signal Html
 viewLift = Signal.map (view updatesChnl.address) updateModelLift
 
--- used by main, as a non-signal function, to convert a Model to Html
+-- used indirectly by main, as a non-signal function, to convert a Model to Html
 view : Signal.Address Update -> Model -> Html
 view updatesChnlAddress ( stateHistory,
                           (i, s1, s2, s3, s4),
                           buttonList,
                           (firstList, secLoop, thrLoop, ansLoop, twoListPerms, threeListPerms,
                             (ansPlusList, specificAnswer, ansPermsPlusList, specificAnswerPlusList
-                              , findAnswerLazy3))
+                              , findAnswerCS))
                         ) =
   div [] [
   div [class "container"]
@@ -303,7 +299,6 @@ updateModelLift = Signal.foldp
 updateModel : Update -> Model -> Model
 updateModel update (stateHistory, (i, s1, s2, s3, s4),
                      buttonList,
-                     --(xs, xxs2, xxs3, xxs4, s9, s10, (s11, s12, s13, s14))
                      results
                    ) =
   let
@@ -349,7 +344,6 @@ updateModel update (stateHistory, (i, s1, s2, s3, s4),
       Circle3Field s -> createModel (newCount, s1, s2, s,  s4) buttonList True
       Circle4Field s -> createModel (newCount, s1, s2, s3, s)  buttonList True
 
-      --ShowAns     ->    createModel ((i + 1), s1, s2, s3, s4) (not b1, b2, b3, b4, b5, b6, b7) True
       ShowAns     ->    createModel (newCount, s1, s2, s3, s4) (buttonListToggle buttonList 1) True
       ShowLoop2   ->    createModel (newCount, s1, s2, s3, s4) (buttonListToggle buttonList 2) True
       ShowLoop3   ->    createModel (newCount, s1, s2, s3, s4) (buttonListToggle buttonList 3) True

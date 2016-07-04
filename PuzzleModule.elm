@@ -1,8 +1,3 @@
--- NOTE: code comes from Signal.send package example
--- have changed fn names to show lifting fns (not sure if it is clearer)
-
---  <link rel="stylesheet" href="css/tidy.css">
-
 module PuzzleModule where
 
 import Signal
@@ -17,12 +12,12 @@ import Graphics.Element exposing (..)
 import String
 import List exposing (..)
 
-type alias WheelPosition    = List Int           -- a single position of a wheel
-type alias WheelLoop        = List WheelPosition -- all positions of a wheel
-type alias LoopsPermutation = List WheelPosition -- item from combo of one or more loops
-type alias LoopsPermColumn  = (Int, Int, Int)  -- values from a single loops perm
-type alias LoopsPermAnswers = List Int        -- results of combo addition
-type alias LoopsAnswerLoop  = List WheelPosition      -- all positions of combo addition
+type alias WheelPosition    = List Int            -- a single position of a wheel
+type alias WheelLoop        = List WheelPosition  -- all positions of a wheel
+type alias LoopsPermutation = List WheelPosition  -- item from combo of one or more loops
+type alias LoopsPermColumn  = (Int, Int, Int)     -- values from a single loops perm
+type alias LoopsPermAnswers = List Int            -- results of combo addition
+type alias LoopsAnswerLoop  = List WheelPosition  -- all positions of combo addition
 type alias Counter          = List Int
 
 
@@ -35,14 +30,11 @@ resToNum r =
     Ok x -> x
     Err s -> 0
 
---M
 wheelPositionFromString : String -> WheelPosition
 wheelPositionFromString s =
   List.map
     strToNum
       <| String.split "," s
-
--- PUZZLE SOLUTIONS
 
 turnWheel : WheelPosition -> Int -> WheelPosition
 turnWheel wheel turns = (drop turns wheel) ++ (take turns wheel)
@@ -55,20 +47,16 @@ getWheelLoop positions pos count =
     otherwise ->
       getWheelLoop ([turnWheel pos count] ++ positions) pos (count-1)
 
--- M
 createWheelLoop : WheelPosition -> WheelLoop
 createWheelLoop initialPos = getWheelLoop [] initialPos ( (length initialPos) - 1 )
 
--- M
 generateWheelLoop : String -> WheelLoop
 generateWheelLoop s = createWheelLoop <| wheelPositionFromString s
 
--- M
 makeSecLoop  = generateWheelLoop
 makeThrLoop  = generateWheelLoop
 makeAnsLoop  = generateWheelLoop
 
--- M
 twoWheelPerms : WheelPosition -> WheelLoop -> List LoopsPermutation
 twoWheelPerms first secLoop = map (\secPosition -> first :: secPosition :: []) secLoop
 
@@ -76,7 +64,6 @@ appendTwoWheelPerms : List LoopsPermutation -> WheelPosition -> List LoopsPermut
 appendTwoWheelPerms twoWheelPermsLocal thrPos =
   map (\twoLoopsPerm -> twoLoopsPerm ++ [thrPos]) twoWheelPermsLocal
 
--- M
 threeLoopPerms : WheelPosition -> WheelLoop -> WheelLoop -> List LoopsPermutation
 threeLoopPerms first secLoop thrLoop =
   let
@@ -102,7 +89,6 @@ columnsFromPermutation perm =
 zip3 : WheelPosition -> WheelPosition -> WheelPosition -> List LoopsPermColumn
 zip3 pos1 pos2 pos3 = map3 (,,) pos1 pos2 pos3
 
--- headLLI : LoopsPermutation -> WheelPosition
 headLLI : List WheelPosition -> WheelPosition
 headLLI = foldr (\h t -> h) []
 
@@ -118,14 +104,11 @@ headLLIxx xs =
 sumPlusPerm : LoopsPermutation -> List (LoopsPermAnswers, LoopsPermutation)
 sumPlusPerm perm = [(map sumColumn <| columnsFromPermutation perm, perm)]
 
--- NOTE this refactors out two later steps by comparing list to loop of answers
--- M
 answersPlusPerm : WheelPosition -> WheelLoop -> WheelLoop ->
                     List (LoopsPermAnswers, LoopsPermutation)
 answersPlusPerm first secLoop thrLoop =
   concat <| map sumPlusPerm <| threeLoopPerms first secLoop thrLoop
 
--- M
 findSpecificAnswer : WheelPosition ->
                        WheelLoop -> WheelLoop -> WheelLoop ->
                          List (LoopsPermAnswers, LoopsPermutation)
@@ -151,17 +134,10 @@ findSpecificAnswerPlusList first secLoop thrLoop answers =
 -- display solution
 displaySpecificAnswers : WheelPosition -> WheelLoop -> WheelLoop -> WheelPosition ->
                           List (LoopsAnswerLoop, LoopsPermutation)
-                          -- (LoopsAnswerLoop, LoopsPermutation) -- head
 displaySpecificAnswers first secLoop thrLoop answers =
-  -- snd <|
-  -- headX <|
   (\h -> [h]) <| headX <|
   findSpecificAnswerPlusList first secLoop thrLoop answers
 
-
--- headXY : List (LoopsAnswerLoop, LoopsPermutation) -> (LoopsAnswerLoop, LoopsPermutation)
---headXY : List (a, b) -> (a, b)
---headXY = foldr (\h t -> h) ()
 
 headX : List (LoopsAnswerLoop, LoopsPermutation) -> (LoopsAnswerLoop, LoopsPermutation)
 headX xs =
@@ -184,11 +160,6 @@ elem2 a answerLoop =
             False -> elem2 a xs
     [] -> False
 
-
--- haskell foldr map
-
-
--- Lazy solution
 
 quotRem : Int -> Int -> (Int, Int)
 quotRem a b =
@@ -256,9 +227,9 @@ getWheelsPermAnswers first secLoop thrLoop n =
         threeWheelsPermsItemByCounter first secLoop thrLoop
         <| getCounter n
 
-findAnswerLazy3 : WheelPosition -> WheelLoop -> WheelLoop -> WheelLoop ->
+findAnswerCS : WheelPosition -> WheelLoop -> WheelLoop -> WheelLoop ->
                     (LoopsPermAnswers, LoopsPermutation)
-findAnswerLazy3 first secLoop thrLoop ansLoop =
+findAnswerCS first secLoop thrLoop ansLoop =
   let
     ansIdx = headCounter <|
       map (\(i, _) -> i) <|
