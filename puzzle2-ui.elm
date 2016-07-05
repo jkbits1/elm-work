@@ -292,6 +292,13 @@ view ( stateHistory,
 
     , div [class "row"] [
     ]
+    , div [class "row"] [
+        Html.button
+          [
+            Html.Events.onClick ChangeWheel
+          ]
+          [ Html.text "wheel" ]
+    ]
   ]
   ]
 
@@ -367,12 +374,19 @@ updateModel update (stateHistory, (i, s1, s2, s3, s4),
 
       ShowState ->      (createModel(newCount, s1, s2, s3, s4) (buttonListToggle buttonList 7) True, Cmd.none)
 
-      ChangeWheel ->    (createModel (i,       s1, s2, s3, s4) buttonList True
-                        , check
-                            [
-                              [{name = "1"}]
-                            ]
-                        )
+      ChangeWheel ->
+        let
+          mdl = createModel (i,       s1, s2, s3, s4) buttonList True
+          wd1 = resultsToD3Data <| wheelData mdl
+        in
+          (mdl
+          , check [
+--                  [{name = "1"}]
+                    wd1
+                  , wd1
+                  , wd1
+                  ]
+          )
 
       -- currently a no-op
       D3Response rs -> (createModel (i,       s1, s2, s3, s4) buttonList True, Cmd.none)
@@ -396,7 +410,31 @@ initialModelState =
     initialCalcs
   )
 
+modelInputs
+      ( stateHistory,
+        inputs,
+        buttonList,
+        results
+      ) = inputs
+
 init = (initialModelState, Cmd.none)
+
+input1 (_, i1, _, _, _) = i1
+
+wheelData : Model -> List Int
+wheelData model = wheelPositionFromString <| input1 <| modelInputs model
+
+resultsToD3Data : List Int -> List { name: String }
+resultsToD3Data xs = List.map (\x -> { name = (toString x) }) xs
+
+--type alias ModelResults =
+--  (WheelPosition, WheelLoop, WheelLoop, WheelLoop,
+--    List LoopsPermutation,                      List LoopsPermutation,
+--    (List (LoopsPermAnswers, LoopsPermutation), List (LoopsPermAnswers, LoopsPermutation),
+--      List (LoopsAnswerLoop, LoopsPermutation), List (LoopsAnswerLoop, LoopsPermutation)
+--      , (LoopsPermAnswers, LoopsPermutation)
+--      ))
+
 
 
 --type Msg2 =
