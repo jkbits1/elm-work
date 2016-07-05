@@ -1,12 +1,13 @@
-import Graphics.Element (..)
-import Signal (..)
-import List (..)
-import Text (..)
+--import Graphics.Element (..)
+--import Signal (..)
+--import List (..)
+--import Text (..)
+import Html exposing (text)
 
-
-main : Element
-main = asText ([product [1,2,3] == 6, product [4,4] == 16, product [] == 1])
--- , , 
+--main : Element
+main = text <| toString ([product [1,2,3] == 6, product [4,4] == 16, product [] == 1])
+--main = asText ([product [1,2,3] == 6, product [4,4] == 16, product [] == 1])
+-- , ,
 
 -- main = asText (product2 (drop 1 [1,2,3,4]))
 -- main = asText (product (drop 1 [1,2,3,4]))
