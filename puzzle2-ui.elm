@@ -1,7 +1,10 @@
 --  <link rel="stylesheet" href="css/tidy.css">
 -- <link rel="stylesheet" href="css/bootstrap.css">
 
+port module WheelApp exposing (..)
+
 import PuzzleModule exposing (..)
+import Wheel exposing (..)
 
 import Html exposing (..)
 import Html.App as HtmlApp
@@ -39,8 +42,9 @@ type Msg =
       ShowPerms2 | ShowPerms3 |
       ShowAns |
 --      ShowLazyAns |
-      ShowState
-
+      ShowState |
+      ChangeWheel |
+      D3Response (List String)
 
 buttonVal : List Bool -> Int -> Bool
 buttonVal list num =
@@ -204,8 +208,12 @@ infoRow label info displayState =
 
 main = HtmlApp.program { init = init, view = view, update = updateModel, subscriptions = subscriptions }
 
+-- subscriptions, data responses from js
+port dataProcessedItems : (List String -> msg) -> Sub msg
+
 subscriptions : Model -> Sub Msg
-subscriptions model = Sub.none
+--subscriptions model = Sub.none
+subscriptions model = dataProcessedItems D3Response
 
 --viewLift : Signal Html
 --viewLift = Signal.map (view updatesChnl.address) updateModelLift
@@ -287,6 +295,8 @@ view ( stateHistory,
   ]
   ]
 
+-- outgoing port to js
+port check : List (List WheelItem) -> Cmd msg
 
 -- converts Signal Update (from updatesChnl) to Signal Model, 
 -- using non-signal updateModel
@@ -334,31 +344,38 @@ updateModel update (stateHistory, (i, s1, s2, s3, s4),
                         displaySpecificAnswers first secLoop thrLoop answers
                         , findAnswerCS first secLoop thrLoop ansLoop))
       in
-        (
-          (newHistory, inputs, buttonStates, newCalcs)
-        , Cmd.none
-        )
+        (newHistory, inputs, buttonStates, newCalcs)
   in
     case update of
-      NoOp        ->    createModel  (i,       s1, s2, s3, s4) buttonList True
+      NoOp        ->    (createModel (i,       s1, s2, s3, s4) buttonList True, Cmd.none)
 
-      Back        ->    createModel inputs states False
+      Back        ->    (createModel inputs states False, Cmd.none)
 
-      Circle1Field s -> createModel (newCount, s,  s2, s3, s4) buttonList True
-      Circle2Field s -> createModel (newCount, s1, s,  s3, s4) buttonList True
-      Circle3Field s -> createModel (newCount, s1, s2, s,  s4) buttonList True
-      Circle4Field s -> createModel (newCount, s1, s2, s3, s)  buttonList True
+      Circle1Field s -> (createModel(newCount, s,  s2, s3, s4) buttonList True, Cmd.none)
+      Circle2Field s -> (createModel(newCount, s1, s,  s3, s4) buttonList True, Cmd.none)
+      Circle3Field s -> (createModel(newCount, s1, s2, s,  s4) buttonList True, Cmd.none)
+      Circle4Field s -> (createModel(newCount, s1, s2, s3, s)  buttonList True, Cmd.none)
 
-      --ShowAns     ->    createModel ((i + 1), s1, s2, s3, s4) (not b1, b2, b3, b4, b5, b6, b7) True
-      ShowAns     ->    createModel (newCount, s1, s2, s3, s4) (buttonListToggle buttonList 1) True
-      ShowLoop2   ->    createModel (newCount, s1, s2, s3, s4) (buttonListToggle buttonList 2) True
-      ShowLoop3   ->    createModel (newCount, s1, s2, s3, s4) (buttonListToggle buttonList 3) True
-      ShowLoopAns ->    createModel (newCount, s1, s2, s3, s4) (buttonListToggle buttonList 4) True
+      --ShowAns     ->    (createModel((i + 1), s1, s2, s3, s4) (not b1, b2, b3, b4, b5, b6, b7) True
+      ShowAns     ->    (createModel(newCount, s1, s2, s3, s4) (buttonListToggle buttonList 1) True, Cmd.none)
+      ShowLoop2   ->    (createModel(newCount, s1, s2, s3, s4) (buttonListToggle buttonList 2) True, Cmd.none)
+      ShowLoop3   ->    (createModel(newCount, s1, s2, s3, s4) (buttonListToggle buttonList 3) True, Cmd.none)
+      ShowLoopAns ->    (createModel(newCount, s1, s2, s3, s4) (buttonListToggle buttonList 4) True, Cmd.none)
 
-      ShowPerms2 ->     createModel (newCount, s1, s2, s3, s4) (buttonListToggle buttonList 5) True
-      ShowPerms3 ->     createModel (newCount, s1, s2, s3, s4) (buttonListToggle buttonList 6) True
+      ShowPerms2 ->     (createModel(newCount, s1, s2, s3, s4) (buttonListToggle buttonList 5) True, Cmd.none)
+      ShowPerms3 ->     (createModel(newCount, s1, s2, s3, s4) (buttonListToggle buttonList 6) True, Cmd.none)
 
-      ShowState ->      createModel (newCount, s1, s2, s3, s4) (buttonListToggle buttonList 7) True
+      ShowState ->      (createModel(newCount, s1, s2, s3, s4) (buttonListToggle buttonList 7) True, Cmd.none)
+
+      ChangeWheel ->    (createModel (i,       s1, s2, s3, s4) buttonList True
+                        , check
+                            [
+                              [{name = "1"}]
+                            ]
+                        )
+
+      -- currently a no-op
+      D3Response rs -> (createModel (i,       s1, s2, s3, s4) buttonList True, Cmd.none)
 
 
 initialInputs = (0, "1,2,3", "4,5,6", "7,8,9", "12,15,18")
@@ -380,3 +397,22 @@ initialModelState =
   )
 
 init = (initialModelState, Cmd.none)
+
+
+--type Msg2 =
+--  Change String
+--  | Check
+--  | Suggest (List String)
+
+-- subscriptions, data responses from js
+--port dataProcessedItems : (List String -> msg) -> Sub msg
+
+
+-- copy of puzzle subs
+--subscriptions : Model -> Sub Msg
+--subscriptions model = Sub.none
+
+--subscriptions : Model -> Sub Msg
+--subscriptions model = dataProcessedItems Suggest
+
+
