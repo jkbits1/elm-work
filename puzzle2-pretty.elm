@@ -3,19 +3,10 @@
 
 --  <link rel="stylesheet" href="css/tidy.css">
 
---import Signal (channel)
-import Signal 
---import Html
---import Html exposing (Html, div, text, input, placeholder)
---import Html.Attributes exposing (class)
---import Html.Events
-
 import Html exposing (..)
+import Html.App as HtmlApp
 import Html.Attributes as Attr exposing (..)
 import Html.Events exposing (..)
-
-import Graphics.Input.Field as Field
-import Graphics.Element exposing (..)
 
 import String
 import List exposing (..)
@@ -46,7 +37,7 @@ type alias ModelResults =
 
 type alias Model = (ModelInputs, ModelButtons, ModelResults)
 
-type Update =
+type Msg =
       NoOp | Add Int | Remove Int |
       UpdateField String |
       Circle2Field String | Circle3Field String | Circle4Field String |
@@ -54,8 +45,8 @@ type Update =
 
 type CircleChange = String
 
-updatesChnl : Signal.Mailbox Update
-updatesChnl = Signal.mailbox NoOp
+--updatesChnl : Signal.Mailbox Update
+--updatesChnl = Signal.mailbox NoOp
 
 --circle1Chnl : Signal.Mailbox String
 --circle1Chnl : Signal.Mailbox Update
@@ -72,9 +63,9 @@ updatesChnl = Signal.mailbox NoOp
 
 
 -- created by view, returns Html and sends Updates to updatesChnl
-addButton : Html
+addButton : Html Msg
 addButton = Html.button
-  [ Html.Events.onClick updatesChnl.address (Add 1)]
+  [ Html.Events.onClick (Add 1)]
   [ Html.text "Show Answers" ]
 
 --showLoopButton : Html
@@ -84,41 +75,36 @@ showLoopButton label action =
                ("btn", True),
                ("btn-default", True)
              ]
-      , Html.Events.onClick updatesChnl.address action
+      , Html.Events.onClick action
       ]
     [ Html.text label ]
 
 
 inputField : String -> String ->
-              Signal.Address Update -> (String -> Update) ->
-              List (String, String) -> Html
-inputField default text chnlAddress updateItem inputStyle =
+              (String -> Msg) ->
+              List (String, String) -> Html Msg
+inputField default text updateItem inputStyle =
   input
     [ placeholder default, Attr.value text
-    , on "input" targetValue
-    --, on "change" targetValue
-        (Signal.message chnlAddress << updateItem)
+    , onInput updateItem
     , style inputStyle
     ]
     []
 
 inputField2 : String -> String -> String ->
-              Signal.Address Update -> (String -> Update) ->
-              List (String, String) -> Html
-inputField2 idVal default text chnlAddress updateItem inputStyle =
+              (String -> Msg) ->
+              List (String, String) -> Html Msg
+inputField2 idVal default text updateItem inputStyle =
   input
     [ placeholder default, Attr.value text
-    , on "input" targetValue
-    --, on "change" targetValue
-        (Signal.message chnlAddress << updateItem)
-    --, style inputStyle
+    , onInput updateItem
       , style wheelStyle
       , id idVal
       , class "form-control col-sm-2"
     ]
     []
 
-formGroup lbl idVal val chnlAddress updateItem style =
+formGroup lbl idVal val updateItem style =
   div [class "form-group"] [
     --div [class "col-sm-2"] [
         label [ for idVal,
@@ -126,7 +112,7 @@ formGroup lbl idVal val chnlAddress updateItem style =
                 classList [("control-label", True),("col-sm-4", True)]
                 ]
                 [text lbl]
-      , inputField2 idVal lbl val chnlAddress updateItem style
+      , inputField2 idVal lbl val updateItem style
     --]
   ]
 
@@ -206,30 +192,35 @@ displayStyle show =
     False ->  [("display", "none")]
 
 -- converts Signal Model to Signal Html, using non-signal view
-main : Signal Html
-main = viewLift
+--main : Signal Html
+--main = viewLift
 
-viewLift : Signal Html
-viewLift = Signal.map (view updatesChnl.address) updateModelLift
+main = HtmlApp.program { init = init, view = view, update = updateModel, subscriptions = subscriptions }
+
+subscriptions : Model -> Sub Msg
+subscriptions model = Sub.none
+
+--viewLift : Signal Html
+--viewLift = Signal.map (view updatesChnl.address) updateModelLift
 
 -- used by main, as a non-signal function, to convert a Model to Html
-view : Signal.Address Update -> Model -> Html
-view updatesChnlAddress (
-                          (i, s1, s2, s3, s4),
-                          (b1, b2, b3, b4, b5),
-                          (firstList, secLoop, thrLoop, ansLoop, twoListPerms, threeListPerms,
-                            (ansPlusList, specificAnswer, ansPermsPlusList, specificAnswerPlusList
-                              , findAnswerLazy3))
-                        ) =
+view : Model -> Html Msg
+view (
+        (i, s1, s2, s3, s4),
+        (b1, b2, b3, b4, b5),
+        (firstList, secLoop, thrLoop, ansLoop, twoListPerms, threeListPerms,
+          (ansPlusList, specificAnswer, ansPermsPlusList, specificAnswerPlusList
+            , findAnswerLazy3))
+      ) =
   div [] [
   div [class "container"]
   [
     Html.form [class "form-inline"][
       --div [class "row"] [
-        formGroup "Wheel 1" "wheel1input"     s1 updatesChnlAddress UpdateField myStyle
-      , formGroup "Wheel 2" "wheel2input"     s2 updatesChnlAddress Circle2Field myStyle
-      , formGroup "Wheel 3" "wheel3input"     s3 updatesChnlAddress Circle3Field myStyle
-      , formGroup "Wheel Ans" "wheelAnsInput" s4 updatesChnlAddress Circle4Field myStyle
+        formGroup "Wheel 1" "wheel1input"     s1 UpdateField myStyle
+      , formGroup "Wheel 2" "wheel2input"     s2 Circle2Field myStyle
+      , formGroup "Wheel 3" "wheel3input"     s3 Circle3Field myStyle
+      , formGroup "Wheel Ans" "wheelAnsInput" s4 Circle4Field myStyle
     ]
 
     , br [] []
@@ -310,24 +301,29 @@ view updatesChnlAddress (
 
 -- converts Signal Update (from updatesChnl) to Signal Model, 
 -- using non-signal updateModel
-updateModelLift : Signal Model
-updateModelLift = Signal.foldp
-                    updateModel
-                    (
-                      (0, "1,2,3", "4,5,6", "7,8,9", "12,15,18"),
-                      --(0, "6,5,5,6,5,4,5,4", "4,2,2,2,4,3,3,1", "1,3,2,3,3,2,4,3",
-                        --    "12,8,12,10,10,12,10,8"),
-                      (True, True, True, True, True),
-                      ([1,2,3], [[4,5,6]], [[7,8,9]], [[12,15,18]], [[[2]]], [[[3]]],
-                        ([([1], [[1]])], [([1], [[1]])], [([[1]], [[1]])], [([[1]], [[1]])]
-                        ,([1], [[1]])
-                        )
-                      )
-                    )
-                    updatesChnl.signal
+--updateModelLift : Signal Model
+--updateModelLift = Signal.foldp
+--                    updateModel
+--                    initialModelState
+--                    updatesChnl.signal
+
+initialModelState =
+  (
+    (0, "1,2,3", "4,5,6", "7,8,9", "12,15,18"),
+    --(0, "6,5,5,6,5,4,5,4", "4,2,2,2,4,3,3,1", "1,3,2,3,3,2,4,3",
+      --    "12,8,12,10,10,12,10,8"),
+    (True, True, True, True, True),
+    ([1,2,3], [[4,5,6]], [[7,8,9]], [[12,15,18]], [[[2]]], [[[3]]],
+      ([([1], [[1]])], [([1], [[1]])], [([[1]], [[1]])], [([[1]], [[1]])]
+      ,([1], [[1]])
+      )
+    )
+  )
+
+init = (initialModelState, Cmd.none)
 
 -- converts Update to new Model
-updateModel : Update -> Model -> Model
+updateModel : Msg -> Model -> (Model, Cmd Msg)
 updateModel update ( (i, s1, s2, s3, s4),
                      (b1, b2, b3, b4, b5),
                      --(xs, xxs2, xxs3, xxs4, s9, s10, (s11, s12, s13, s14))
@@ -342,14 +338,17 @@ updateModel update ( (i, s1, s2, s3, s4),
         thrLoop   = makeThrLoop s3
         ansLoop   = makeAnsLoop s4
       in
-        ((i, s1, s2, s3, s4), buttonStates,
-          (first, secLoop, thrLoop, ansLoop,
-            twoWheelPerms first secLoop, threeLoopPerms first secLoop thrLoop,
-            (answersPlusPerm      first secLoop thrLoop,
-              findSpecificAnswer  first secLoop thrLoop ansLoop,
-              answersPermsPlusList first secLoop thrLoop,
-              displaySpecificAnswers first secLoop thrLoop answers
-              , findAnswerLazy3 first secLoop thrLoop ansLoop)))
+        (
+          ((i, s1, s2, s3, s4), buttonStates,
+            (first, secLoop, thrLoop, ansLoop,
+              twoWheelPerms first secLoop, threeLoopPerms first secLoop thrLoop,
+              (answersPlusPerm      first secLoop thrLoop,
+                findSpecificAnswer  first secLoop thrLoop ansLoop,
+                answersPermsPlusList first secLoop thrLoop,
+                displaySpecificAnswers first secLoop thrLoop answers
+                , findAnswerLazy3 first secLoop thrLoop ansLoop)))
+        , Cmd.none
+        )
   in
     case update of
       NoOp        ->    createModel  i      s1 s2 s3 s4 (b1, b2, b3, b4, b5)
