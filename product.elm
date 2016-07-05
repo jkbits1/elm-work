@@ -1,11 +1,13 @@
-import Graphics.Element (..)
-import Signal (..)
-import List (..)
-import Text (..)
+--import Graphics.Element (..)
+--import Signal (..)
+--import List (..)
+--import Text (..)
+import Html exposing (text)
+import List exposing (drop)
 
-
-main : Element
-main = asText (product (drop 1 [1,2,3,4]))
+--main : Element
+main = text <| toString (product (drop 1 [1,2,3,4]))
+--main = asText (product (drop 1 [1,2,3,4]))
 -- main = asText (head (drop 1 [1,2,3]))
 -- main = plainText (head (drop 1 [1,2,3]))
 
