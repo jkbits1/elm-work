@@ -352,6 +352,11 @@ updateModel update (stateHistory, (i, s1, s2, s3, s4),
                         , findAnswerCS first secLoop thrLoop ansLoop))
       in
         (newHistory, inputs, buttonStates, newCalcs)
+    mdl = createModel (i,       s1, s2, s3, s4) buttonList True
+    wd1 = resultsToD3Data <| wheelData mdl input1
+    wd2 = resultsToD3Data <| wheelData mdl input2
+    wd3 = resultsToD3Data <| wheelData mdl input3
+    wd4 = resultsToD3Data <| wheelData mdl input4
   in
     case update of
       NoOp        ->    (createModel (i,       s1, s2, s3, s4) buttonList True, Cmd.none)
@@ -375,18 +380,7 @@ updateModel update (stateHistory, (i, s1, s2, s3, s4),
       ShowState ->      (createModel(newCount, s1, s2, s3, s4) (buttonListToggle buttonList 7) True, Cmd.none)
 
       ChangeWheel ->
-        let
-          mdl = createModel (i,       s1, s2, s3, s4) buttonList True
-          wd1 = resultsToD3Data <| wheelData mdl
-        in
-          (mdl
-          , check [
---                  [{name = "1"}]
-                    wd1
-                  , wd1
-                  , wd1
-                  ]
-          )
+          (mdl, check [ wd1, wd2, wd3 ] )
 
       -- currently a no-op
       D3Response rs -> (createModel (i,       s1, s2, s3, s4) buttonList True, Cmd.none)
@@ -410,22 +404,7 @@ initialModelState =
     initialCalcs
   )
 
-modelInputs
-      ( stateHistory,
-        inputs,
-        buttonList,
-        results
-      ) = inputs
-
 init = (initialModelState, Cmd.none)
-
-input1 (_, i1, _, _, _) = i1
-
-wheelData : Model -> List Int
-wheelData model = wheelPositionFromString <| input1 <| modelInputs model
-
-resultsToD3Data : List Int -> List { name: String }
-resultsToD3Data xs = List.map (\x -> { name = (toString x) }) xs
 
 --type alias ModelResults =
 --  (WheelPosition, WheelLoop, WheelLoop, WheelLoop,
@@ -435,7 +414,31 @@ resultsToD3Data xs = List.map (\x -> { name = (toString x) }) xs
 --      , (LoopsPermAnswers, LoopsPermutation)
 --      ))
 
+input1 : ModelInputs -> String
+input1 (_, i1, _, _, _) = i1
+input2 : ModelInputs -> String
+input2 (_, _, i2, _, _) = i2
+input3 : ModelInputs -> String
+input3 (_, _, _, i3, _) = i3
+input4 : ModelInputs -> String
+input4 (_, _, _, _, i4) = i4
 
+modelInputs : Model -> ModelInputs
+modelInputs
+      ( stateHistory,
+        inputs,
+        buttonList,
+        results
+      ) = inputs
+
+wheelData : Model -> (ModelInputs -> String ) -> List Int
+wheelData model inp1  = wheelPositionFromString <| inp1 <| modelInputs model
+
+--wheelData2 : String -> List Int
+--wheelData2 s = wheelPositionFromString s
+
+resultsToD3Data : List Int -> List { name: String }
+resultsToD3Data xs = List.map (\x -> { name = (toString x) }) xs
 
 --type Msg2 =
 --  Change String
