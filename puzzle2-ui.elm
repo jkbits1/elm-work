@@ -353,10 +353,10 @@ updateModel update (stateHistory, (i, s1, s2, s3, s4),
       in
         (newHistory, inputs, buttonStates, newCalcs)
     mdl = createModel (i,       s1, s2, s3, s4) buttonList True
-    wd1 = resultsToD3Data <| wheelData mdl input1
-    wd2 = resultsToD3Data <| wheelData mdl input2
-    wd3 = resultsToD3Data <| wheelData mdl input3
-    wd4 = resultsToD3Data <| wheelData mdl input4
+    wd1 = resultsToD3Data <| wheelPositionFromString s1
+    wd2 = resultsToD3Data <| wheelPositionFromString s2
+    wd3 = resultsToD3Data <| wheelPositionFromString s3
+    wd4 = resultsToD3Data <| wheelPositionFromString s4
   in
     case update of
       NoOp        ->    (createModel (i,       s1, s2, s3, s4) buttonList True, Cmd.none)
@@ -431,8 +431,8 @@ modelInputs
         results
       ) = inputs
 
-wheelData : Model -> (ModelInputs -> String ) -> List Int
-wheelData model inp1  = wheelPositionFromString <| inp1 <| modelInputs model
+--wheelData : Model -> (ModelInputs -> String ) -> List Int
+--wheelData model inp1  = wheelPositionFromString <| inp1 <| modelInputs model
 
 --wheelData2 : String -> List Int
 --wheelData2 s = wheelPositionFromString s

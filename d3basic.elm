@@ -1,7 +1,5 @@
 port module TestInterop exposing (..)
 
-import Wheel exposing (..)
-
 import Html exposing (..)
 import Html.App as Html
 import Html.Events exposing (..)
