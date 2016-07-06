@@ -363,10 +363,10 @@ updateModel update (stateHistory, (i, s1, s2, s3, s4),
 
       Back        ->    (createModel inputs states False, Cmd.none)
 
-      Circle1Field s -> (createModel(newCount, s,  s2, s3, s4) buttonList True, Cmd.none)
-      Circle2Field s -> (createModel(newCount, s1, s,  s3, s4) buttonList True, Cmd.none)
-      Circle3Field s -> (createModel(newCount, s1, s2, s,  s4) buttonList True, Cmd.none)
-      Circle4Field s -> (createModel(newCount, s1, s2, s3, s)  buttonList True, Cmd.none)
+      Circle1Field s -> (createModel(newCount, s,  s2, s3, s4) buttonList True, check [ wd1, wd2, wd3 ] )
+      Circle2Field s -> (createModel(newCount, s1, s,  s3, s4) buttonList True, check [ wd1, wd2, wd3 ] )
+      Circle3Field s -> (createModel(newCount, s1, s2, s,  s4) buttonList True, check [ wd1, wd2, wd3 ] )
+      Circle4Field s -> (createModel(newCount, s1, s2, s3, s)  buttonList True, check [ wd1, wd2, wd3 ] )
 
       --ShowAns     ->    (createModel((i + 1), s1, s2, s3, s4) (not b1, b2, b3, b4, b5, b6, b7) True
       ShowAns     ->    (createModel(newCount, s1, s2, s3, s4) (buttonListToggle buttonList 1) True, Cmd.none)
@@ -379,8 +379,7 @@ updateModel update (stateHistory, (i, s1, s2, s3, s4),
 
       ShowState ->      (createModel(newCount, s1, s2, s3, s4) (buttonListToggle buttonList 7) True, Cmd.none)
 
-      ChangeWheel ->
-          (mdl, check [ wd1, wd2, wd3 ] )
+      ChangeWheel ->    (mdl, check [ wd1, wd2, wd3 ] )
 
       -- currently a no-op
       D3Response rs -> (createModel (i,       s1, s2, s3, s4) buttonList True, Cmd.none)
