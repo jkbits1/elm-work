@@ -40,7 +40,7 @@ function showCircle (donutDataList) {
 
   var screenWidth = window.innerWidth;
 
-  var initWH = 500;
+  var initWH = 400;
 
   // this seems to work pretty well, a bit iffy for 2.0 upwards though
   // var adjRatio = 0.7;
@@ -53,16 +53,22 @@ function showCircle (donutDataList) {
     // height = Math.min(screenWidth, 500) - margin.top - margin.bottom;
 
   width = Math.min(screenWidth, 500 * adjRatio) - margin.left - margin.right,
-    height = Math.min(screenWidth, 500 * adjRatio) - margin.top - margin.bottom;
+  height = Math.min(screenWidth, 500 * adjRatio) - margin.top - margin.bottom;
 
   svg = d3.select("#chart svg").remove();
 
+  var svgWidth = 400; //(width + margin.left + margin.right);
+  var svgHeight = 400; // (height + margin.top + margin.bottom);
+
   // var
   svg = d3.select("#chart").append("svg")
-    .attr("width", (width + margin.left + margin.right))
-    .attr("height", (height + margin.top + margin.bottom))
+    .attr("width", svgWidth )
+    .attr("height", svgHeight)
     .append("g").attr("class", "wrapper")
-    .attr("transform", "translate(" + (width / 2 + margin.left) + "," + (height / 2 + margin.top) + ")")
+    .attr("transform",
+      "translate(" +
+      ((width / 2 + margin.left) - 50) + "," +
+        ((height / 2 + margin.top) - 50) + ")")
     // .attr("transform", "translate(" + (width + margin.left) + "," + (height + margin.top) + ")")
     //   .attr("transform", "translate(250,250)")
     ;

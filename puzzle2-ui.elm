@@ -247,12 +247,19 @@ view ( stateHistory,
       ]
     , br [] []
 
-    , Html.form [class "form-inline"][
+    , Html.form [class "form-inline", style [("width", "500px"), ("float", "left")]][
+        div [] [
         formGroup "Wheel 1" "wheel1input"     s1 Circle1Field myStyle
       , formGroup "Wheel 2" "wheel2input"     s2 Circle2Field myStyle
-      , formGroup "Wheel 3" "wheel3input"     s3 Circle3Field myStyle
+--      , span [ id "chart" ] []
+      ]
+      , div [] [
+        formGroup "Wheel 3" "wheel3input"     s3 Circle3Field myStyle
       , formGroup "Wheel Ans" "wheelAnsInput" s4 Circle4Field myStyle
+      ]
     ]
+
+    , div [id "chart", style [("width", "0px")]] []
 
     , br [] []
 
