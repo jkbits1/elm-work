@@ -353,19 +353,19 @@ updateModel update (stateHistory, (i, s1, s2, s3, s4),
       in
         (newHistory, inputs, buttonStates, newCalcs)
     mdl = createModel (i,       s1, s2, s3, s4) buttonList True
-    wd1 = resultsToD3Data <| wheelPositionFromString s1
-    wd2 = resultsToD3Data <| wheelPositionFromString s2
-    wd3 = resultsToD3Data <| wheelPositionFromString s3
-    wd4 = resultsToD3Data <| wheelPositionFromString s4
+    wd1 = d3DataFromString s1
+    wd2 = d3DataFromString s2
+    wd3 = d3DataFromString s3
+    wd4 = d3DataFromString s4
   in
     case update of
       NoOp        ->    (createModel (i,       s1, s2, s3, s4) buttonList True, Cmd.none)
 
       Back        ->    (createModel inputs states False, Cmd.none)
 
-      Circle1Field s -> (createModel(newCount, s,  s2, s3, s4) buttonList True, check [ wd1, wd2, wd3 ] )
-      Circle2Field s -> (createModel(newCount, s1, s,  s3, s4) buttonList True, check [ wd1, wd2, wd3 ] )
-      Circle3Field s -> (createModel(newCount, s1, s2, s,  s4) buttonList True, check [ wd1, wd2, wd3 ] )
+      Circle1Field s -> (createModel(newCount, s,  s2, s3, s4) buttonList True, check [ d3DataFromString s, wd2, wd3 ] )
+      Circle2Field s -> (createModel(newCount, s1, s,  s3, s4) buttonList True, check [ wd1, d3DataFromString s, wd3 ] )
+      Circle3Field s -> (createModel(newCount, s1, s2, s,  s4) buttonList True, check [ wd1, wd2, d3DataFromString s ] )
       Circle4Field s -> (createModel(newCount, s1, s2, s3, s)  buttonList True, check [ wd1, wd2, wd3 ] )
 
       --ShowAns     ->    (createModel((i + 1), s1, s2, s3, s4) (not b1, b2, b3, b4, b5, b6, b7) True
@@ -403,7 +403,15 @@ initialModelState =
     initialCalcs
   )
 
-init = (initialModelState, Cmd.none)
+init =
+  let
+    mdl = initialModelState
+    wd1 = resultsToD3Data <| wheelData mdl input1
+    wd2 = resultsToD3Data <| wheelData mdl input2
+    wd3 = resultsToD3Data <| wheelData mdl input3
+    wd4 = resultsToD3Data <| wheelData mdl input4
+  in
+    (mdl, check [ wd1, wd2, wd3 ] )
 
 --type alias ModelResults =
 --  (WheelPosition, WheelLoop, WheelLoop, WheelLoop,
@@ -430,14 +438,13 @@ modelInputs
         results
       ) = inputs
 
---wheelData : Model -> (ModelInputs -> String ) -> List Int
---wheelData model inp1  = wheelPositionFromString <| inp1 <| modelInputs model
-
---wheelData2 : String -> List Int
---wheelData2 s = wheelPositionFromString s
+wheelData : Model -> (ModelInputs -> String ) -> List Int
+wheelData model inp = wheelPositionFromString <| inp <| modelInputs model
 
 resultsToD3Data : List Int -> List { name: String }
 resultsToD3Data xs = List.map (\x -> { name = (toString x) }) xs
+
+d3DataFromString = (\s -> resultsToD3Data <| wheelPositionFromString s)
 
 --type Msg2 =
 --  Change String
