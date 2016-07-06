@@ -247,7 +247,7 @@ view ( stateHistory,
       ]
     , br [] []
 
-    , Html.form [class "form-inline", style [("width", "500px"), ("float", "left")]][
+    , Html.form [class "form-inline", style [("width", "300px"), ("float", "left")]][
         div [] [
         formGroup "Wheel 1" "wheel1input"     s1 Circle1Field myStyle
       , formGroup "Wheel 2" "wheel2input"     s2 Circle2Field myStyle
