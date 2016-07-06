@@ -127,7 +127,8 @@ inputField2 idVal default text updateItem inputStyle =
       , class "form-control col-sm-2"
     ]
     []
-
+--formGroup "1" "wheel1input"     s1 Circle1Field myStyle Rotate1
+formGroup : String -> String -> String -> (String -> Msg) -> List (String, String) -> Msg -> Html Msg
 formGroup lbl idVal val updateItem style msg =
   div [class "form-group"] [
     div [] [
@@ -138,14 +139,14 @@ formGroup lbl idVal val updateItem style msg =
                 [text <| "Wheel " ++ lbl]
       , inputField2 idVal lbl val updateItem style
     ]
-    , div [] [
-      Html.button
-          [
-            Html.Events.onClick msg
-          , class "form-control col-sm-2"
-          ]
-          [ Html.text <| "R " ++ lbl ]
-    ]
+--    , div [] [
+--      Html.button
+--          [
+--            Html.Events.onClick msg
+--          , class "form-control col-sm-2"
+--          ]
+--          [ Html.text <| "R " ++ lbl ]
+--    ]
   ]
 
 --msgFromNum n =
@@ -279,6 +280,31 @@ view ( stateHistory,
       ]
     ]
 
+                , div [] [
+                  Html.button
+                      [class "form-control col-sm-2"
+                      , style [("width", "30px"), ("float", "left")]
+                      ,  Html.Events.onClick Rotate1
+                      ]
+                      [ Html.text <| "R " ++ "1" ]
+                ]
+                , div [] [
+                  Html.button
+                      [class "form-control col-sm-2"
+                      , style [("width", "30px"), ("float", "left")]
+                      ,  Html.Events.onClick Rotate2
+                      ]
+                      [ Html.text <| "R " ++ "2" ]
+                ]
+                , div [] [
+                  Html.button
+                      [class "form-control col-sm-2"
+                      , style [("width", "30px"), ("float", "left")]
+                      ,  Html.Events.onClick Rotate3
+                      ]
+                      [ Html.text <| "R " ++ "3" ]
+                ]
+
     , div [id "chart", style [("width", "0px")]] []
 
     , br [] []
@@ -287,6 +313,7 @@ view ( stateHistory,
     , wheelRow      2 "Wheel 2"   "Loop 2"    s2 (toString secLoop) ShowLoop2   <| buttonVal buttonList 2
     , wheelRow      3 "Wheel 3"   "Loop 3"    s3 (toString thrLoop) ShowLoop3   <| buttonVal buttonList 3
     , wheelRow      4 "Wheel Answers" "Loop Answers"  s4 (toString ansLoop) ShowLoopAns <| buttonVal buttonList 4
+
   ]
 
   , br [] []
@@ -399,7 +426,9 @@ updateModel update (stateHistory, (i, s1, s2, s3, s4),
       ShowAns     ->    (createModel(newCount, s1, s2, s3, s4) (buttonListToggle buttonList 1) True, Cmd.none)
       ShowLoop2   ->    (createModel(newCount, s1, s2, s3, s4) (buttonListToggle buttonList 2) True, Cmd.none)
       ShowLoop3   ->    (createModel(newCount, s1, s2, s3, s4) (buttonListToggle buttonList 3) True, Cmd.none)
+
       ShowLoopAns ->    (createModel(newCount, s1, s2, s3, s4) (buttonListToggle buttonList 4) True, Cmd.none)
+--      ShowLoopAns ->    (createModel (i,       s1, rotateNumsString s2, s3, s4) buttonList True, Cmd.none)
 
       ShowPerms2 ->     (createModel(newCount, s1, s2, s3, s4) (buttonListToggle buttonList 5) True, Cmd.none)
       ShowPerms3 ->     (createModel(newCount, s1, s2, s3, s4) (buttonListToggle buttonList 6) True, Cmd.none)
@@ -411,9 +440,16 @@ updateModel update (stateHistory, (i, s1, s2, s3, s4),
       -- currently a no-op
       D3Response rs -> (createModel (i,       s1, s2, s3, s4) buttonList True, Cmd.none)
 
-      Rotate1 -> (createModel (i,       rotateNumsString s1, s2, s3, s4) buttonList True, Cmd.none)
-      Rotate2 -> (createModel (i,       s1, rotateNumsString s2, s3, s4) buttonList True, Cmd.none)
-      Rotate3 -> (createModel (i,       s1, s2, rotateNumsString s3, s4) buttonList True, Cmd.none)
+      Rotate1 -> (createModel (i,       rotateNumsString s1, s2, s3, s4) buttonList True,
+                    check [ d3DataFromString <| rotateNumsString s1, wd2, wd3 ])
+--      Rotate1 -> (createModel(newCount, s1, s2, s3, s4) (buttonListToggle buttonList 4) True, Cmd.none)
+      Rotate2 -> (createModel (i,       s1, rotateNumsString s2, s3, s4) buttonList True,
+                    check [ wd1, d3DataFromString <| rotateNumsString s2, wd3 ])
+      Rotate3 -> (createModel (i,       s1, s2, rotateNumsString s3, s4) buttonList True,
+                    --Cmd.none
+                    check [ wd1, wd2, d3DataFromString <| rotateNumsString s3 ]
+--                    check [ wd1, wd2, wd3 ]
+                    )
 
 
 initialInputs = (0, "1,2,3", "4,5,6", "7,8,9", "12,15,18")
