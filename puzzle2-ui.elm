@@ -44,7 +44,10 @@ type Msg =
 --      ShowLazyAns |
       ShowState |
       ChangeWheel |
-      D3Response (List String)
+      D3Response (List String) |
+      Rotate1 |
+      Rotate2 |
+      Rotate3
 
 buttonVal : List Bool -> Int -> Bool
 buttonVal list num =
@@ -125,15 +128,32 @@ inputField2 idVal default text updateItem inputStyle =
     ]
     []
 
-formGroup lbl idVal val updateItem style =
+formGroup lbl idVal val updateItem style msg =
   div [class "form-group"] [
+    div [] [
         label [ for idVal,
                 --classList [("control-label", True),("col-sm-4", True)]
                 classList [("control-label", True),("col-sm-4", True)]
                 ]
-                [text lbl]
+                [text <| "Wheel " ++ lbl]
       , inputField2 idVal lbl val updateItem style
+    ]
+    , div [] [
+      Html.button
+          [
+            Html.Events.onClick msg
+          , class "form-control col-sm-2"
+          ]
+          [ Html.text <| "R " ++ lbl ]
+    ]
   ]
+
+--msgFromNum n =
+--  case n of
+--    1 -> Rotate1
+--    2 -> Rotate2
+--    3 -> Rotate3
+
 
 wheelOnlyRow idx wheelLabel wheelData =
     div [class "row"] [
@@ -249,13 +269,13 @@ view ( stateHistory,
 
     , Html.form [class "form-inline", style [("width", "300px"), ("float", "left")]][
         div [] [
-        formGroup "Wheel 1" "wheel1input"     s1 Circle1Field myStyle
-      , formGroup "Wheel 2" "wheel2input"     s2 Circle2Field myStyle
+        formGroup "1" "wheel1input"     s1 Circle1Field myStyle Rotate1
+      , formGroup "2" "wheel2input"     s2 Circle2Field myStyle Rotate2
 --      , span [ id "chart" ] []
       ]
       , div [] [
-        formGroup "Wheel 3" "wheel3input"     s3 Circle3Field myStyle
-      , formGroup "Wheel Ans" "wheelAnsInput" s4 Circle4Field myStyle
+        formGroup "3" "wheel3input"     s3 Circle3Field myStyle Rotate3
+      , formGroup "Ans" "wheelAnsInput" s4 Circle4Field myStyle Rotate1
       ]
     ]
 
@@ -391,6 +411,10 @@ updateModel update (stateHistory, (i, s1, s2, s3, s4),
       -- currently a no-op
       D3Response rs -> (createModel (i,       s1, s2, s3, s4) buttonList True, Cmd.none)
 
+      Rotate1 -> (createModel (i,       rotateNumsString s1, s2, s3, s4) buttonList True, Cmd.none)
+      Rotate2 -> (createModel (i,       s1, rotateNumsString s2, s3, s4) buttonList True, Cmd.none)
+      Rotate3 -> (createModel (i,       s1, s2, rotateNumsString s3, s4) buttonList True, Cmd.none)
+
 
 initialInputs = (0, "1,2,3", "4,5,6", "7,8,9", "12,15,18")
 initialStates = [False, False, False, False, False, False, False, False, False, False]
@@ -451,7 +475,13 @@ wheelData model inp = wheelPositionFromString <| inp <| modelInputs model
 resultsToD3Data : List Int -> List { name: String }
 resultsToD3Data xs = List.map (\x -> { name = (toString x) }) xs
 
+d3DataFromString : String -> List { name: String }
 d3DataFromString = (\s -> resultsToD3Data <| wheelPositionFromString s)
+
+wheelStringFromInt : List Int -> String
+wheelStringFromInt xs = String.join ", " <| List.map (\x -> toString x) xs
+
+rotateNumsString s = wheelStringFromInt <| turnWheel (wheelPositionFromString s) 1
 
 --type Msg2 =
 --  Change String
