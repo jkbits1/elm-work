@@ -216,19 +216,21 @@ wheelStyle =
 
 myStyle : List (String, String)
 myStyle =
-  [ ("width", "100%")
-  , ("height", "40px")
-  , ("padding", "10px 0")
-  , ("font-size", "1.8em")
-  , ("text-align", "center")
+  [
+--    ("width", "100%")
+--  , ("height", "40px")
+--  , ("padding", "10px 0")
+--  , ("font-size", "1.8em")
+--  , ("text-align", "center")
   ]
 
 textStyle : List (String, String)
 textStyle =
-  [ ("width", "100%")
-  , ("padding", "10px 0")
-  , ("font-size", "1.8em")
-  , ("text-align", "left")
+  [
+--    ("width", "100%")
+--  , ("padding", "10px 0")
+--  , ("font-size", "1.8em")
+--  , ("text-align", "left")
   ]
 
 displayStyle : Bool -> List (String, String)
