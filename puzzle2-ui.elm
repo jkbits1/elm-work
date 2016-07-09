@@ -106,16 +106,16 @@ showLoopButton labels hide action =
       [ Html.text label ]
 
 
-inputField : String -> String ->
-              (String -> Msg) ->
-              List (String, String) -> Html Msg
-inputField default text updateItem inputStyle =
-  input
-    [ placeholder default, Attr.value text
-    , onInput updateItem
-    , style inputStyle
-    ]
-    []
+--inputField : String -> String ->
+--              (String -> Msg) ->
+--              List (String, String) -> Html Msg
+--inputField default text updateItem inputStyle =
+--  input
+--    [ placeholder default, Attr.value text
+--    , onInput updateItem
+--    , style inputStyle
+--    ]
+--    []
 
 inputField2 : String -> String -> String ->
               (String -> Msg) ->
@@ -124,9 +124,9 @@ inputField2 idVal default text updateItem inputStyle =
   input
     [ placeholder default, Attr.value text
     , onInput updateItem
-      , style wheelStyle
+--      , style wheelStyle
       , id idVal
---      , class "form-control col-sm-2"
+      , class "form-control col-sm-2 wheelStyle"
     ]
     []
 --formGroup "1" "wheel1input"     s1 Circle1Field myStyle Rotate1
@@ -134,16 +134,17 @@ formGroup : String -> String -> String -> (String -> Msg) -> List (String, Strin
 formGroup lbl idVal val updateItem style msg =
   div [
 --  class "form-group"
+    class "wheelInput"
   ] [
-    div [] [
+--    div [] [
         label [
           for idVal
-        , classList [("control-label", True),("col-sm-4", True)]
+        , classList [("control-label", True),("col-sm-4", True), ("wheelInputLabel", True)]
         ] [
           text <| "Wheel " ++ lbl
         ]
       , inputField2 idVal lbl val updateItem style
-    ]
+--    ]
 --    , div [] [
 --      Html.button
 --          [
@@ -177,7 +178,6 @@ wheelOnlyRow idx wheelLabel wheelData =
 wheelRow idx wheelLabel loopLabel wheelData loopData action hide =
     div [
       classList [("row", True),("wheelRow", True)]
---, style [("min-height", "50px"), ("margin-top", "10px")]
       ] [
 
         div [
@@ -211,9 +211,9 @@ foundAnswerIndicator answerList show =
     [ text <| "foundAnswer? - " ++ found ]
 
 
-wheelStyle : List (String, String)
-wheelStyle =
-  [ ("min-width", "200px") ]
+--wheelStyle : List (String, String)
+--wheelStyle =
+--  [ ("min-width", "200px") ]
 
 myStyle : List (String, String)
 myStyle =
@@ -319,7 +319,6 @@ view ( stateHistory,
             div [] [
             formGroup "1" "wheel1input"     s1 Circle1Field myStyle Rotate1
           , formGroup "2" "wheel2input"     s2 Circle2Field myStyle Rotate2
-    --      , span [ id "chart" ] []
           ]
           , div [] [
             formGroup "3" "wheel3input"     s3 Circle3Field myStyle Rotate3
@@ -327,7 +326,7 @@ view ( stateHistory,
           ]
         ]
     , div [classList [("rotBtns", True)]] [
-        div [] [
+        div [class "wheelInput"] [
         Html.button
             [
 --                      class "form-control col-sm-2"
@@ -337,7 +336,7 @@ view ( stateHistory,
             ]
             [ Html.text <| "R " ++ "1" ]
         ]
-        , div [] [
+        , div [class "wheelInput"] [
           Html.button
               [
   --                        class "form-control col-sm-2"

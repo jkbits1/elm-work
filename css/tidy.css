@@ -406,6 +406,7 @@ button {
 
 .wheelCalcs {
   width: 300px;
+  margin-top: 200px;
 }
 
 .answers {
@@ -424,4 +425,17 @@ button {
 .wheelRow {
   min-height: 50px;
   margin-top: 10px;
+}
+
+.wheelInput {
+  height: 45px;
+}
+
+.wheelInputLabel {
+  padding-left: 0px;
+}
+
+.wheelStyle {
+  /*min-width: 200px;*/
+  min-width: 170px;
 }
