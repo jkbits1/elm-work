@@ -420,3 +420,8 @@ button {
   position: absolute;
   left: 50px;
 }
+
+.wheelRow {
+  min-height: 50px;
+  margin-top: 10px;
+}

@@ -163,39 +163,40 @@ formGroup lbl idVal val updateItem style msg =
 
 wheelOnlyRow idx wheelLabel wheelData =
     div [
---          class "row"
+          class "row"
           ] [
       div [
---        class "col-sm-2"
+        class "col-sm-2"
         ] [ text wheelLabel ]
       ,
       div [
---        class "col-sm-2"
+        class "col-sm-2"
         ] [ text <| wheelData ]
     ]
 
 wheelRow idx wheelLabel loopLabel wheelData loopData action hide =
     div [
---      class "row", style [("min-height", "50px"), ("margin-top", "10px")]
+      classList [("row", True),("wheelRow", True)]
+--, style [("min-height", "50px"), ("margin-top", "10px")]
       ] [
 
         div [
---        class "col-sm-2", style [("font-weight", "700")]
+        class "col-sm-2", style [("font-weight", "700")]
         ] [ text wheelLabel ]
       , div [
---      class "col-sm-2"
+      class "col-sm-2"
       ] [ text <| wheelData ]
       , div [
---      class "col-sm-2"
+      class "col-sm-2"
       ] [ showLoopButton ("+", "-") hide action ]
       , div [
---        class "col-sm-2", style <| (displayStyle hide) ++ [("font-weight", "700")]
+        class "col-sm-2", style <| (displayStyle hide) ++ [("font-weight", "700")]
         ] [
         text loopLabel
       ]
 
       , div [
---        class "col-sm-2", style <| displayStyle hide
+        class "col-sm-2", style <| displayStyle hide
         ] [ text loopData ]
     ]
 
