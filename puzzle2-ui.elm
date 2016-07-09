@@ -375,57 +375,59 @@ view ( stateHistory,
 
   , br [] []
 
-  , div [
---  class "container"
-  ]
-  [
+  , div [ classList [("answers", True)]] [
       div [
---      class "row"
---             , style (displayStyle <| buttonVal buttonList 1)
-      ] [
-          div [
---          class "col-sm-12"
-          ] [ foundAnswerIndicator specificAnswer <| buttonVal buttonList 1 ]
+    --  class "container"
       ]
-
-    , br [] []
-    ,  infoRow "2 Loop Perms"     (toString twoListPerms)   <| buttonVal buttonList 5
-    , infoRow "3 Loop Perms"  (toString threeListPerms) <| buttonVal buttonList 6
-    , infoRow "answersPlus"  (toString ansPlusList ) <| buttonVal buttonList 1
-
-    , br [] []
-
-    , div [
---        class "row", style (displayStyle <| buttonVal buttonList 1)
-        ] [
+      [
           div [
---          class "col-sm-2"
-          ] [ text "findAnswers - " ]
-        , div [
---            class "col-sm-8"
-          ] [ text <| toString specificAnswer ]
-      ]
-
-    , infoRow "lazyAnswer - " (toString findAnswerLazy3) <| buttonVal buttonList 1
-    , infoRow ("State change count: " ++ (toString i)) (toString stateHistory) <| buttonVal buttonList 7
-
-    , div [ style <| textStyle ++ (displayStyle False)] [ text ("answersPerms - " ++ (toString ansPermsPlusList)) ]
-    , div [ style <| textStyle ++ (displayStyle False)] [ text ("displayAnswer - " ++ (toString specificAnswerPlusList)) ]
-
-    , div [
---    class "row"
-    ] [
-    ]
-    , div [
---      class "row"
-      ] [
-        Html.button
-          [
-            Html.Events.onClick ChangeWheel
+    --      class "row"
+    --             , style (displayStyle <| buttonVal buttonList 1)
+          ] [
+              div [
+    --          class "col-sm-12"
+              ] [ foundAnswerIndicator specificAnswer <| buttonVal buttonList 1 ]
           ]
-          [ Html.text "wheel" ]
+
+        , br [] []
+        ,  infoRow "2 Loop Perms"     (toString twoListPerms)   <| buttonVal buttonList 5
+        , infoRow "3 Loop Perms"  (toString threeListPerms) <| buttonVal buttonList 6
+        , infoRow "answersPlus"  (toString ansPlusList ) <| buttonVal buttonList 1
+
+        , br [] []
+
+        , div [
+    --        class "row", style (displayStyle <| buttonVal buttonList 1)
+            ] [
+              div [
+    --          class "col-sm-2"
+              ] [ text "findAnswers - " ]
+            , div [
+    --            class "col-sm-8"
+              ] [ text <| toString specificAnswer ]
+          ]
+
+        , infoRow "lazyAnswer - " (toString findAnswerLazy3) <| buttonVal buttonList 1
+        , infoRow ("State change count: " ++ (toString i)) (toString stateHistory) <| buttonVal buttonList 7
+
+        , div [ style <| textStyle ++ (displayStyle False)] [ text ("answersPerms - " ++ (toString ansPermsPlusList)) ]
+        , div [ style <| textStyle ++ (displayStyle False)] [ text ("displayAnswer - " ++ (toString specificAnswerPlusList)) ]
+
+        , div [
+    --    class "row"
+        ] [
+        ]
+        , div [
+    --      class "row"
+          ] [
+            Html.button
+              [
+                Html.Events.onClick ChangeWheel
+              ]
+              [ Html.text "wheel" ]
+        ]
+      ]
     ]
-  ]
   ]
 
 -- outgoing port to js

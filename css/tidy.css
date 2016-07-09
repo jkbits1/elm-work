@@ -398,11 +398,15 @@ button {
 }
 
 .rotBtns {
-  width: 100px;
+  width: 75px;
   float: left;
 }
 
 .wheelCalcs {
   width: 300px;
 
+}
+
+.answers {
+  width: 300px;
 }
