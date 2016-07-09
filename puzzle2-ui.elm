@@ -305,7 +305,9 @@ view ( stateHistory,
                       [ Html.text <| "R " ++ "3" ]
                 ]
 
-    , div [id "chart", style [("width", "0px")]] []
+--    , div [id "chart", style [("width", "0px")]] []
+    , div [id "chart", style [("width", "250px"), ("float", "right")]] []
+
 
     , br [] []
 
