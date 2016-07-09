@@ -63,7 +63,9 @@ maxButton = 10
 buttonListToggle list num = take (num-1) list ++ [not <| buttonVal list num] ++ take (maxButton - num) (drop num list)
 
 
-buttonClassList = classList [("btn", True), ("btn-default", True)]
+buttonClassList = classList [
+--  ("btn", True), ("btn-default", True)
+  ]
 
 backButton : Html Msg
 backButton    = uiButton Back       "Step Back"
@@ -124,17 +126,20 @@ inputField2 idVal default text updateItem inputStyle =
     , onInput updateItem
       , style wheelStyle
       , id idVal
-      , class "form-control col-sm-2"
+--      , class "form-control col-sm-2"
     ]
     []
 --formGroup "1" "wheel1input"     s1 Circle1Field myStyle Rotate1
 formGroup : String -> String -> String -> (String -> Msg) -> List (String, String) -> Msg -> Html Msg
 formGroup lbl idVal val updateItem style msg =
-  div [class "form-group"] [
+  div [
+--  class "form-group"
+  ] [
     div [] [
-        label [ for idVal,
+        label [ for idVal
+--                ,
                 --classList [("control-label", True),("col-sm-4", True)]
-                classList [("control-label", True),("col-sm-4", True)]
+--                classList [("control-label", True),("col-sm-4", True)]
                 ]
                 [text <| "Wheel " ++ lbl]
       , inputField2 idVal lbl val updateItem style
@@ -157,23 +162,41 @@ formGroup lbl idVal val updateItem style msg =
 
 
 wheelOnlyRow idx wheelLabel wheelData =
-    div [class "row"] [
-      div [class "col-sm-2"] [ text wheelLabel ]
+    div [
+--          class "row"
+          ] [
+      div [
+--        class "col-sm-2"
+        ] [ text wheelLabel ]
       ,
-      div [class "col-sm-2"] [ text <| wheelData ]
+      div [
+--        class "col-sm-2"
+        ] [ text <| wheelData ]
     ]
 
 wheelRow idx wheelLabel loopLabel wheelData loopData action hide =
-    div [class "row", style [("min-height", "50px"), ("margin-top", "10px")]] [
+    div [
+--      class "row", style [("min-height", "50px"), ("margin-top", "10px")]
+      ] [
 
-        div [class "col-sm-2", style [("font-weight", "700")] ] [ text wheelLabel ]
-      , div [class "col-sm-2"] [ text <| wheelData ]
-      , div [class "col-sm-2"] [ showLoopButton ("+", "-") hide action ]
-      , div [class "col-sm-2", style <| (displayStyle hide) ++ [("font-weight", "700")] ] [
+        div [
+--        class "col-sm-2", style [("font-weight", "700")]
+        ] [ text wheelLabel ]
+      , div [
+--      class "col-sm-2"
+      ] [ text <| wheelData ]
+      , div [
+--      class "col-sm-2"
+      ] [ showLoopButton ("+", "-") hide action ]
+      , div [
+--        class "col-sm-2", style <| (displayStyle hide) ++ [("font-weight", "700")]
+        ] [
         text loopLabel
       ]
 
-      , div [class "col-sm-2", style <| displayStyle hide ] [ text loopData ]
+      , div [
+--        class "col-sm-2", style <| displayStyle hide
+        ] [ text loopData ]
     ]
 
 foundAnswerIndicator answerList show =
@@ -215,11 +238,19 @@ displayStyle show =
     False ->  [("display", "none")]
 
 infoRow label info displayState =
-  div [class "row", style <| -- textStyle
-                      [("margin-top", "10px")] ++
-                      (displayStyle displayState)] [
-      div [class "col-sm-2"] [ text label ]
-    , div [class "col-sm-8"] [ text <| info ]
+  div [
+--  class "row",
+        style
+--<| -- textStyle
+--                      [("margin-top", "10px")] ++
+                      (displayStyle displayState)
+                      ] [
+      div [
+--        class "col-sm-2"
+        ] [ text label ]
+    , div [
+--    class "col-sm-8"
+      ] [ text <| info ]
   ]
 
 
@@ -249,26 +280,38 @@ view ( stateHistory,
             , findAnswerLazy3))
       ) =
   div [] [
-  div [class "container"]
+  div [
+--    class "container"
+    ]
   [
-         div [class "row"] [
+         div [
+--         class "row"
+         ] [
           h2 [] [text "Elm Calculations"]
          ]
 
-       , div [class "row"] [
-          div [class "btn-group"] [
+       , div [
+--          class "row"
+          ] [
+          div [
+--            class "btn-group"
+            ] [
               perms2Button  <| buttonVal buttonList 5
             , perms3Button  <| buttonVal buttonList 6
             , answersButton <| buttonVal buttonList 1
           ]
-        , div [class "btn-group", style [("margin-left", "5px")] ] [
+        , div [
+--          class "btn-group", style [("margin-left", "5px")]
+          ] [
             backButton
           , stateButton <| buttonVal buttonList 7
         ]
       ]
     , br [] []
 
-    , Html.form [class "form-inline", style [("width", "300px"), ("float", "left")]][
+    , Html.form [
+--      class "form-inline", style [("width", "300px"), ("float", "left")]
+    ][
         div [] [
         formGroup "1" "wheel1input"     s1 Circle1Field myStyle Rotate1
       , formGroup "2" "wheel2input"     s2 Circle2Field myStyle Rotate2
@@ -282,31 +325,39 @@ view ( stateHistory,
 
                 , div [] [
                   Html.button
-                      [class "form-control col-sm-2"
-                      , style [("width", "30px"), ("float", "left")]
-                      ,  Html.Events.onClick Rotate1
+                      [
+--                      class "form-control col-sm-2"
+--                      , style [("width", "30px"), ("float", "left")]
+--                      ,
+                        Html.Events.onClick Rotate1
                       ]
                       [ Html.text <| "R " ++ "1" ]
                 ]
                 , div [] [
                   Html.button
-                      [class "form-control col-sm-2"
-                      , style [("width", "30px"), ("float", "left")]
-                      ,  Html.Events.onClick Rotate2
+                      [
+--                        class "form-control col-sm-2"
+--                      , style [("width", "30px"), ("float", "left")]
+--                      ,
+                        Html.Events.onClick Rotate2
                       ]
                       [ Html.text <| "R " ++ "2" ]
                 ]
                 , div [] [
                   Html.button
-                      [class "form-control col-sm-2"
-                      , style [("width", "30px"), ("float", "left")]
-                      ,  Html.Events.onClick Rotate3
+                      [
+--                        class "form-control col-sm-2"
+--                      , style [("width", "30px"), ("float", "left")]
+--                      ,
+                        Html.Events.onClick Rotate3
                       ]
                       [ Html.text <| "R " ++ "3" ]
                 ]
 
 --    , div [id "chart", style [("width", "0px")]] []
-    , div [id "chart", style [("width", "250px"), ("float", "right")]] []
+    , div [id "chart"
+--        , style [("width", "250px"), ("float", "right")]
+      ] []
 
 
     , br [] []
@@ -315,17 +366,21 @@ view ( stateHistory,
     , wheelRow      2 "Wheel 2"   "Loop 2"    s2 (toString secLoop) ShowLoop2   <| buttonVal buttonList 2
     , wheelRow      3 "Wheel 3"   "Loop 3"    s3 (toString thrLoop) ShowLoop3   <| buttonVal buttonList 3
     , wheelRow      4 "Wheel Answers" "Loop Answers"  s4 (toString ansLoop) ShowLoopAns <| buttonVal buttonList 4
-
   ]
 
   , br [] []
 
-  , div [class "container"]
+  , div [
+--  class "container"
+  ]
   [
-      div [class "row"
-             , style (displayStyle <| buttonVal buttonList 1)
+      div [
+--      class "row"
+--             , style (displayStyle <| buttonVal buttonList 1)
       ] [
-          div [ class "col-sm-12" ] [ foundAnswerIndicator specificAnswer <| buttonVal buttonList 1 ]
+          div [
+--          class "col-sm-12"
+          ] [ foundAnswerIndicator specificAnswer <| buttonVal buttonList 1 ]
       ]
 
     , br [] []
@@ -335,9 +390,15 @@ view ( stateHistory,
 
     , br [] []
 
-    , div [class "row", style (displayStyle <| buttonVal buttonList 1)] [
-          div [ class "col-sm-2" ] [ text "findAnswers - " ]
-        , div [ class "col-sm-8" ] [ text <| toString specificAnswer ]
+    , div [
+--        class "row", style (displayStyle <| buttonVal buttonList 1)
+        ] [
+          div [
+--          class "col-sm-2"
+          ] [ text "findAnswers - " ]
+        , div [
+--            class "col-sm-8"
+          ] [ text <| toString specificAnswer ]
       ]
 
     , infoRow "lazyAnswer - " (toString findAnswerLazy3) <| buttonVal buttonList 1
@@ -346,9 +407,13 @@ view ( stateHistory,
     , div [ style <| textStyle ++ (displayStyle False)] [ text ("answersPerms - " ++ (toString ansPermsPlusList)) ]
     , div [ style <| textStyle ++ (displayStyle False)] [ text ("displayAnswer - " ++ (toString specificAnswerPlusList)) ]
 
-    , div [class "row"] [
+    , div [
+--    class "row"
+    ] [
     ]
-    , div [class "row"] [
+    , div [
+--      class "row"
+      ] [
         Html.button
           [
             Html.Events.onClick ChangeWheel
