@@ -390,6 +390,8 @@ button {
   font-size: 26px;
   color: #2b542c;
   float: right;
+  position: absolute;
+  left: 350px;
 }
 
 .wheelsForm {
