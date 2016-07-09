@@ -391,7 +391,7 @@ button {
   color: #2b542c;
   float: right;
   position: absolute;
-  left: 350px;
+  left: 450px;
 }
 
 .wheelsForm {
@@ -406,9 +406,12 @@ button {
 
 .wheelCalcs {
   width: 300px;
-
 }
 
 .answers {
   width: 300px;
+}
+
+.stateButton {
+  margin-left: 5px;
 }

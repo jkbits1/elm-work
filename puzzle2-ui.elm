@@ -136,12 +136,12 @@ formGroup lbl idVal val updateItem style msg =
 --  class "form-group"
   ] [
     div [] [
-        label [ for idVal
---                ,
-                --classList [("control-label", True),("col-sm-4", True)]
---                classList [("control-label", True),("col-sm-4", True)]
-                ]
-                [text <| "Wheel " ++ lbl]
+        label [
+          for idVal
+        , classList [("control-label", True),("col-sm-4", True)]
+        ] [
+          text <| "Wheel " ++ lbl
+        ]
       , inputField2 idVal lbl val updateItem style
     ]
 --    , div [] [
@@ -283,27 +283,27 @@ view ( stateHistory,
       ) =
   div [] [
   div [
---    class "container"
+    class "container"
     ]
   [
          div [
---         class "row"
+         class "row"
          ] [
           h2 [] [text "Elm Calculations"]
          ]
 
        , div [
---          class "row"
+          class "row"
           ] [
           div [
---            class "btn-group"
+            class "btn-group"
             ] [
               perms2Button  <| buttonVal buttonList 5
             , perms3Button  <| buttonVal buttonList 6
             , answersButton <| buttonVal buttonList 1
           ]
         , div [
---          class "btn-group", style [("margin-left", "5px")]
+            classList [("btn-group", True), ("stateButton", True)]
           ] [
             backButton
           , stateButton <| buttonVal buttonList 7
@@ -312,53 +312,51 @@ view ( stateHistory,
     , br [] []
 
     , Html.form [
---      class "form-inline", style [("width", "300px"), ("float", "left")]
-        classList [("wheelsForm", True)]
-    ][
+          classList [("wheelsForm", True), ("form-inline", True) ]
+--        , style [ ("width", "300px"), ("float", "left") ]
+        ] [
+            div [] [
+            formGroup "1" "wheel1input"     s1 Circle1Field myStyle Rotate1
+          , formGroup "2" "wheel2input"     s2 Circle2Field myStyle Rotate2
+    --      , span [ id "chart" ] []
+          ]
+          , div [] [
+            formGroup "3" "wheel3input"     s3 Circle3Field myStyle Rotate3
+          , formGroup "Ans" "wheelAnsInput" s4 Circle4Field myStyle Rotate1
+          ]
+        ]
+    , div [classList [("rotBtns", True)]] [
         div [] [
-        formGroup "1" "wheel1input"     s1 Circle1Field myStyle Rotate1
-      , formGroup "2" "wheel2input"     s2 Circle2Field myStyle Rotate2
---      , span [ id "chart" ] []
-      ]
-      , div [] [
-        formGroup "3" "wheel3input"     s3 Circle3Field myStyle Rotate3
-      , formGroup "Ans" "wheelAnsInput" s4 Circle4Field myStyle Rotate1
-      ]
-    ]
-
-                ,
-                  div [classList [("rotBtns", True)]] [
-                    div [] [
-                    Html.button
-                        [
-  --                      class "form-control col-sm-2"
-  --                      , style [("width", "30px"), ("float", "left")]
-  --                      ,
-                          Html.Events.onClick Rotate1
-                        ]
-                        [ Html.text <| "R " ++ "1" ]
-                  ]
-                  , div [] [
-                    Html.button
-                        [
+        Html.button
+            [
+--                      class "form-control col-sm-2"
+--                      , style [("width", "30px"), ("float", "left")]
+--                      ,
+              Html.Events.onClick Rotate1
+            ]
+            [ Html.text <| "R " ++ "1" ]
+        ]
+        , div [] [
+          Html.button
+              [
   --                        class "form-control col-sm-2"
   --                      , style [("width", "30px"), ("float", "left")]
   --                      ,
-                          Html.Events.onClick Rotate2
-                        ]
-                        [ Html.text <| "R " ++ "2" ]
-                  ]
-                  , div [] [
-                    Html.button
-                        [
+                Html.Events.onClick Rotate2
+              ]
+              [ Html.text <| "R " ++ "2" ]
+        ]
+        , div [] [
+          Html.button
+              [
   --                        class "form-control col-sm-2"
   --                      , style [("width", "30px"), ("float", "left")]
   --                      ,
-                          Html.Events.onClick Rotate3
-                        ]
-                        [ Html.text <| "R " ++ "3" ]
-                  ]
-                ]
+                Html.Events.onClick Rotate3
+              ]
+              [ Html.text <| "R " ++ "3" ]
+        ]
+      ]
 --    , div [id "chart", style [("width", "0px")]] []
     , div [id "chart"
 --        , style [("width", "250px"), ("float", "right")]
@@ -399,7 +397,8 @@ view ( stateHistory,
         , br [] []
 
         , div [
-    --        class "row", style (displayStyle <| buttonVal buttonList 1)
+    --        class "row",
+                style (displayStyle <| buttonVal buttonList 1)
             ] [
               div [
     --          class "col-sm-2"
