@@ -241,7 +241,7 @@ displayStyle show =
 
 infoRow label info displayState =
   div [
---  class "row",
+  class "row",
         style
 --<| -- textStyle
 --                      [("margin-top", "10px")] ++
@@ -377,11 +377,11 @@ view ( stateHistory,
 
   , div [ classList [("answers", True)]] [
       div [
-    --  class "container"
+      class "container"
       ]
       [
           div [
-    --      class "row"
+          class "row"
     --             , style (displayStyle <| buttonVal buttonList 1)
           ] [
               div [
@@ -397,7 +397,7 @@ view ( stateHistory,
         , br [] []
 
         , div [
-    --        class "row",
+            class "row",
                 style (displayStyle <| buttonVal buttonList 1)
             ] [
               div [
@@ -415,11 +415,11 @@ view ( stateHistory,
         , div [ style <| textStyle ++ (displayStyle False)] [ text ("displayAnswer - " ++ (toString specificAnswerPlusList)) ]
 
         , div [
-    --    class "row"
+        class "row"
         ] [
         ]
         , div [
-    --      class "row"
+          class "row"
           ] [
             Html.button
               [

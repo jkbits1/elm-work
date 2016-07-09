@@ -415,3 +415,8 @@ button {
 .stateButton {
   margin-left: 5px;
 }
+
+#puzzle2-ui {
+  position: absolute;
+  left: 50px;
+}
