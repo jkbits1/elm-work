@@ -57,8 +57,11 @@ function showCircle (donutDataList) {
 
   svg = d3.select("#chart svg").remove();
 
-  var svgWidth = 400; //(width + margin.left + margin.right);
+  var svgWidth  = 400; //(width + margin.left + margin.right);
   var svgHeight = 400; // (height + margin.top + margin.bottom);
+
+  var transWidth  = 200; // ((width / 2 + margin.left) - 50)
+  var transHeight = 175; // ((height / 2 + margin.top) - 50)
 
   // var
   svg = d3.select("#chart").append("svg")
@@ -67,8 +70,8 @@ function showCircle (donutDataList) {
     .append("g").attr("class", "wrapper")
     .attr("transform",
       "translate(" +
-      ((width / 2 + margin.left) - 50) + "," +
-        ((height / 2 + margin.top) - 50) + ")")
+       transWidth + "," +
+        transHeight + ")")
     // .attr("transform", "translate(" + (width + margin.left) + "," + (height + margin.top) + ")")
     //   .attr("transform", "translate(250,250)")
     ;

@@ -389,4 +389,20 @@ button {
 #chart {
   font-size: 26px;
   color: #2b542c;
+  float: right;
+}
+
+.wheelsForm {
+  width: 300px;
+  float: left;
+}
+
+.rotBtns {
+  width: 100px;
+  float: left;
+}
+
+.wheelCalcs {
+  width: 300px;
+
 }

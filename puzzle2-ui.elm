@@ -311,6 +311,7 @@ view ( stateHistory,
 
     , Html.form [
 --      class "form-inline", style [("width", "300px"), ("float", "left")]
+        classList [("wheelsForm", True)]
     ][
         div [] [
         formGroup "1" "wheel1input"     s1 Circle1Field myStyle Rotate1
@@ -323,37 +324,39 @@ view ( stateHistory,
       ]
     ]
 
-                , div [] [
-                  Html.button
-                      [
---                      class "form-control col-sm-2"
---                      , style [("width", "30px"), ("float", "left")]
---                      ,
-                        Html.Events.onClick Rotate1
-                      ]
-                      [ Html.text <| "R " ++ "1" ]
+                ,
+                  div [classList [("rotBtns", True)]] [
+                    div [] [
+                    Html.button
+                        [
+  --                      class "form-control col-sm-2"
+  --                      , style [("width", "30px"), ("float", "left")]
+  --                      ,
+                          Html.Events.onClick Rotate1
+                        ]
+                        [ Html.text <| "R " ++ "1" ]
+                  ]
+                  , div [] [
+                    Html.button
+                        [
+  --                        class "form-control col-sm-2"
+  --                      , style [("width", "30px"), ("float", "left")]
+  --                      ,
+                          Html.Events.onClick Rotate2
+                        ]
+                        [ Html.text <| "R " ++ "2" ]
+                  ]
+                  , div [] [
+                    Html.button
+                        [
+  --                        class "form-control col-sm-2"
+  --                      , style [("width", "30px"), ("float", "left")]
+  --                      ,
+                          Html.Events.onClick Rotate3
+                        ]
+                        [ Html.text <| "R " ++ "3" ]
+                  ]
                 ]
-                , div [] [
-                  Html.button
-                      [
---                        class "form-control col-sm-2"
---                      , style [("width", "30px"), ("float", "left")]
---                      ,
-                        Html.Events.onClick Rotate2
-                      ]
-                      [ Html.text <| "R " ++ "2" ]
-                ]
-                , div [] [
-                  Html.button
-                      [
---                        class "form-control col-sm-2"
---                      , style [("width", "30px"), ("float", "left")]
---                      ,
-                        Html.Events.onClick Rotate3
-                      ]
-                      [ Html.text <| "R " ++ "3" ]
-                ]
-
 --    , div [id "chart", style [("width", "0px")]] []
     , div [id "chart"
 --        , style [("width", "250px"), ("float", "right")]
@@ -362,10 +365,12 @@ view ( stateHistory,
 
     , br [] []
 
-    , wheelOnlyRow  1 "Wheel 1"               s1
-    , wheelRow      2 "Wheel 2"   "Loop 2"    s2 (toString secLoop) ShowLoop2   <| buttonVal buttonList 2
-    , wheelRow      3 "Wheel 3"   "Loop 3"    s3 (toString thrLoop) ShowLoop3   <| buttonVal buttonList 3
-    , wheelRow      4 "Wheel Answers" "Loop Answers"  s4 (toString ansLoop) ShowLoopAns <| buttonVal buttonList 4
+    , div [classList [("wheelCalcs", True)]] [
+        wheelOnlyRow  1 "Wheel 1"               s1
+      , wheelRow      2 "Wheel 2"   "Loop 2"    s2 (toString secLoop) ShowLoop2   <| buttonVal buttonList 2
+      , wheelRow      3 "Wheel 3"   "Loop 3"    s3 (toString thrLoop) ShowLoop3   <| buttonVal buttonList 3
+      , wheelRow      4 "Wheel Answers" "Loop Answers"  s4 (toString ansLoop) ShowLoopAns <| buttonVal buttonList 4
+    ]
   ]
 
   , br [] []
