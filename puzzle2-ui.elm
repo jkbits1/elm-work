@@ -440,19 +440,19 @@ view ( stateHistory,
         , div [ style <| textStyle ++ (displayStyle False)] [ text ("answersPerms - " ++ (toString ansPermsPlusList)) ]
         , div [ style <| textStyle ++ (displayStyle False)] [ text ("displayAnswer - " ++ (toString specificAnswerPlusList)) ]
 
-        , div [
-        class "row"
-        ] [
-        ]
-        , div [
-          class "row"
-          ] [
-            Html.button
-              [
-                Html.Events.onClick ChangeWheel
-              ]
-              [ Html.text "wheel" ]
-        ]
+--        , div [
+--        class "row"
+--        ] [
+--        ]
+--        , div [
+--          class "row"
+--          ] [
+--            Html.button
+--              [
+--                Html.Events.onClick ChangeWheel
+--              ]
+--              [ Html.text "wheel" ]
+--        ]
       ]
     ]
   ]
