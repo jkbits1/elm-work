@@ -477,7 +477,18 @@ button {
   position: absolute;
   /*left: 583px;*/
   left: 511px;
-  top: 535px;
+  /*top: 535px;*/
+  top: 525px;
+  font-size: 20px;
+}
+
+.solvedPuzzle {
+  display: block;
+  font-weight: 700;
+  position: absolute;
+  /*left: 583px;*/
+  left: 557px;
+  top: 559px;
   font-size: 20px;
 }
 
@@ -498,12 +509,3 @@ button {
   opacity: 0.8;
 }
 
-.solvedPuzzle {
-  display: block;
-  font-weight: 700;
-  position: absolute;
-  /*left: 583px;*/
-  left: 557px;
-  top: 510px;
-  font-size: 20px;
-}

@@ -332,7 +332,7 @@ view ( stateHistory,
          div [
          class "row title"
          ] [
-          h2 [] [text "Elm Calculations"]
+          h2 [] [text "Elm Puzzle Calculator"]
          ]
 
        , div [
@@ -706,14 +706,16 @@ rotateNumsString s = wheelStringFromInt <| turnWheel (wheelPositionFromString s)
 --(List.map sumColumn <| PuzzleModule.zip3 [1,2,3] [4,5,6] [7,8,9])
 --  == [12,15,18]
 
+currentAnswers s1 s2 s3 s4 =
+             (List.map sumColumn <| PuzzleModule.zip3
+               (wheelPositionFromString s1)
+               (wheelPositionFromString s2)
+               (wheelPositionFromString s3)
+             )
+
 puzzleSolved : String -> String -> String -> String -> Bool
 puzzleSolved s1 s2 s3 s4 =
-            (List.map sumColumn <| PuzzleModule.zip3
-              (wheelPositionFromString s1)
-              (wheelPositionFromString s2)
-              (wheelPositionFromString s3)
-            )
-            == (wheelPositionFromString s4)
+  currentAnswers s1 s2 s3 s4 == (wheelPositionFromString s4)
 
 --foundAnswerIndicator : List (a,b) -> Bool -> Html Msg
 --foundAnswerIndicator answerList show =
@@ -740,7 +742,7 @@ puzzleSolvedIndicator s1 s2 s3 s4 =
       if solved then
         "Yes"
       else
-        "No"
+        "No " ++ (toString <| currentAnswers s1 s2 s3 s4)
   in
     div [ class "solvedPuzzle" ] [
       text <| "Puzzle solved? - "
@@ -754,7 +756,6 @@ colorStyle success =
   case success of
     True ->   [("color", "green")]
     False ->  [("color", "red")]
-
 
 --foundAnswerIndicator : List (a,b) -> Bool -> Html Msg
 --foundAnswerIndicator answerList show =
