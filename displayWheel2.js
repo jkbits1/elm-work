@@ -23,8 +23,17 @@ function showCircle (donutDataList) {
 
 //Create a color scale
   var colorScale = d3.scale.linear()
-    .domain([1, 3.5, 6])
-    .range(["#2c7bb6", "#ffffbf", "#d7191c"])
+    // .domain([1, 3.5, 6])
+    // .domain([1, 4.8, 6])
+    // .domain([0.2, 2.8, 6])
+    // .domain([0.03, 2.6, 6])
+    .domain([0.03, 2.1, 6])
+    .range([
+      // "#2c7bb6",
+      "#3c7bb6",
+      // "#ffffbf",
+      "#D8D865",
+      "#d7191c"])
     .interpolate(d3.interpolateHcl);
 
 //Create an arc function

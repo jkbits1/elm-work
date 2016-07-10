@@ -465,3 +465,11 @@ button {
   margin-top: 20px;
   margin-bottom: 15px;
 }
+
+.donutText {
+  letter-spacing: 0.2em;
+}
+
+.donutArcSlices {
+  opacity: 0.8;
+}
