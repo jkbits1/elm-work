@@ -475,7 +475,7 @@ button {
   font-weight: 700;
   position: absolute;
   left: 583px;
-  top: 525px;
+  top: 535px;
 }
 
 .permsData {
@@ -493,4 +493,12 @@ button {
 
 .donutArcSlices {
   opacity: 0.8;
+}
+
+.solvedPuzzle {
+  display: block;
+  font-weight: 700;
+  position: absolute;
+  left: 583px;
+  top: 510px;
 }

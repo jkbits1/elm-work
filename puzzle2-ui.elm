@@ -10,6 +10,8 @@ import Html exposing (..)
 import Html.App as HtmlApp
 import Html.Attributes as Attr exposing (..)
 import Html.Events exposing (..)
+import Text exposing (color)
+import Color exposing (..)
 
 import String
 import List exposing (..)
@@ -221,16 +223,34 @@ wheelRow idx wheelLabel loopLabel wheelData loopData action hide =
         ] [ text loopData ]
     ]
 
+--foundAnswerIndicator : List (a,b) -> Bool -> Html Msg
+--foundAnswerIndicator answerList show =
+--  let found =
+--    if (length answerList == 0) then
+--      "No"
+--    else
+--      "Yes"
+--  in
+--    div [ class "foundAnswer", style <| (displayStyle show) ]
+--    [ text <| "Does solution exist? - " ++ found ]
+
 foundAnswerIndicator : List (a,b) -> Bool -> Html Msg
 foundAnswerIndicator answerList show =
-  let found =
-    if (length answerList == 0) then
-      "No"
-    else
-      "Yes"
+  let
+    found = not <| length answerList == 0
+    foundString =
+      if found then
+        "Yes"
+      else
+        "No"
   in
     div [ class "foundAnswer", style <| (displayStyle show) ]
-    [ text <| "Does solution exist? - " ++ found ]
+    [ text <| "Does solution exist? - "
+    , span [ style <| colorStyle <| found ] [
+        text <| foundString
+      ]
+    ]
+
 
 --wheelStyle : List (String, String)
 --wheelStyle =
@@ -421,6 +441,16 @@ view ( stateHistory,
               ]
           ]
 
+        , div [
+          class "row"
+    --             , style (displayStyle <| buttonVal buttonList 1)
+          ] [
+              div [
+    --          class "col-sm-12"
+              ] [ puzzleSolvedIndicator s1 s2 s3 s4
+              ]
+          ]
+
         , br [] []
         , infoRow "2 Loop Perms"  (toString twoListPerms)   <| buttonVal buttonList 5
         , infoRow "3 Loop Perms"  (toString threeListPerms) <| buttonVal buttonList 6
@@ -447,6 +477,18 @@ view ( stateHistory,
 
         , div [ style <| textStyle ++ (displayStyle False)] [ text ("answersPerms - " ++ (toString ansPermsPlusList)) ]
         , div [ style <| textStyle ++ (displayStyle False)] [ text ("displayAnswer - " ++ (toString specificAnswerPlusList)) ]
+
+        , div [] [
+          text <| toString <|
+            (List.map sumColumn <| PuzzleModule.zip3
+              (wheelPositionFromString s1)
+              (wheelPositionFromString s2)
+              (wheelPositionFromString s3)
+            )
+            == (wheelPositionFromString s4)
+        ]
+
+--wheelPositionFromString s1
 
 --        , div [
 --        class "row"
@@ -659,3 +701,78 @@ rotateNumsString s = wheelStringFromInt <| turnWheel (wheelPositionFromString s)
 --subscriptions model = dataProcessedItems Suggest
 
 
+
+
+--(List.map sumColumn <| PuzzleModule.zip3 [1,2,3] [4,5,6] [7,8,9])
+--  == [12,15,18]
+
+puzzleSolved : String -> String -> String -> String -> Bool
+puzzleSolved s1 s2 s3 s4 =
+            (List.map sumColumn <| PuzzleModule.zip3
+              (wheelPositionFromString s1)
+              (wheelPositionFromString s2)
+              (wheelPositionFromString s3)
+            )
+            == (wheelPositionFromString s4)
+
+--foundAnswerIndicator : List (a,b) -> Bool -> Html Msg
+--foundAnswerIndicator answerList show =
+--  let
+--    found = length answerList == 0
+--    foundString =
+--      if found then
+--        "No"
+--      else
+--        "Yes"
+--  in
+--    div [ class "foundAnswer", style <| (displayStyle show) ]
+--    [ text <| "Does solution exist? - "
+--    , span [ style <| colorStyle <| found ] [
+--        text <| foundString
+--      ]
+--    ]
+
+puzzleSolvedIndicator : String -> String -> String -> String -> Html Msg
+puzzleSolvedIndicator s1 s2 s3 s4 =
+  let
+    solved = (puzzleSolved s1 s2 s3 s4)
+    solvedString =
+      if solved then
+        "Yes"
+      else
+        "No"
+  in
+    div [ class "solvedPuzzle" ] [
+      text <| "Puzzle solved? - "
+    , span [ style <| colorStyle <| solved ] [
+        text <| solvedString
+      ]
+    ]
+
+colorStyle : Bool -> List (String, String)
+colorStyle success =
+  case success of
+    True ->   [("color", "green")]
+    False ->  [("color", "red")]
+
+
+--foundAnswerIndicator : List (a,b) -> Bool -> Html Msg
+--foundAnswerIndicator answerList show =
+--  let found =
+--    if (length answerList == 0) then
+--      "No"
+--    else
+--      "Yes"
+--  in
+--    div [ class "foundAnswer", style <| (displayStyle show) ]
+--    [ text <| "Does solution exist? - " ++ found ]
+
+--        , div [] [
+--          text <| toString <|
+--            (List.map sumColumn <| PuzzleModule.zip3
+--              (wheelPositionFromString s1)
+--              (wheelPositionFromString s2)
+--              (wheelPositionFromString s3)
+--            )
+--            == (wheelPositionFromString s4)
+--        ]
