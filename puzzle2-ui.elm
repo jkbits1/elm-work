@@ -310,7 +310,7 @@ view ( stateHistory,
     ]
   [
          div [
-         class "row"
+         class "row title"
          ] [
           h2 [] [text "Elm Calculations"]
          ]
@@ -420,17 +420,19 @@ view ( stateHistory,
 
         , br [] []
 
-        , div [
-            class "row",
-                style (displayStyle <| buttonVal buttonList 1)
-            ] [
-              div [
-    --          class "col-sm-2"
-              ] [ text "findAnswers - " ]
-            , div [
-    --            class "col-sm-8"
-              ] [ text <| toString specificAnswer ]
-          ]
+--        , div [
+--            class "row",
+--                style (displayStyle <| buttonVal buttonList 1)
+--            ] [
+--              div [
+--    --          class "col-sm-2"
+--              ] [ text "findAnswers - " ]
+--            , div [
+--    --            class "col-sm-8"
+--              ] [ text <| toString specificAnswer ]
+--          ]
+
+        , infoRow "findAnswers"   (toString specificAnswer )   <| buttonVal buttonList 1
 
         , infoRow "lazyAnswer - " (toString findAnswerLazy3) <| buttonVal buttonList 1
         , infoRow ("State change count: " ++ (toString i)) (toString stateHistory) <| buttonVal buttonList 7

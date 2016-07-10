@@ -429,6 +429,7 @@ button {
 
 .wheelRowLabel {
   font-weight: 700;
+  line-height: 1.2;
 }
 
 .wheelInput {
@@ -457,5 +458,10 @@ button {
 }
 
 .permsData {
-  margin-bottom: 20px;
+  margin-bottom: 25px;
+}
+
+.title {
+  margin-top: 20px;
+  margin-bottom: 15px;
 }
