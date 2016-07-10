@@ -405,7 +405,7 @@ button {
 }
 
 .wheelCalcs {
-  width: 300px;
+  width: 550px;
   margin-top: 200px;
 }
 
@@ -438,4 +438,8 @@ button {
 .wheelStyle {
   /*min-width: 200px;*/
   min-width: 170px;
+}
+
+.loopButton {
+  width: 125px;
 }

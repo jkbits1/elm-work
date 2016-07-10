@@ -65,22 +65,28 @@ buttonListToggle list num = take (num-1) list ++ [not <| buttonVal list num] ++ 
 
 buttonClassList = classList [
 --  ("btn", True), ("btn-default", True)
+--    ("loopButton", True)
+  ]
+
+buttonClassList2 = classList [
+--  ("btn", True), ("btn-default", True)
+    ("loopButton", True)
   ]
 
 backButton : Html Msg
 backButton    = uiButton Back       "Step Back"
 
 answersButton : Bool -> Html Msg
-answersButton hide  = showLoopButton ("Show Answers", "Hide Answers") hide ShowAns
+answersButton hide  = showLoopButton2 ("Show Answers", "Hide Answers") hide ShowAns buttonClassList2
 
 stateButton : Bool -> Html Msg
-stateButton  hide   = showLoopButton ("Show State", "Hide State")     hide ShowState
+stateButton  hide   = showLoopButton2 ("Show State", "Hide State")     hide ShowState buttonClassList2
 
 perms2Button : Bool -> Html Msg
-perms2Button hide   = showLoopButton ("Show Perms 2", "Hide Perms 2") hide ShowPerms2
+perms2Button hide   = showLoopButton2 ("Show Perms 2", "Hide Perms 2") hide ShowPerms2 buttonClassList2
 
 perms3Button : Bool -> Html Msg
-perms3Button hide   = showLoopButton ("Show Perms 3", "Hide Perms 3") hide ShowPerms3
+perms3Button hide   = showLoopButton2 ("Show Perms 3", "Hide Perms 3") hide ShowPerms3 buttonClassList2
 
 
 uiButton : Msg -> String -> Html Msg
@@ -101,6 +107,20 @@ showLoopButton labels hide action =
   in
     Html.button
       [   buttonClassList
+        , Html.Events.onClick action
+      ]
+      [ Html.text label ]
+
+showLoopButton2 labels hide action classList =
+  let
+    label =
+      if hide == True then
+        snd labels
+      else
+        fst labels
+  in
+    Html.button
+      [   classList
         , Html.Events.onClick action
       ]
       [ Html.text label ]
@@ -187,7 +207,7 @@ wheelRow idx wheelLabel loopLabel wheelData loopData action hide =
       class "col-sm-2"
       ] [ text <| wheelData ]
       , div [
-      class "col-sm-2"
+      class "col-sm-1"
       ] [ showLoopButton ("+", "-") hide action ]
       , div [
         class "col-sm-2", style <| (displayStyle hide) ++ [("font-weight", "700")]
