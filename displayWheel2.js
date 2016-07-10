@@ -12,8 +12,9 @@ function circles() {
     // , {name: "c2", value: 2, dataItems: donutDataList[1]}
     // donutDataList[0], donutDataList[1]
       ["a", "b", "c"]
-    , ["x", "y", "z"]
     , ["m", "n", "o"]
+    , ["p", "q", "r"]
+    , ["x", "y", "z"]
   ]
 }
 
@@ -111,13 +112,16 @@ function showCircle (donutDataList) {
     .sort(null);
 
   function getDataList (d) {
-    var n = 2;
+    var n = 3;
 
     if (d[0] == "a") {
       n = 0;
     }
-    else if (d[0] == "x") {
+    else if (d[0] == "m") {
       n = 1;
+    }
+    else if (d[0] == "p") {
+      n = 2;
     }
 
     return pie(donutDataList[n]);
@@ -218,13 +222,21 @@ function showCircle (donutDataList) {
       var dy = (d.endAngle > 90 * Math.PI / 180 ? 18 : -11);
 
       var adjDy = dy;
+      // var sz2adj = 37;
+      // var sz2adj2 = 9.6;
+      var sz4adj = 28;
+      var sz2adj = 38.5;
+      var sz2adj2 = 6.8;
 
       if (dy < 0) {
         if (d.data.sz == 6) {
           adjDy = (-0.3 * dy) * 17;
         }
         else if (d.data.sz == 4) {
-          adjDy = (-0.3 * dy) * 27;
+          adjDy = (-0.3 * dy) * sz4adj;
+        }
+        else if (d.data.sz == 2) {
+          adjDy = (-0.3 * dy) * sz2adj;
         }
         else {
           adjDy = dy * -1.9;
@@ -236,6 +248,9 @@ function showCircle (donutDataList) {
         }
         else if (d.data.sz == 4) {
           adjDy = (-0.9 * dy) * 4.8;
+        }
+        else if (d.data.sz == 2) {
+          adjDy = (-0.9 * dy) * sz2adj2;
         }
         else {
           adjDy = dy * -0.44;

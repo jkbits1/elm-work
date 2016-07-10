@@ -21,7 +21,11 @@ dataSz[2] = data[2].map(val => {
     return {name: val.name, value: 9, sz: 4}
   });
 
-showCircle(dataSz);
+  dataSz[3] = data[2].map(val => {
+    return {name: val.name, value: 9, sz: 2}
+  });
+
+  showCircle(dataSz);
 
 var names = data[0].map(val => val.name);
 
