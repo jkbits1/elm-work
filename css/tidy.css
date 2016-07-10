@@ -427,6 +427,10 @@ button {
   margin-top: 10px;
 }
 
+.wheelRowLabel {
+  font-weight: 700;
+}
+
 .wheelInput {
   height: 45px;
 }
@@ -442,4 +446,16 @@ button {
 
 .loopButton {
   width: 125px;
+}
+
+.foundAnswer {
+  display: block;
+  font-weight: 700;
+  position: absolute;
+  left: 583px;
+  top: 525px;
+}
+
+.permsData {
+  margin-bottom: 20px;
 }

@@ -201,7 +201,8 @@ wheelRow idx wheelLabel loopLabel wheelData loopData action hide =
       ] [
 
         div [
-        class "col-sm-2", style [("font-weight", "700")]
+          class "col-sm-2 wheelRowLabel"
+--            , style [("font-weight", "700")]
         ] [ text wheelLabel ]
       , div [
       class "col-sm-2"
@@ -220,6 +221,7 @@ wheelRow idx wheelLabel loopLabel wheelData loopData action hide =
         ] [ text loopData ]
     ]
 
+foundAnswerIndicator : List (a,b) -> Bool -> Html Msg
 foundAnswerIndicator answerList show =
   let found =
     if (length answerList == 0) then
@@ -227,9 +229,8 @@ foundAnswerIndicator answerList show =
     else
       "Yes"
   in
-    div [ style <| (displayStyle show) ++ [("font-weight", "700")] ]
+    div [ class "foundAnswer", style <| (displayStyle show) ]
     [ text <| "foundAnswer? - " ++ found ]
-
 
 --wheelStyle : List (String, String)
 --wheelStyle =
@@ -269,10 +270,11 @@ infoRow label info displayState =
                       (displayStyle displayState)
                       ] [
       div [
---        class "col-sm-2"
+        class "col-sm-2 wheelRowLabel"
+--          class "wheelRowLabel"
         ] [ text label ]
     , div [
---    class "col-sm-8"
+        class "col-sm-8 permsData"
       ] [ text <| info ]
   ]
 
@@ -406,13 +408,15 @@ view ( stateHistory,
           ] [
               div [
     --          class "col-sm-12"
-              ] [ foundAnswerIndicator specificAnswer <| buttonVal buttonList 1 ]
+              ] [ foundAnswerIndicator specificAnswer True
+                    -- <| buttonVal buttonList 1
+              ]
           ]
 
         , br [] []
-        ,  infoRow "2 Loop Perms"     (toString twoListPerms)   <| buttonVal buttonList 5
+        , infoRow "2 Loop Perms"  (toString twoListPerms)   <| buttonVal buttonList 5
         , infoRow "3 Loop Perms"  (toString threeListPerms) <| buttonVal buttonList 6
-        , infoRow "answersPlus"  (toString ansPlusList ) <| buttonVal buttonList 1
+        , infoRow "answersPlus"   (toString ansPlusList )   <| buttonVal buttonList 1
 
         , br [] []
 
