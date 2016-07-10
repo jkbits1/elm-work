@@ -432,6 +432,18 @@ button {
   line-height: 1.2;
 }
 
+.wheelRowData {
+  /*margin-left: -10px;*/
+}
+
+.plusAdjust {
+  margin-left: 35px;
+}
+
+.loopDataAdjust {
+  margin-left: -15px;
+}
+
 .wheelInput {
   height: 45px;
 }

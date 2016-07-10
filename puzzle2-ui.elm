@@ -187,11 +187,11 @@ wheelOnlyRow idx wheelLabel wheelData =
           class "row"
           ] [
       div [
-        class "col-sm-2"
+        class "col-sm-2 wheelRowLabel"
         ] [ text wheelLabel ]
       ,
       div [
-        class "col-sm-2"
+        class "col-sm-2 wheelRowData"
         ] [ text <| wheelData ]
     ]
 
@@ -205,10 +205,10 @@ wheelRow idx wheelLabel loopLabel wheelData loopData action hide =
 --            , style [("font-weight", "700")]
         ] [ text wheelLabel ]
       , div [
-      class "col-sm-2"
+      class "col-sm-2 wheelRowData"
       ] [ text <| wheelData ]
       , div [
-      class "col-sm-1"
+      class "col-sm-1 plusAdjust"
       ] [ showLoopButton ("+", "-") hide action ]
       , div [
         class "col-sm-2", style <| (displayStyle hide) ++ [("font-weight", "700")]
@@ -217,7 +217,7 @@ wheelRow idx wheelLabel loopLabel wheelData loopData action hide =
       ]
 
       , div [
-        class "col-sm-2", style <| displayStyle hide
+        class "col-sm-2 loopDataAdjust", style <| displayStyle hide
         ] [ text loopData ]
     ]
 
