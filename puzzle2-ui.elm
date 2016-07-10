@@ -478,15 +478,15 @@ view ( stateHistory,
         , div [ style <| textStyle ++ (displayStyle False)] [ text ("answersPerms - " ++ (toString ansPermsPlusList)) ]
         , div [ style <| textStyle ++ (displayStyle False)] [ text ("displayAnswer - " ++ (toString specificAnswerPlusList)) ]
 
-        , div [] [
-          text <| toString <|
-            (List.map sumColumn <| PuzzleModule.zip3
-              (wheelPositionFromString s1)
-              (wheelPositionFromString s2)
-              (wheelPositionFromString s3)
-            )
-            == (wheelPositionFromString s4)
-        ]
+--        , div [] [
+--          text <| toString <|
+--            (List.map sumColumn <| PuzzleModule.zip3
+--              (wheelPositionFromString s1)
+--              (wheelPositionFromString s2)
+--              (wheelPositionFromString s3)
+--            )
+--            == (wheelPositionFromString s4)
+--        ]
 
 --wheelPositionFromString s1
 
