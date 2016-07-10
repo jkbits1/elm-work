@@ -230,7 +230,7 @@ foundAnswerIndicator answerList show =
       "Yes"
   in
     div [ class "foundAnswer", style <| (displayStyle show) ]
-    [ text <| "foundAnswer? - " ++ found ]
+    [ text <| "Does solution exist? - " ++ found ]
 
 --wheelStyle : List (String, String)
 --wheelStyle =
@@ -348,36 +348,44 @@ view ( stateHistory,
           ]
         ]
     , div [classList [("rotBtns", True)]] [
-        div [class "wheelInput"] [
-        Html.button
-            [
---                      class "form-control col-sm-2"
---                      , style [("width", "30px"), ("float", "left")]
---                      ,
-              Html.Events.onClick Rotate1
-            ]
-            [ Html.text <| "R " ++ "1" ]
-        ]
-        , div [class "wheelInput"] [
-          Html.button
-              [
-  --                        class "form-control col-sm-2"
-  --                      , style [("width", "30px"), ("float", "left")]
-  --                      ,
-                Html.Events.onClick Rotate2
-              ]
-              [ Html.text <| "R " ++ "2" ]
-        ]
-        , div [] [
-          Html.button
-              [
-  --                        class "form-control col-sm-2"
-  --                      , style [("width", "30px"), ("float", "left")]
-  --                      ,
-                Html.Events.onClick Rotate3
-              ]
-              [ Html.text <| "R " ++ "3" ]
-        ]
+        rotButton "1" Rotate1
+--        div [
+--          class "rotButton" -- "wheelInput"
+--          ] [
+--        Html.button
+--            [
+----                      class "form-control col-sm-2"
+----                      , style [("width", "30px"), ("float", "left")]
+----                      ,
+--              Html.Events.onClick Rotate1
+--            ]
+--            [ Html.text <| "R " ++ "1" ]
+--        ]
+        ,
+          rotButton "2" Rotate2
+--        div [class "wheelInput"] [
+--          Html.button
+--              [
+--  --                        class "form-control col-sm-2"
+--  --                      , style [("width", "30px"), ("float", "left")]
+--  --                      ,
+--                Html.Events.onClick Rotate2
+--              ]
+--              [ Html.text <| "R " ++ "2" ]
+--        ]
+        ,
+--        div [] [
+--          Html.button
+--              [
+--  --                        class "form-control col-sm-2"
+--  --                      , style [("width", "30px"), ("float", "left")]
+--  --                      ,
+--                Html.Events.onClick Rotate3
+--              ]
+--              [ Html.text <| "R " ++ "3" ]
+--        ]
+        rotButton "3" Rotate3
+
       ]
 --    , div [id "chart", style [("width", "0px")]] []
     , div [id "chart"
@@ -456,6 +464,21 @@ view ( stateHistory,
       ]
     ]
   ]
+
+rotButton labelNum msg =
+  div [
+    class "rotButton" -- "wheelInput"
+    ] [
+  Html.button
+      [
+--                      class "form-control col-sm-2"
+--                      , style [("width", "30px"), ("float", "left")]
+--                      ,
+        Html.Events.onClick msg
+      ]
+      [ Html.text <| "R " ++ labelNum ]
+  ]
+
 
 -- outgoing port to js
 port check : List (List WheelItem) -> Cmd msg

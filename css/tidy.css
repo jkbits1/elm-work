@@ -402,11 +402,13 @@ button {
 .rotBtns {
   width: 75px;
   float: left;
+  margin-top: 30px;
 }
 
 .wheelCalcs {
   width: 550px;
-  margin-top: 200px;
+  /*margin-top: 200px;*/
+  margin-top: 265px;
 }
 
 .answers {
@@ -448,13 +450,20 @@ button {
   height: 45px;
 }
 
+.rotButton {
+  height: 65px;
+}
+
 .wheelInputLabel {
   padding-left: 0px;
+  padding-top: 5px;
+  padding-bottom: 2px;
 }
 
 .wheelStyle {
   /*min-width: 200px;*/
   min-width: 170px;
+  font-size: 18px;
 }
 
 .loopButton {
