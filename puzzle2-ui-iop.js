@@ -5,7 +5,7 @@
 var node = document.getElementById("puzzle2-ui");
 var app = Elm.WheelApp.embed(node);
 
-app.ports.check.subscribe( data => {
+app.ports.showWheel.subscribe( data => {
 
   var dataSz = [];
 
@@ -21,7 +21,7 @@ dataSz[2] = data[2].map(val => {
     return {name: val.name, value: 9, sz: 4}
   });
 
-  dataSz[3] = data[2].map(val => {
+  dataSz[3] = data[3].map(val => {
     return {name: val.name, value: 9, sz: 2}
   });
 

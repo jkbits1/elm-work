@@ -481,7 +481,7 @@ rotButton labelNum msg =
 
 
 -- outgoing port to js
-port check : List (List WheelItem) -> Cmd msg
+port showWheel : List (List WheelItem) -> Cmd msg
 
 -- converts Signal Update (from updatesChnl) to Signal Model, 
 -- using non-signal updateModel
@@ -541,10 +541,10 @@ updateModel update (stateHistory, (i, s1, s2, s3, s4),
 
       Back        ->    (createModel inputs states False, Cmd.none)
 
-      Circle1Field s -> (createModel(newCount, s,  s2, s3, s4) buttonList True, check [ d3DataFromString s, wd2, wd3 ] )
-      Circle2Field s -> (createModel(newCount, s1, s,  s3, s4) buttonList True, check [ wd1, d3DataFromString s, wd3 ] )
-      Circle3Field s -> (createModel(newCount, s1, s2, s,  s4) buttonList True, check [ wd1, wd2, d3DataFromString s ] )
-      Circle4Field s -> (createModel(newCount, s1, s2, s3, s)  buttonList True, check [ wd1, wd2, wd3 ] )
+      Circle1Field s -> (createModel(newCount, s,  s2, s3, s4) buttonList True, showWheel [ d3DataFromString s, wd2, wd3, wd4  ] )
+      Circle2Field s -> (createModel(newCount, s1, s,  s3, s4) buttonList True, showWheel [ wd1, d3DataFromString s, wd3, wd4  ] )
+      Circle3Field s -> (createModel(newCount, s1, s2, s,  s4) buttonList True, showWheel [ wd1, wd2, d3DataFromString s, wd4 ] )
+      Circle4Field s -> (createModel(newCount, s1, s2, s3, s)  buttonList True, showWheel [ wd1, wd2, wd3, d3DataFromString s ] )
 
       --ShowAns     ->    (createModel((i + 1), s1, s2, s3, s4) (not b1, b2, b3, b4, b5, b6, b7) True
       ShowAns     ->    (createModel(newCount, s1, s2, s3, s4) (buttonListToggle buttonList 1) True, Cmd.none)
@@ -559,20 +559,19 @@ updateModel update (stateHistory, (i, s1, s2, s3, s4),
 
       ShowState ->      (createModel(newCount, s1, s2, s3, s4) (buttonListToggle buttonList 7) True, Cmd.none)
 
-      ChangeWheel ->    (mdl, check [ wd1, wd2, wd3 ] )
+      ChangeWheel ->    (mdl, showWheel [ wd1, wd2, wd3, wd4  ] )
 
       -- currently a no-op
       D3Response rs -> (createModel (i,       s1, s2, s3, s4) buttonList True, Cmd.none)
 
       Rotate1 -> (createModel (i,       rotateNumsString s1, s2, s3, s4) buttonList True,
-                    check [ d3DataFromString <| rotateNumsString s1, wd2, wd3 ])
+                    showWheel [ d3DataFromString <| rotateNumsString s1, wd2, wd3, wd4 ])
 --      Rotate1 -> (createModel(newCount, s1, s2, s3, s4) (buttonListToggle buttonList 4) True, Cmd.none)
       Rotate2 -> (createModel (i,       s1, rotateNumsString s2, s3, s4) buttonList True,
-                    check [ wd1, d3DataFromString <| rotateNumsString s2, wd3 ])
+                    showWheel [ wd1, d3DataFromString <| rotateNumsString s2, wd3, wd4 ])
       Rotate3 -> (createModel (i,       s1, s2, rotateNumsString s3, s4) buttonList True,
                     --Cmd.none
-                    check [ wd1, wd2, d3DataFromString <| rotateNumsString s3 ]
---                    check [ wd1, wd2, wd3 ]
+                    showWheel [ wd1, wd2, d3DataFromString <| rotateNumsString s3, wd4 ]
                     )
 
 
@@ -602,7 +601,7 @@ init =
     wd3 = resultsToD3Data <| wheelData mdl input3
     wd4 = resultsToD3Data <| wheelData mdl input4
   in
-    (mdl, check [ wd1, wd2, wd3 ] )
+    (mdl, showWheel [ wd1, wd2, wd3, wd4 ] )
 
 --type alias ModelResults =
 --  (WheelPosition, WheelLoop, WheelLoop, WheelLoop,
