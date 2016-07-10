@@ -452,6 +452,7 @@ button {
 
 .rotButton {
   height: 65px;
+  margin-left: -8px;
 }
 
 .wheelInputLabel {
@@ -474,8 +475,10 @@ button {
   display: block;
   font-weight: 700;
   position: absolute;
-  left: 583px;
+  /*left: 583px;*/
+  left: 511px;
   top: 535px;
+  font-size: 20px;
 }
 
 .permsData {
@@ -499,6 +502,8 @@ button {
   display: block;
   font-weight: 700;
   position: absolute;
-  left: 583px;
+  /*left: 583px;*/
+  left: 557px;
   top: 510px;
+  font-size: 20px;
 }

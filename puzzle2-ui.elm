@@ -518,7 +518,7 @@ rotButton labelNum msg =
 --                      ,
         Html.Events.onClick msg
       ]
-      [ Html.text <| "R " ++ labelNum ]
+      [ Html.text <| "Rotate " ++ labelNum ]
   ]
 
 
