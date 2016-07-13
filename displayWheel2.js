@@ -169,7 +169,15 @@ function showCircle (donutDataList) {
 
       //Grab everything up to the first Line statement
       //The [1] gives back the expression between the () (thus not the L as well) which is exactly the arc statement
-      var newArc = firstArcSection.exec(d3.select(this).attr("d"))[1];
+      var newArc;
+      var firstArcArray = firstArcSection.exec(d3.select(this).attr("d"));
+      
+      if (firstArcArray == null) {
+        newArc = "";
+      }
+      else {
+        newArc = firstArcArray[1];
+      }
       //Replace all the comma's so that IE can handle it -_-
       //The g after the / is a modifier that "find all matches rather than stopping after the first match"
       newArc = newArc.replace(/,/g, " ");
@@ -181,14 +189,20 @@ function showCircle (donutDataList) {
         var startLoc = /M(.*?)A/,		//Everything between the first capital M and first capital A
           middleLoc = /A(.*?)0 0 1/,	//Everything between the first capital A and 0 0 1
           endLoc = /0 0 1 (.*?)$/;	//Everything between the first 0 0 1 and the end of the string (denoted by $)
-        //Flip the direction of the arc by switching the start en end point (and sweep flag)
-        //of those elements that are below the horizontal line
-        var newStart = endLoc.exec(newArc)[1];
-        var newEnd = startLoc.exec(newArc)[1];
-        var middleSec = middleLoc.exec(newArc)[1];
 
         //Build up the new arc notation, set the sweep-flag to 0
-        newArc = "M" + newStart + "A" + middleSec + "0 0 0 " + newEnd;
+        if (firstArcArray == null) {
+            newArc = "";
+        }
+        else {
+            //Flip the direction of the arc by switching the start en end point (and sweep flag)
+            //of those elements that are below the horizontal line
+            var newStart = endLoc.exec(newArc)[1];
+            var newEnd = startLoc.exec(newArc)[1];
+            var middleSec = middleLoc.exec(newArc)[1];
+        
+            newArc = "M" + newStart + "A" + middleSec + "0 0 0 " + newEnd;
+        }
       }//if
 
       //Create a new invisible arc that the text can flow along
