@@ -201,7 +201,7 @@ infoRow label info displayState =
 -- converts Signal Model to Signal Html, using non-signal view
 --main : Signal Html
 --main = viewLift
-PuzzleSolutions = HtmlApp.program { init = init, view = view, update = updateModel, subscriptions = subscriptions }
+main = HtmlApp.program { init = init, view = view, update = updateModel, subscriptions = subscriptions }
 
 subscriptions : Model -> Sub Msg
 subscriptions model = Sub.none
