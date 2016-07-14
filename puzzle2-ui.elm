@@ -581,7 +581,10 @@ updateModel update (stateHistory, (i, s1, s2, s3, s4),
     case update of
       NoOp        ->    (createModel (i,       s1, s2, s3, s4) buttonList True, Cmd.none)
 
-      Back        ->    (createModel inputs states False, Cmd.none)
+      Back        ->    (createModel inputs states False, 
+                            Cmd.none
+                            -- showWheel [ wd1, wd2, wd3, wd4  ] 
+                            )
 
       Circle1Field s -> (createModel(newCount, s,  s2, s3, s4) buttonList True, showWheel [ d3DataFromString s, wd2, wd3, wd4  ] )
       Circle2Field s -> (createModel(newCount, s1, s,  s3, s4) buttonList True, showWheel [ wd1, d3DataFromString s, wd3, wd4  ] )
