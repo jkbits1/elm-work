@@ -1,12 +1,14 @@
 import Html exposing (..)
 import Html.Events exposing (..)
-import Html.Attributes exposing (..)
+-- import Html.Attributes exposing (..)
 import Html.App as HtmlApp
 import List exposing (..)
 
 type alias Player = 
-    {   name:   String
-    ,   id:     Int
+    {   
+        id:     Int
+    ,   name:   String
+    ,   ranking: Int
     }
 
 type alias Model = 
@@ -17,6 +19,7 @@ type alias Model =
 
 type Msg = NoOp | Add | NewName String
 
+init : (Model, Cmd Msg)
 init = ({players = [], newName = ""}, Cmd.none)
 
 main = HtmlApp.program { init = init, view = view, update = update, subscriptions = subscriptions}
@@ -35,36 +38,42 @@ view model = div [] [
                 onClick Add
             ] [text "Add player"]
         ]
-    ,   createPlayersHtml model.players
+    ,   playersHtml model.players
 
   ] 
 
-createPlayersHtml : List Player -> Html Msg
-createPlayersHtml model =   
-    ul [] -- [
-        -- li [] [
-        --     text "player item"
-        -- ]
-        <| List.map liFromPlayer model
-    -- ]
+playersHtml : List Player -> Html Msg
+playersHtml model =   
+    ul [] <| List.map playerLi model
         
-liFromPlayer : Player -> Html Msg
-liFromPlayer player =
+playerLi : Player -> Html Msg
+playerLi player =
     li [] [
-        text player.name    
+        text <| player.name ++ " id: " ++ (toString player.id) ++ " r: " ++ (toString player.ranking)    
     ]
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model = 
     case msg of
         NoOp ->         (model, Cmd.none)
-        NewName s ->    ({players = model.players, newName = s}, Cmd.none)
-        Add ->          (
-            {   
-                players = 
-                    [{name = model.newName, id = (length model.players) + 1}] ++ model.players
-            ,   newName = model.newName
-            }, Cmd.none)
+        NewName s ->    ({model | newName = s}, Cmd.none)
+        Add ->          
+            let 
+                idNum = (length model.players) + 1
+            in
+                (
+                    {  
+                        model
+                    |   players = 
+                            [
+                                {  id       = idNum
+                                ,  name     = model.newName
+                                ,  ranking  = idNum
+                                }
+                            ] ++ model.players  
+                    }
+                ,   Cmd.none
+                )
 
 subscriptions : Model -> Sub Msg
 subscriptions model = Sub.none
