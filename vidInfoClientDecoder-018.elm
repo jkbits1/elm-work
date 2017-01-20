@@ -2,23 +2,15 @@ import Debug exposing (log)
 import Html exposing (..)
 import Html.Attributes as Attr exposing (..)
 import Html.Events exposing (..)
-import Http
-import Json.Decode as Json exposing (field)
+import Http exposing (..)
+import Json.Decode exposing (field)
 import String
 import Task exposing (..)
 import Time
+import JsonBits exposing (..)
+import List exposing (..)
 -- import Window
 
-type alias Model = {
-    count : Int
-  , info : String 
-  }
-
-
-type Msg = 
-    NoOp
-  | ButtonGet
-  | Info (Result Http.Error String)
 
 -- queryChnl : Signal.Mailbox String
 -- queryChnl = Signal.mailbox "red-info.txt"
@@ -71,6 +63,8 @@ view model =
         -- , onInput queryChnl
         -- , style myStyle
           button [ onClick ButtonGet ] [ text "send request" ]
+        , button [ onClick ButtonGet2 ] [ text "send request2" ]
+        , button [ onClick ButtonGetFiles ] [ text "send request for files" ]
         ]
       , div []
         [
@@ -240,7 +234,6 @@ imgStyle h src =
 --   Http.get stringList
 --     vidInfoFilesURL `andThen` getFirstString
 
-
 -- getFileNamesAsString : String -> Task Http.Error String
 getFileNamesAsString : String -> Http.Request String
 getFileNamesAsString string = 
@@ -249,7 +242,7 @@ getFileNamesAsString string =
     -- Http.url 
     -- "http://localhost:9090/vidInfo/files" 
     -- "https://www.google.co.uk" 
-    "https://api.giphy.com/v1/gifs/random?api_key=dc6zaTOxFJmzC&tag="
+    <| "https://api.giphy.com/v1/gifs/random?api_key=dc6zaTOxFJmzC&tag=" ++ "kitten"
     -- []
 
 getFileNamesAsStringCmd : Cmd Msg
@@ -279,53 +272,53 @@ type alias Size =
     , height : Int
     }
     
--- filenameDecoder : Json.Decoder (String)    
--- filenameDecoder = "fileName" |> field Json.string
+-- filenameDecoder : Json.DecodeDecoder (String)    
+-- filenameDecoder = "fileName" |> field Json.Decodestring
 
--- titleDetailsDecoder : Json.Decoder (List String)    
+-- titleDetailsDecoder : Json.DecodeDecoder (List String)    
 -- titleDetailsDecoder = 
 -- --  Debug.log "titleDetails" <|
---     "titleDetails" |> field Json.list Json.string
+--     "titleDetails" |> field Json.Decodelist Json.Decodestring
     
--- titleDetailsList : Json.Decoder (List TitleDetail)
+-- titleDetailsList : Json.DecodeDecoder (List TitleDetail)
 -- titleDetailsList =
---   Json.at ["wrapper", "titleDetails"] <| 
---     Json.list <|
---       Json.map2 TitleDetail
--- --        ("titleNumber" |> field Json.string)
--- --        ("length" |> field Json.string)
---         ("titleNumber" |> field Json.int)
---         ("length" |> field Json.float)
+--   Json.Decodeat ["wrapper", "titleDetails"] <| 
+--     Json.Decodelist <|
+--       Json.Decodemap2 TitleDetail
+-- --        ("titleNumber" |> field Json.Decodestring)
+-- --        ("length" |> field Json.Decodestring)
+--         ("titleNumber" |> field Json.Decodeint)
+--         ("length" |> field Json.Decodefloat)
 
---titleDetailsList : Json.Decoder (List TitleDetail)
+--titleDetailsList : Json.DecodeDecoder (List TitleDetail)
 --titleDetailsList =
---  ("titleDetails" |> field (Json.list <|
---      Json.map2 TitleDetail
---        ("titleNumber" |> field Json.int)
---        ("length" |> field Json.float)
+--  ("titleDetails" |> field (Json.Decodelist <|
+--      Json.Decodemap2 TitleDetail
+--        ("titleNumber" |> field Json.Decodeint)
+--        ("length" |> field Json.Decodefloat)
 --    )
 --  )
 
--- stringList : Json.Decoder (List String)    
--- stringList = Json.list Json.string
+-- stringList : Json.DecodeDecoder (List String)    
+-- stringList = Json.Decodelist Json.Decodestring
 
--- photoList : Json.Decoder (List Photo)
+-- photoList : Json.DecodeDecoder (List Photo)
 -- photoList =
---   Json.at ["photos","photo"] <| Json.list <|
---       Json.map2 Photo
---         ("id" |> field Json.string)
---         ("title" |> field Json.string)
+--   Json.Decodeat ["photos","photo"] <| Json.Decodelist <|
+--       Json.Decodemap2 Photo
+--         ("id" |> field Json.Decodestring)
+--         ("title" |> field Json.Decodestring)
 
 
--- sizeList : Json.Decoder (List Size)
+-- sizeList : Json.DecodeDecoder (List Size)
 -- sizeList =
 --   let number =
---         -- Json.oneOf [ Json.int, Json.customDecoder Json.string String.toInt ]
---         Json.oneOf [ Json.int, customDecoder Json.string String.toInt ]
+--         -- Json.DecodeoneOf [ Json.Decodeint, Json.DecodecustomDecoder Json.Decodestring String.toInt ]
+--         Json.DecodeoneOf [ Json.Decodeint, customDecoder Json.Decodestring String.toInt ]
 --   in
---       Json.at ["sizes","size"] <| Json.list <|
---           Json.map3 Size
---             ("source" |> field Json.string)
+--       Json.Decodeat ["sizes","size"] <| Json.Decodelist <|
+--           Json.Decodemap3 Size
+--             ("source" |> field Json.Decodestring)
 --             ("width" |> field number)
 --             ("height" |> field number)
 
@@ -346,9 +339,8 @@ type alias Size =
 -- --  Http.url "http://localhost:9090/vidInfo" []
 --   Http.url "http://localhost:9090/vidInfoWrapped" []
 
--- vidInfoFilesURL : String
--- vidInfoFilesURL =
---   Http.url "http://localhost:9090/vidInfo/files" []
+
+
 
 -- HANDLE RESPONSES
 
@@ -403,6 +395,7 @@ getTitleSpecifics details =
 --     string :: _ -> succeed string
 --     [] ->
 --       fail (Http.UnexpectedPayload "expecting 1 or more strings from server")
+
 
 -- pickSize : (Int,Int) -> List Size -> Task Http.Error String
 -- pickSize (width,height) sizes =
@@ -470,25 +463,6 @@ getTitleSpecifics details =
 --       fail (Http.BadResponse response.status response.statusText)    
 
 
-customDecoder decoder toResult = 
-   Json.andThen
-             (\a ->
-                   case toResult a of 
-                      Ok b -> Json.succeed b
-                      Err err -> Json.fail err
-             )
-             decoder
-
-
-update : Msg -> Model -> (Model, Cmd Msg )
-update msg model = 
-  case msg of 
-    NoOp -> (model, Cmd.none)
-    ButtonGet -> ( {model | count = model.count + 1 }, getFileNamesAsStringCmd)
-    Info (Ok jsonInfo) -> ( {model | info = jsonInfo }, Cmd.none)    
-    Info (Err _) -> (model, Cmd.none)
-
-
 -- WIRING
 
 -- main : Signal Html
@@ -520,3 +494,73 @@ init = (
   , Cmd.none)
 
 subscriptions model = Sub.none
+
+
+-- code below grabbed from original, now deprecated, package
+-- https://github.com/evancz/elm-http/blob/3.0.1/src/Http.elm
+-- REQUESTS
+
+{-| Create a properly encoded URL with a [query string][qs]. The first argument is
+the portion of the URL before the query string, which is assumed to be
+properly encoded already. The second argument is a list of all the
+key/value pairs needed for the query string. Both the keys and values
+will be appropriately encoded, so they can contain spaces, ampersands, etc.
+[qs]: http://en.wikipedia.org/wiki/Query_string
+    url "http://example.com/users" [ ("name", "john doe"), ("age", "30") ]
+    -- http://example.com/users?name=john+doe&age=30
+-}
+-- url : String -> List (String,String) -> String
+-- url baseUrl args =
+--   case args of
+--     [] ->
+--         baseUrl
+
+--     _ ->
+--         baseUrl ++ "?" ++ String.join "&" (List.map queryPair args)
+
+
+-- queryPair : (String,String) -> String
+-- queryPair (key,value) =
+--   queryEscape key ++ "=" ++ queryEscape value
+
+
+-- queryEscape : String -> String
+-- queryEscape string =
+--   String.join "+" (String.split "%20" (uriEncode string))
+
+-- uriEncode : String -> String
+-- uriEncode =
+--   Native.Http.uriEncode
+
+customDecoder decoder toResult = 
+   Json.Decode.andThen
+             (\a ->
+                   case toResult a of 
+                      Ok b -> Json.Decode.succeed b
+                      Err err -> Json.Decode.fail err
+             )
+             decoder
+
+
+update : Msg -> Model -> (Model, Cmd Msg )
+update msg model = 
+  case msg of 
+    NoOp -> (model, Cmd.none)
+    ButtonGet -> ( {model | count = model.count + 1 }, getFileNamesAsStringCmd)
+    ButtonGet2 -> ( {model | count = model.count + 1 }, getFirstFileNameNew "string" )
+
+    ButtonGetFiles -> ( {model | count = model.count + 1 }, getFirstFileName "string" )
+
+    Info (Ok jsonInfo) -> ( {model | info = jsonInfo }, Cmd.none)    
+    Info (Err _) -> (model, Cmd.none)
+
+    Info2 (Ok jsonInfo) -> ( {model | info = jsonInfo }, Cmd.none)    
+    Info2 (Err _) -> (model, Cmd.none)
+
+    InfoList (Ok jsonInfo) -> 
+      let 
+        item = Maybe.withDefault "" <| head jsonInfo
+      in 
+        ( {model | info = item }, Cmd.none)    
+    InfoList (Err _) -> (model, Cmd.none)
+
