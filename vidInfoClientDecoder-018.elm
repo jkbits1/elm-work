@@ -354,13 +354,6 @@ getTitleSpecifics details =
         succeed 
           [TitleDetail 0 0.0]
 
--- getFirstString : List String -> Task Http.Error String
--- getFirstString strings =
---   case strings of
---     string :: _ -> succeed string
---     [] ->
---       fail (Http.UnexpectedPayload "expecting 1 or more strings from server")
-
 
 -- pickSize : (Int,Int) -> List Size -> Task Http.Error String
 -- pickSize (width,height) sizes =

@@ -22,10 +22,12 @@ type Msg =
 vidInfoFilesURL : String
 vidInfoFilesURL =
   -- url 
-    -- "http://localhost:9090/vidInfo/files" 
-    "http://localhost:8000/vidInfo/files" 
-    -- []
+  -- "http://localhost:9090/vidInfo/files" 
+  "http://localhost:8000/vidInfo/files" 
+  -- ("https://api.giphy.com/v1/gifs/random?api_key=dc6zaTOxFJmzC&tag=" ++ "kitten")
+  -- []
 
+-- from elm packages page, works in elm repl
 -- decodeString (list string) "[\"test1\", \"test2\"]"
 
 -- getFirstString : List String -> Task Http.Error String
@@ -60,10 +62,25 @@ getFirstStringx strings =
 
 getFirstString : Decoder String
 getFirstString = 
-  stringList |> andThen getFirstStringx
+  stringList |> andThen 
+    -- getFirstStringx
+    -- incorporated code from getFirstStringx as anon fn
+             (\xs ->
+                -- create Decoder String that decodes to first file name
+                Json.Decode.succeed <|
+                  Maybe.withDefault "" <| List.head xs 
+             )
+            --  decoder
   
 stringList : Json.Decode.Decoder (List String)    
 stringList = Json.Decode.list Json.Decode.string
+
+-- getFirstString : List String -> Task Http.Error String
+-- getFirstString strings =
+--   case strings of
+--     string :: _ -> succeed string
+--     [] ->
+--       fail (Http.UnexpectedPayload "expecting 1 or more strings from server")
 
 -- getFirstFileName : String -> Task Http.Error String
 -- getFirstFileName string = 
@@ -74,10 +91,8 @@ getFirstFileName : String -> Cmd Msg
 getFirstFileName string = 
   Http.send InfoFirstFileName <|
     Http.get 
-      -- ("https://api.giphy.com/v1/gifs/random?api_key=dc6zaTOxFJmzC&tag=" ++ "kitten")
     -- stringList
       vidInfoFilesURL 
-      -- stringList
       -- <| andThen getFirstString
       getFirstString
 
