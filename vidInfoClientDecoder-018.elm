@@ -62,9 +62,9 @@ view model =
         -- , on "input" targetValue (Signal.message queryChnl)
         -- , onInput queryChnl
         -- , style myStyle
-          button [ onClick ButtonGet ] [ text "send request" ]
-        , button [ onClick ButtonGet2 ] [ text "send request2" ]
-        , button [ onClick ButtonGetFiles ] [ text "send request for files" ]
+          button [ onClick ButtonGet ]              [ text "send request" ]
+        , button [ onClick ButtonGetFirstFileName ] [ text "send request - first file name" ]
+        , button [ onClick ButtonGetFileNames ]     [ text "send request - file names" ]
         ]
       , div []
         [
@@ -224,32 +224,7 @@ imgStyle h src =
 --getDetails : List String -> Task Http.Error (List String)
 
 
--- getFileNames : String -> Task Http.Error (List String)
--- getFileNames string = 
---   Http.get stringList
---     vidInfoFilesURL `andThen` getStrings
     
--- getFirstFileName : String -> Task Http.Error String
--- getFirstFileName string = 
---   Http.get stringList
---     vidInfoFilesURL `andThen` getFirstString
-
--- getFileNamesAsString : String -> Task Http.Error String
-getFileNamesAsString : String -> Http.Request String
-getFileNamesAsString string = 
-  Http.getString 
-    -- vidInfoFilesURL        
-    -- Http.url 
-    -- "http://localhost:9090/vidInfo/files" 
-    -- "https://www.google.co.uk" 
-    <| "https://api.giphy.com/v1/gifs/random?api_key=dc6zaTOxFJmzC&tag=" ++ "kitten"
-    -- []
-
-getFileNamesAsStringCmd : Cmd Msg
-getFileNamesAsStringCmd = 
-  Http.send Info <| getFileNamesAsString ""
-
---getFileNamesAsString string = getStringCors "http://localhost:9090/vidInfo/files"
 
 -- JSON DECODERS
 
@@ -298,9 +273,6 @@ type alias Size =
 --        ("length" |> field Json.Decodefloat)
 --    )
 --  )
-
--- stringList : Json.DecodeDecoder (List String)    
--- stringList = Json.Decodelist Json.Decodestring
 
 -- photoList : Json.DecodeDecoder (List Photo)
 -- photoList =
@@ -381,13 +353,6 @@ getTitleSpecifics details =
 --      fail (Http.UnexpectedPayload "expecting 1 or more strings from server")
         succeed 
           [TitleDetail 0 0.0]
-
--- getStrings : List String -> Task Http.Error (List String)
--- getStrings strings =
---   case strings of
---     string :: _ -> succeed strings
---     [] ->
---       fail (Http.UnexpectedPayload "expecting 1 or more strings from server")
 
 -- getFirstString : List String -> Task Http.Error String
 -- getFirstString strings =
@@ -546,20 +511,24 @@ update : Msg -> Model -> (Model, Cmd Msg )
 update msg model = 
   case msg of 
     NoOp -> (model, Cmd.none)
-    ButtonGet -> ( {model | count = model.count + 1 }, getFileNamesAsStringCmd)
-    ButtonGet2 -> ( {model | count = model.count + 1 }, getFirstFileNameNew "string" )
-
-    ButtonGetFiles -> ( {model | count = model.count + 1 }, getFirstFileName "string" )
+    ButtonGet -> 
+      ( {model | count = model.count + 1 }, getFileNamesAsStringCmd )
+    -- ButtonGet -> ( {model | count = model.count + 1 }, getFirstFileNameNew "string" )
+    ButtonGetFirstFileName -> 
+      ( {model | count = model.count + 1 }, getFirstFileName "string" )
+    ButtonGetFileNames -> 
+      ( {model | count = model.count + 1 }, getFileNames "string" )
 
     Info (Ok jsonInfo) -> ( {model | info = jsonInfo }, Cmd.none)    
     Info (Err _) -> (model, Cmd.none)
 
-    Info2 (Ok jsonInfo) -> ( {model | info = jsonInfo }, Cmd.none)    
-    Info2 (Err _) -> (model, Cmd.none)
+    InfoFirstFileName (Ok jsonInfo) -> ( {model | info = jsonInfo }, Cmd.none)    
+    InfoFirstFileName (Err _) -> (model, Cmd.none)
 
     InfoList (Ok jsonInfo) -> 
       let 
-        item = Maybe.withDefault "" <| head jsonInfo
+        -- item = Maybe.withDefault "" <| head jsonInfo
+        item = toString jsonInfo
       in 
         ( {model | info = item }, Cmd.none)    
     InfoList (Err _) -> (model, Cmd.none)
