@@ -76,6 +76,8 @@ view model =
           button [ onClick ButtonGet ]              [ text "send request" ]
         , button [ onClick ButtonGetFirstFileName ] [ text "send request - first file name" ]
         , button [ onClick ButtonGetFileNames ]     [ text "send request - file names" ]
+        , button [ onClick ButtonGetFileNames ]     [ text "send request - file names" ]
+        , button [ onClick ButtonGetFileDetails ]   [ text "send request - file details" ]
         ]
       , div []
         [
@@ -200,6 +202,7 @@ imgStyle h src =
 --     |> Signal.map (\task -> task `andThen` 
 --                     Signal.send specificDetailsChnl)
 
+-- DONE
 --port 
 -- getVidInfoFirstFile : Signal (Task Http.Error ())
 -- getVidInfoFirstFile =
@@ -208,6 +211,7 @@ imgStyle h src =
 --         |> Signal.map (\task -> task `andThen` Signal.send 
 --             resultChnl)
 
+-- DONE
 --port 
 -- getVidInfoFiles : Signal (Task Http.Error ())
 -- getVidInfoFiles =
@@ -216,6 +220,7 @@ imgStyle h src =
 --       |> Signal.map (\task -> task `andThen` Signal.send 
 --           resultsChnl) 
 
+-- MOSTLY DONE
 --port 
 -- getVidInfoFilesAsString : Signal (Task Http.Error ())
 -- getVidInfoFilesAsString =
@@ -248,14 +253,6 @@ imgStyle h src =
     
 
 -- JSON DECODERS
-
-type alias TitleDetail =
-    { 
---      titleNumber : String
---    , length: String
-      titleNumber : Int
-    , length: Float
-    }
 
 type alias Photo =
     { id : String
@@ -326,12 +323,6 @@ type alias Size =
 --     , ("api_key", "9be5b08cd8168fa82d136aa55f1fdb3c")
 --     , ("method", "flickr.photos." ++ method)
 --     ] ++ args
-
--- vidInfoURL : String
--- vidInfoURL =
--- --  Http.url "http://localhost:9090/vidInfo" []
---   Http.url "http://localhost:9090/vidInfoWrapped" []
-
 
 
 
@@ -533,6 +524,10 @@ update msg model =
     ButtonGetFileNames -> 
       ( {model | count = model.count + 1 }, getFileNames "string" )
 
+    ButtonGetFileDetails  -> 
+      ( {model | count = model.count + 1 }, getFileDetails "red-info.txt" )
+
+
     Info (Ok jsonInfo) -> ( {model | info = jsonInfo }, Cmd.none)    
     Info (Err _) -> (model, Cmd.none)
 
@@ -547,4 +542,9 @@ update msg model =
       in 
         ( {model | fileNames = items }, Cmd.none)    
     InfoList (Err _) -> (model, Cmd.none)
+
+  -- | InfoFileDetails (Result Http.Error (List TitleDetail))
+    InfoFileDetails (Ok jsonInfo) -> ( {model | info = toString jsonInfo }, Cmd.none)    
+    -- InfoFileDetails (Ok jsonInfo) -> ( {model | info = jsonInfo }, Cmd.none)    
+    InfoFileDetails (Err s) -> ({model | info = toString s}, Cmd.none)
 

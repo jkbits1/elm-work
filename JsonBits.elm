@@ -15,9 +15,13 @@ type Msg =
   | ButtonGet
   | ButtonGetFirstFileName
   | ButtonGetFileNames
+  | ButtonGetFileDetails
   | Info (Result Http.Error String)
   | InfoFirstFileName (Result Http.Error String)
   | InfoList (Result Http.Error (List String))
+  -- | InfoFileDetails (Result Http.Error (List TitleDetail))
+  | InfoFileDetails (Result Http.Error (List String))
+  -- | InfoFileDetails (Result Http.Error String)
 
 vidInfoFilesURL : String
 vidInfoFilesURL =
@@ -26,6 +30,132 @@ vidInfoFilesURL =
   "http://localhost:8000/vidInfo/files" 
   -- ("https://api.giphy.com/v1/gifs/random?api_key=dc6zaTOxFJmzC&tag=" ++ "kitten")
   -- []
+
+vidInfoURL : String
+vidInfoURL =
+ "http://localhost:8000/vidInfo"
+--  Http.url "http://localhost:9090/vidInfo" []
+--   Http.url "http://localhost:9090/vidInfoWrapped" []
+
+
+type alias TitleDetail =
+    { 
+--      titleNumber : String
+--    , length: String
+      titleNumber : Int
+    , length: Float
+    }
+
+    -- titleDetailsDecoder : Json.DecodeDecoder (List String)    
+-- titleDetailsDecoder = 
+-- --  Debug.log "titleDetails" <|
+--     "titleDetails" |> field Json.Decodelist Json.Decodestring
+    
+-- titleDetailsList : Json.DecodeDecoder (List TitleDetail)
+-- titleDetailsList =
+--   Json.Decodeat ["wrapper", "titleDetails"] <| 
+--     Json.Decodelist <|
+--       Json.Decodemap2 TitleDetail
+-- --        ("titleNumber" |> field Json.Decodestring)
+-- --        ("length" |> field Json.Decodestring)
+--         ("titleNumber" |> field Json.Decodeint)
+--         ("length" |> field Json.Decodefloat)
+
+-- getFileNames : String -> Task Http.Error (List String)
+-- getFileNames : String -> Cmd Msg
+-- getFileNames string = 
+--   Http.send InfoList <|
+--     getFileNamesReq
+
+-- getFileDetailsReq : String -> Http.Request String
+getFileDetailsReq : String -> Http.Request (List String)
+-- getFileDetailsReq : String -> Http.Request (List TitleDetail)
+getFileDetailsReq string =
+  Http.get 
+    (vidInfoURL ++ "\\" ++ string)
+    -- titleDetailsList
+    titleDetailsList2
+    -- titleDetailsList3
+    -- titleDetailsList3
+    -- titleDetailsList3c
+    -- andThen
+    --     getTitleDetails
+
+  -- getFileDetails : String -> Task Http.Error (List String)
+-- getFileDetails string = 
+--   Http.send InfoFirstFileName <|
+--     Http.get 
+--       (vidInfoURL ++ "\\" ++ string)
+--     titleDetailsList
+--       `andThen`
+--         getTitleDetails
+getFileDetails : String -> Cmd Msg
+getFileDetails string = 
+  Http.send InfoFileDetails <|
+    getFileDetailsReq string
+
+-- getTitleDetails : List TitleDetail -> Task Http.Error (List String)
+-- getTitleDetails : List TitleDetail -> Cmd Msg
+-- getTitleDetails details =
+--   case details of
+--     string :: _ -> succeed 
+--       (List.map (toString) details)
+-- --      [
+-- ----      Debug.log "files dets" "file details"
+-- --        "dummy title dets"
+-- --      ]
+--     [] ->
+-- --      fail (Http.UnexpectedPayload "expecting 1 or more strings from server")
+--         succeed ["no details found"]
+
+titleDetailsList : Json.Decode.Decoder (List TitleDetail)
+titleDetailsList =
+  (field "titleDetails" 
+    (Json.Decode.list <|
+      Json.Decode.map2 TitleDetail
+        (field "titleNumber" Json.Decode.int)
+        (field "length" Json.Decode.float)
+    )
+  )
+
+titleDetailsList2 : Json.Decode.Decoder (List String)
+titleDetailsList2 =
+  (field "titleDetails" 
+    <| Json.Decode.list Json.Decode.string
+  )
+
+titleDetailsList3 : Json.Decode.Decoder (String)
+titleDetailsList3 =
+  (field "titleDetails" 
+    Json.Decode.string
+  )
+
+titleDetailsList3a : Json.Decode.Decoder (String)
+titleDetailsList3a =
+  (field "titleDetails" 
+    Json.Decode.string
+  ) |> andThen 
+    -- sort of a NoOp 
+             (\s ->
+                -- create Decoder String that decodes to first file name
+                Json.Decode.succeed <| s
+             )
+
+-- titleDetailsList3b : Json.Decode.Decoder (String)
+-- titleDetailsList3b =
+--   (field "titleDetails" 
+--     Json.Decode.string <| Json.Decode.string
+--   ) 
+
+-- titleDetailsList3c : Json.Decode.Decoder (String)
+-- titleDetailsList3c =
+--   (field "titleDetails" 
+--     <| Json.Decode.list Json.Decode.string
+--   )
+
+
+
+
 
 -- from elm packages page, works in elm repl
 -- decodeString (list string) "[\"test1\", \"test2\"]"
@@ -56,6 +186,8 @@ getFirstStringx strings =
   --   string :: _ -> succeed string
   --   [] ->
   --     fail (Http.UnexpectedPayload "expecting 1 or more strings from server")
+
+
 
 
 -- (List String -> Decoder String) -> Decoder (List String) -> Decoder String
