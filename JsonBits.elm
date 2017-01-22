@@ -7,8 +7,8 @@ import Http exposing (..)
 type alias Model = {
     count : Int
   , info : String 
+  , fileNames : List String
   }
-
 
 type Msg = 
     NoOp

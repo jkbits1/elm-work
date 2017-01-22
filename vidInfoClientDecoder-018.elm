@@ -43,6 +43,17 @@ import List exposing (..)
 -- specificDetailsChnl : Signal.Mailbox (List TitleDetail)
 -- specificDetailsChnl = Signal.mailbox [TitleDetail 0 0.0]
 
+infoListItems : Model -> List (Html Msg)
+infoListItems model = 
+  List.map (\s -> li [] [text s]) model.fileNames
+  -- [ text <| toString model.info
+  -- , ul [] [
+  --     li [] [ text "2nd level item" ]
+  --   ] 
+  -- ]
+
+              -- li []f
+              -- <| infoListItems model
 
 
 -- VIEW
@@ -74,6 +85,16 @@ view model =
       , div []
         [
           text <| toString model.info
+        ]
+
+      , div []
+        [
+          ul []
+          -- [ 
+            -- li []
+              -- <| 
+                <| infoListItems model
+          -- ]
         ]
         
       -- ,
@@ -445,7 +466,7 @@ main = Html.program { init = init, view = view, update = update, subscriptions =
 
 --infixl 4 ~
 
-model = { count = 0, info = "test" }
+model = { count = 0, info = "test", fileNames = [] }
 
 init = (
     model
@@ -521,8 +542,9 @@ update msg model =
     InfoList (Ok jsonInfo) -> 
       let 
         -- item = Maybe.withDefault "" <| head jsonInfo
-        item = toString jsonInfo
+        items = -- toString 
+          jsonInfo
       in 
-        ( {model | info = item }, Cmd.none)    
+        ( {model | fileNames = items }, Cmd.none)    
     InfoList (Err _) -> (model, Cmd.none)
 
