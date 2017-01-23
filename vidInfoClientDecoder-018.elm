@@ -43,9 +43,9 @@ import List exposing (..)
 -- specificDetailsChnl : Signal.Mailbox (List TitleDetail)
 -- specificDetailsChnl = Signal.mailbox [TitleDetail 0 0.0]
 
-infoListItems : Model -> List (Html Msg)
-infoListItems model = 
-  List.map (\s -> li [] [text s]) model.fileNames
+infoListItems : List a -> List (Html Msg)
+infoListItems xs = 
+  List.map (\s -> li [] [text <| toString s]) xs
   -- [ text <| toString model.info
   -- , ul [] [
   --     li [] [ text "2nd level item" ]
@@ -95,8 +95,13 @@ view model =
           -- [ 
             -- li []
               -- <| 
-                <| infoListItems model
+                <| infoListItems model.fileNames
           -- ]
+        ]
+      , div []
+        [
+          ul [] <| infoListItems model.xvals
+
         ]
         
       -- ,
@@ -457,7 +462,7 @@ main = Html.program { init = init, view = view, update = update, subscriptions =
 
 --infixl 4 ~
 
-model = { count = 0, info = "test", fileNames = [] }
+model = { count = 0, info = "test", fileNames = [], xvals = [] }
 
 init = (
     model
@@ -525,7 +530,8 @@ update msg model =
       ( {model | count = model.count + 1 }, getFileNames "string" )
 
     ButtonGetFileDetails  -> 
-      ( {model | count = model.count + 1 }, getFileDetails "red-info.txt" )
+      -- ( {model | count = model.count + 1 }, getFileDetails "red-info.txt" )
+      ( {model | count = model.count + 1 }, getFileDetails2 "red-info.txt" )
 
 
     Info (Ok jsonInfo) -> ( {model | info = jsonInfo }, Cmd.none)    
@@ -548,3 +554,6 @@ update msg model =
     -- InfoFileDetails (Ok jsonInfo) -> ( {model | info = jsonInfo }, Cmd.none)    
     InfoFileDetails (Err s) -> ({model | info = toString s}, Cmd.none)
 
+    InfoFileDetails2 (Ok jsonInfo) -> ( {model | xvals = jsonInfo }, Cmd.none)    
+    -- InfoFileDetails (Ok jsonInfo) -> ( {model | info = jsonInfo }, Cmd.none)    
+    InfoFileDetails2 (Err s) -> ({model | info = toString s}, Cmd.none)

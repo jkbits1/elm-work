@@ -8,6 +8,7 @@ type alias Model = {
     count : Int
   , info : String 
   , fileNames : List String
+  , xvals : List Int
   }
 
 type Msg = 
@@ -22,6 +23,7 @@ type Msg =
   -- | InfoFileDetails (Result Http.Error (List TitleDetail))
   | InfoFileDetails (Result Http.Error (List String))
   -- | InfoFileDetails (Result Http.Error String)
+  | InfoFileDetails2 (Result Http.Error (List Int))
 
 vidInfoFilesURL : String
 vidInfoFilesURL =
@@ -94,6 +96,19 @@ getFileDetails string =
   Http.send InfoFileDetails <|
     getFileDetailsReq string
 
+
+getFileDetailsReq2 : String -> Http.Request (List Int)
+getFileDetailsReq2 string =
+  Http.get 
+    (vidInfoURL ++ "\\" ++ string)
+    titleDetailsList4
+
+getFileDetails2 : String -> Cmd Msg
+getFileDetails2 string = 
+  Http.send InfoFileDetails2 <|
+    getFileDetailsReq2 string
+
+
 -- getTitleDetails : List TitleDetail -> Task Http.Error (List String)
 -- getTitleDetails : List TitleDetail -> Cmd Msg
 -- getTitleDetails details =
@@ -141,6 +156,48 @@ titleDetailsList3a =
                 Json.Decode.succeed <| s
              )
 
+--titleDetailsList : Json.DecodeDecoder (List TitleDetail)
+--titleDetailsList =
+--  ("titleDetails" |> field (Json.Decode.list <|
+--      Json.Decode.map2 TitleDetail
+--        ("titleNumber" |> field Json.Decodeint)
+--        ("length" |> field Json.Decodefloat)
+--    )
+--  )
+
+titleDetailsList4 : Json.Decode.Decoder (List Int)
+titleDetailsList4 =
+  (field "titleDetails" string) |> 
+    andThen 
+      (\s ->
+        decodeString (list (field "titleNumber" int)) s |>
+          (\r ->
+            case r of 
+              Ok xs -> Json.Decode.succeed xs
+              Err err -> Json.Decode.fail <| err ++ "xx"
+          )
+      )
+
+-- decodeString : Decoder a -> String -> Result String a
+
+-- succeed : a -> Decoder a
+
+
+--     customDecoder decoder toResult = 
+--  Json.Decode.andThen
+--            (\a ->
+--                  case toResult a of 
+--                     Ok b -> Json.Decode.succeed b
+--                     Err err -> Json.Decode.fail err
+--            )
+--            decoder
+
+-- decodeString (field "titleDetails" string) """{\"titleDetails\":\"[1,2]\"}"""
+-- Ok "[1,2]" : Result.Result String String
+-- decodeString (list (field "titleNumber" int)) "[{\"line\":\"ID_DVD_TITLE_1_LENGTH=0.480\",\"titleNumber\":1,\"length\":0.48}]"
+-- Ok [1] : Result.Result String (List Int)
+
+
 -- titleDetailsList3b : Json.Decode.Decoder (String)
 -- titleDetailsList3b =
 --   (field "titleDetails" 
@@ -174,11 +231,11 @@ getFirstStringx strings =
   --  Json.Decode.andThen
             --  (\xs ->
                 -- create Decoder String that decodes to first file name
+                -- succeed : a -> Decoder a
                 Json.Decode.succeed <|
                   Maybe.withDefault "" <| List.head strings --xs 
             --  )
             --  decoder
-
 
 
   -- Json.Decode.decodeString (list Json.Decodestring) strings
@@ -295,4 +352,43 @@ getFileNamesAsStringCmd =
   Http.send Info <| getFileNamesAsString ""
 
 --getFileNamesAsString string = getStringCors "http://localhost:9090/vidInfo/files"
+
+-- "{\"fileName\":\"red-info.txt\",\"titleDetails\":\"[{\"line\":\"ID_DVD_TITLE_1_LENGTH=0.480\",\"titleNumber\":1,\"length\":0.48}]\"}"
+
+-- 
+-- {"fileName":"red-info.txt","titleDetails":
+
+-- decodeString JsonBits.titleDetailsList3a "{\"fileName\":\"red-info.txt\",\"titleDetails\":\"[{\"line\":\"ID_DVD_TITLE_1_LENGTH=0.480\",\"titleNumber\":1,\"length\":0.48}]\"}"
+
+-- decodeString JsonBits.titleDetailsList3a "{\"titleDetails\":\"[{\"line\":\"ID_DVD_TITLE_1\",\"titleNumber\":1,\"length\":0.48}]\"}"
+
+-- decodeString JsonBits.titleDetailsList3a "{"fileName":"red-info.txt","titleDetails":"[{\"line\":\"ID_DVD_TITLE_1_LENGTH=0.480\",\"titleNumber\":1,\"length\":0.48}]"}"
+
+-- decodeString (field "titleDetails" string) """{\"titleDetails\":\"[1,2]\"}"""
+-- Ok "[1,2]" : Result.Result String String
+-- decodeString (list (field "titleNumber" int)) "[{\"line\":\"ID_DVD_TITLE_1_LENGTH=0.480\",\"titleNumber\":1,\"length\":0.48}]"
+-- Ok [1] : Result.Result String (List Int)
+
+-- decodeString (list (field "titleNumber" int)) "[{\"line\":\"ID_DVD_TITLE_1_LENGTH=0.480\",\"titleNumber\":1,\"length\":0.48}]"
+-- Ok [1] : Result.Result String (List Int)
+
+-- decodeString (list (field "line" string)) "[{\"line\":\"ID_DVD_TITLE_1_LENGTH=0.480\",\"titleNumber\":1,\"length\":0.48}]"
+-- Ok ["ID_DVD_TITLE_1_LENGTH=0.480"] : Result.Result String (List String)
+
+-- decodeString (list (field "line" string)) "[{\"line\":\"ID_DVD_TITLE_1_LENGTH=0.480\",\"titleNumber\":1,\"length\":0.48}, {\"line\":\"ID_DVD_TITLE_1_LENGTH=0.481\",\"titleNumber\":2,\"length\":0.481}]"
+-- Ok ["ID_DVD_TITLE_1_LENGTH=0.480","ID_DVD_TITLE_1_LENGTH=0.481"]
+--     : Result.Result String (List String)
+
+-- decodeString (field "fileName" string) """{ "fileName":"red-info.txt" }"""
+-- Ok "red-info.txt" : Result.Result String String
+
+-- decodeString (field "titleDetails" string) """{\"titleDetails\":\"[]\"}"""
+-- Ok "[]" : Result.Result String String
+
+-- decodeString (field "titleDetails" string) """{\"titleDetails\":\"[1,2]\"}"""
+-- Ok "[1,2]" : Result.Result String String
+
+-- decodeString (list int) "[1,2]"
+-- Ok [1,2] : Result.Result String (List Int)
+
 
