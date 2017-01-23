@@ -9,6 +9,7 @@ type alias Model = {
   , info : String 
   , fileNames : List String
   , xvals : List Int
+  , titleDetails : List TitleDetail
   }
 
 type Msg = 
@@ -17,13 +18,14 @@ type Msg =
   | ButtonGetFirstFileName
   | ButtonGetFileNames
   | ButtonGetFileDetails
+  | ButtonGetFileDetails3
   | Info (Result Http.Error String)
   | InfoFirstFileName (Result Http.Error String)
   | InfoList (Result Http.Error (List String))
-  -- | InfoFileDetails (Result Http.Error (List TitleDetail))
   | InfoFileDetails (Result Http.Error (List String))
   -- | InfoFileDetails (Result Http.Error String)
   | InfoFileDetails2 (Result Http.Error (List Int))
+  | InfoFileDetails3 (Result Http.Error (List TitleDetail))
 
 vidInfoFilesURL : String
 vidInfoFilesURL =
@@ -108,6 +110,18 @@ getFileDetails2 string =
   Http.send InfoFileDetails2 <|
     getFileDetailsReq2 string
 
+getFileDetailsReq3 : String -> Http.Request (List TitleDetail)
+getFileDetailsReq3 string =
+  Http.get 
+    (vidInfoURL ++ "\\" ++ string)
+    -- titleDetailsListOrig
+    titleDetailsList5
+
+getFileDetails3 : String -> Cmd Msg
+getFileDetails3 string = 
+  Http.send InfoFileDetails3 <|
+    getFileDetailsReq3 string
+
 
 -- getTitleDetails : List TitleDetail -> Task Http.Error (List String)
 -- getTitleDetails : List TitleDetail -> Cmd Msg
@@ -156,14 +170,18 @@ titleDetailsList3a =
                 Json.Decode.succeed <| s
              )
 
---titleDetailsList : Json.DecodeDecoder (List TitleDetail)
---titleDetailsList =
---  ("titleDetails" |> field (Json.Decode.list <|
---      Json.Decode.map2 TitleDetail
---        ("titleNumber" |> field Json.Decodeint)
---        ("length" |> field Json.Decodefloat)
---    )
---  )
+titleDetailsListOrig : Json.Decode.Decoder (List TitleDetail)
+titleDetailsListOrig =
+  (field "titleDetails" 
+    (list <|
+      Json.Decode.map2 TitleDetail
+        (field "titleNumber" int)
+        (field "length" float)
+    )
+  )
+
+titleDetail : Decoder TitleDetail
+titleDetail = map2 TitleDetail (field "titleNumber" int) (field "length" float)
 
 titleDetailsList4 : Json.Decode.Decoder (List Int)
 titleDetailsList4 =
@@ -171,6 +189,19 @@ titleDetailsList4 =
     andThen 
       (\s ->
         decodeString (list (field "titleNumber" int)) s |>
+          (\r ->
+            case r of 
+              Ok xs -> Json.Decode.succeed xs
+              Err err -> Json.Decode.fail <| err ++ "xx"
+          )
+      )
+
+titleDetailsList5 : Json.Decode.Decoder (List TitleDetail)
+titleDetailsList5 =
+  (field "titleDetails" string) |> 
+    andThen 
+      (\s ->
+        decodeString (list titleDetail) s |>
           (\r ->
             case r of 
               Ok xs -> Json.Decode.succeed xs

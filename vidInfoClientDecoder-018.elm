@@ -78,6 +78,7 @@ view model =
         , button [ onClick ButtonGetFileNames ]     [ text "send request - file names" ]
         , button [ onClick ButtonGetFileNames ]     [ text "send request - file names" ]
         , button [ onClick ButtonGetFileDetails ]   [ text "send request - file details" ]
+        , button [ onClick ButtonGetFileDetails3 ]   [ text "send request - file details3" ]
         ]
       , div []
         [
@@ -101,7 +102,10 @@ view model =
       , div []
         [
           ul [] <| infoListItems model.xvals
-
+        ]
+      , div []
+        [
+          ul [] <| infoListItems model.titleDetails
         ]
         
       -- ,
@@ -462,7 +466,7 @@ main = Html.program { init = init, view = view, update = update, subscriptions =
 
 --infixl 4 ~
 
-model = { count = 0, info = "test", fileNames = [], xvals = [] }
+model = { count = 0, info = "test", fileNames = [], xvals = [], titleDetails = [] }
 
 init = (
     model
@@ -533,6 +537,8 @@ update msg model =
       -- ( {model | count = model.count + 1 }, getFileDetails "red-info.txt" )
       ( {model | count = model.count + 1 }, getFileDetails2 "red-info.txt" )
 
+    ButtonGetFileDetails3 ->
+      ( {model | count = model.count + 1 }, getFileDetails3 "red-info.txt" )
 
     Info (Ok jsonInfo) -> ( {model | info = jsonInfo }, Cmd.none)    
     Info (Err _) -> (model, Cmd.none)
@@ -557,3 +563,7 @@ update msg model =
     InfoFileDetails2 (Ok jsonInfo) -> ( {model | xvals = jsonInfo }, Cmd.none)    
     -- InfoFileDetails (Ok jsonInfo) -> ( {model | info = jsonInfo }, Cmd.none)    
     InfoFileDetails2 (Err s) -> ({model | info = toString s}, Cmd.none)
+
+    InfoFileDetails3 (Ok jsonInfo) -> ( {model | titleDetails = jsonInfo }, Cmd.none)    
+    -- InfoFileDetails (Ok jsonInfo) -> ( {model | info = jsonInfo }, Cmd.none)    
+    InfoFileDetails3 (Err s) -> ({model | info = toString s}, Cmd.none)
