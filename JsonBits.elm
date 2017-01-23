@@ -170,19 +170,6 @@ titleDetailsList3a =
                 Json.Decode.succeed <| s
              )
 
-titleDetailsListOrig : Json.Decode.Decoder (List TitleDetail)
-titleDetailsListOrig =
-  (field "titleDetails" 
-    (list <|
-      Json.Decode.map2 TitleDetail
-        (field "titleNumber" int)
-        (field "length" float)
-    )
-  )
-
-titleDetail : Decoder TitleDetail
-titleDetail = map2 TitleDetail (field "titleNumber" int) (field "length" float)
-
 titleDetailsList4 : Json.Decode.Decoder (List Int)
 titleDetailsList4 =
   (field "titleDetails" string) |> 
@@ -196,14 +183,30 @@ titleDetailsList4 =
           )
       )
 
+-- original code from earlier Elm version
+-- no longer works
+-- seems to need intermediate string conversion now
+titleDetailsListOrig : Json.Decode.Decoder (List TitleDetail)
+titleDetailsListOrig =
+  (field "titleDetails" 
+    (list <|
+      Json.Decode.map2 TitleDetail
+        (field "titleNumber" int)
+        (field "length" float)
+    )
+  )
+
+titleDetailDecoder : Decoder TitleDetail
+titleDetailDecoder = map2 TitleDetail (field "titleNumber" int) (field "length" float)
+
 titleDetailsList5 : Json.Decode.Decoder (List TitleDetail)
 titleDetailsList5 =
   (field "titleDetails" string) |> 
     andThen 
       (\s ->
-        decodeString (list titleDetail) s |>
-          (\r ->
-            case r of 
+        decodeString (list titleDetailDecoder) s |>
+          (\result ->
+            case result of 
               Ok xs -> Json.Decode.succeed xs
               Err err -> Json.Decode.fail <| err ++ "xx"
           )
