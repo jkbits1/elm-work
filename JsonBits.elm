@@ -137,16 +137,6 @@ getFileDetails3 string =
 -- --      fail (Http.UnexpectedPayload "expecting 1 or more strings from server")
 --         succeed ["no details found"]
 
-titleDetailsList : Json.Decode.Decoder (List TitleDetail)
-titleDetailsList =
-  (field "titleDetails" 
-    (Json.Decode.list <|
-      Json.Decode.map2 TitleDetail
-        (field "titleNumber" Json.Decode.int)
-        (field "length" Json.Decode.float)
-    )
-  )
-
 titleDetailsList2 : Json.Decode.Decoder (List String)
 titleDetailsList2 =
   (field "titleDetails" 
@@ -184,8 +174,7 @@ titleDetailsList4 =
       )
 
 -- original code from earlier Elm version
--- no longer works
--- seems to need intermediate string conversion now
+-- no longer works, seems to need intermediate string conversion now
 titleDetailsListOrig : Json.Decode.Decoder (List TitleDetail)
 titleDetailsListOrig =
   (field "titleDetails" 
@@ -213,9 +202,7 @@ titleDetailsList5 =
       )
 
 -- decodeString : Decoder a -> String -> Result String a
-
 -- succeed : a -> Decoder a
-
 
 --     customDecoder decoder toResult = 
 --  Json.Decode.andThen
@@ -387,6 +374,9 @@ getFileNamesAsStringCmd =
 
 --getFileNamesAsString string = getStringCors "http://localhost:9090/vidInfo/files"
 
+-- 
+-- various experiments in Elm repl, to get json parsing correct
+-- 
 -- "{\"fileName\":\"red-info.txt\",\"titleDetails\":\"[{\"line\":\"ID_DVD_TITLE_1_LENGTH=0.480\",\"titleNumber\":1,\"length\":0.48}]\"}"
 
 -- 
@@ -398,31 +388,39 @@ getFileNamesAsStringCmd =
 
 -- decodeString JsonBits.titleDetailsList3a "{"fileName":"red-info.txt","titleDetails":"[{\"line\":\"ID_DVD_TITLE_1_LENGTH=0.480\",\"titleNumber\":1,\"length\":0.48}]"}"
 
+-- can get a string value from a simple object
+-- decodeString (field "fileName" string) """{ "fileName":"red-info.txt" }"""
+-- Ok "red-info.txt" : Result.Result String String
+
+-- so, it seems I can get a string from the field
 -- decodeString (field "titleDetails" string) """{\"titleDetails\":\"[1,2]\"}"""
 -- Ok "[1,2]" : Result.Result String String
+
+-- and, given a string of a list, can get an actual list
+-- decodeString (list int) "[1,2]"
+-- Ok [1,2] : Result.Result String (List Int)
+
+-- can get an empty list
+-- decodeString (field "titleDetails" string) """{\"titleDetails\":\"[]\"}"""
+-- Ok "[]" : Result.Result String String
+
+-- and can get test list as decoded on its own (seem to have done this step earlier, too)
+-- decodeString (field "titleDetails" string) """{\"titleDetails\":\"[1,2]\"}"""
+-- Ok "[1,2]" : Result.Result String String
+
+-- from the actual list, can get a single int
 -- decodeString (list (field "titleNumber" int)) "[{\"line\":\"ID_DVD_TITLE_1_LENGTH=0.480\",\"titleNumber\":1,\"length\":0.48}]"
 -- Ok [1] : Result.Result String (List Int)
 
--- decodeString (list (field "titleNumber" int)) "[{\"line\":\"ID_DVD_TITLE_1_LENGTH=0.480\",\"titleNumber\":1,\"length\":0.48}]"
--- Ok [1] : Result.Result String (List Int)
-
+-- from the actual list, can get a single string
 -- decodeString (list (field "line" string)) "[{\"line\":\"ID_DVD_TITLE_1_LENGTH=0.480\",\"titleNumber\":1,\"length\":0.48}]"
 -- Ok ["ID_DVD_TITLE_1_LENGTH=0.480"] : Result.Result String (List String)
 
+-- from the actual list, can get multiple strings
 -- decodeString (list (field "line" string)) "[{\"line\":\"ID_DVD_TITLE_1_LENGTH=0.480\",\"titleNumber\":1,\"length\":0.48}, {\"line\":\"ID_DVD_TITLE_1_LENGTH=0.481\",\"titleNumber\":2,\"length\":0.481}]"
 -- Ok ["ID_DVD_TITLE_1_LENGTH=0.480","ID_DVD_TITLE_1_LENGTH=0.481"]
 --     : Result.Result String (List String)
 
--- decodeString (field "fileName" string) """{ "fileName":"red-info.txt" }"""
--- Ok "red-info.txt" : Result.Result String String
 
--- decodeString (field "titleDetails" string) """{\"titleDetails\":\"[]\"}"""
--- Ok "[]" : Result.Result String String
-
--- decodeString (field "titleDetails" string) """{\"titleDetails\":\"[1,2]\"}"""
--- Ok "[1,2]" : Result.Result String String
-
--- decodeString (list int) "[1,2]"
--- Ok [1,2] : Result.Result String (List Int)
 
 
