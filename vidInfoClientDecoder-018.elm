@@ -79,6 +79,7 @@ view model =
         , button [ onClick ButtonGetFileNames ]     [ text "send request - file names" ]
         , button [ onClick ButtonGetFileDetails ]   [ text "send request - file details" ]
         , button [ onClick ButtonGetFileDetails3 ]   [ text "send request - file details3" ]
+        , button [ onClick ButtonGetFileDetailsWrapped ]   [ text "send request - file details wrapped" ]        
         ]
       , div []
         [
@@ -229,7 +230,7 @@ imgStyle h src =
 --       |> Signal.map (\task -> task `andThen` Signal.send 
 --           resultsChnl) 
 
--- MOSTLY DONE
+-- DONE
 --port 
 -- getVidInfoFilesAsString : Signal (Task Http.Error ())
 -- getVidInfoFilesAsString =
@@ -246,20 +247,10 @@ imgStyle h src =
 --       (vidInfoURL)
 --         `andThen` getTitleSpecifics
 
--- getFileDetails : String -> Task Http.Error (List String)
--- getFileDetails string = 
---   Http.get 
---     titleDetailsList
---       (vidInfoURL ++ "\\" ++ string)
---       -- (vidInfoURL)
---       `andThen`
---         getTitleDetails
     
 --titleDetailsDecoder : Json.Decoder (List String)    
 --getDetails : List String -> Task Http.Error (List String)
 
-
-    
 
 -- JSON DECODERS
 
@@ -282,25 +273,6 @@ type alias Size =
 -- --  Debug.log "titleDetails" <|
 --     "titleDetails" |> field Json.Decodelist Json.Decodestring
     
--- titleDetailsList : Json.DecodeDecoder (List TitleDetail)
--- titleDetailsList =
---   Json.Decodeat ["wrapper", "titleDetails"] <| 
---     Json.Decodelist <|
---       Json.Decodemap2 TitleDetail
--- --        ("titleNumber" |> field Json.Decodestring)
--- --        ("length" |> field Json.Decodestring)
---         ("titleNumber" |> field Json.Decodeint)
---         ("length" |> field Json.Decodefloat)
-
---titleDetailsList : Json.DecodeDecoder (List TitleDetail)
---titleDetailsList =
---  ("titleDetails" |> field (Json.Decodelist <|
---      Json.Decodemap2 TitleDetail
---        ("titleNumber" |> field Json.Decodeint)
---        ("length" |> field Json.Decodefloat)
---    )
---  )
-
 -- photoList : Json.DecodeDecoder (List Photo)
 -- photoList =
 --   Json.Decodeat ["photos","photo"] <| Json.Decodelist <|
@@ -364,17 +336,6 @@ getTitleDetails details =
     [] ->
 --      fail (Http.UnexpectedPayload "expecting 1 or more strings from server")
         succeed ["no details found"]
-
-getTitleSpecifics : List TitleDetail -> Task Http.Error (List TitleDetail)
-getTitleSpecifics details =
-  case details of
-    detail :: _ -> succeed 
-      details
-    [] ->
---      fail (Http.UnexpectedPayload "expecting 1 or more strings from server")
-        succeed 
-          [TitleDetail 0 0.0]
-
 
 -- pickSize : (Int,Int) -> List Size -> Task Http.Error String
 -- pickSize (width,height) sizes =
@@ -540,6 +501,9 @@ update msg model =
     ButtonGetFileDetails3 ->
       ( {model | count = model.count + 1 }, getFileDetails3 "red-info.txt" )
 
+    ButtonGetFileDetailsWrapped  ->
+      ( {model | count = model.count + 1 }, getFileDetailsWrapped "red-info.txt" )
+
     Info (Ok jsonInfo) -> ( {model | info = jsonInfo }, Cmd.none)    
     Info (Err _) -> (model, Cmd.none)
 
@@ -556,14 +520,14 @@ update msg model =
     InfoList (Err _) -> (model, Cmd.none)
 
   -- | InfoFileDetails (Result Http.Error (List TitleDetail))
-    InfoFileDetails (Ok jsonInfo) -> ( {model | info = toString jsonInfo }, Cmd.none)    
+    InfoFileDetails1 (Ok jsonInfo) -> ( {model | info = toString jsonInfo }, Cmd.none)    
     -- InfoFileDetails (Ok jsonInfo) -> ( {model | info = jsonInfo }, Cmd.none)    
-    InfoFileDetails (Err s) -> ({model | info = toString s}, Cmd.none)
+    InfoFileDetails1 (Err s) -> ({model | info = toString s}, Cmd.none)
 
     InfoFileDetails2 (Ok jsonInfo) -> ( {model | xvals = jsonInfo }, Cmd.none)    
     -- InfoFileDetails (Ok jsonInfo) -> ( {model | info = jsonInfo }, Cmd.none)    
     InfoFileDetails2 (Err s) -> ({model | info = toString s}, Cmd.none)
 
-    InfoFileDetails3 (Ok jsonInfo) -> ( {model | titleDetails = jsonInfo }, Cmd.none)    
+    InfoFileDetails (Ok jsonInfo) -> ( {model | titleDetails = jsonInfo }, Cmd.none)    
     -- InfoFileDetails (Ok jsonInfo) -> ( {model | info = jsonInfo }, Cmd.none)    
-    InfoFileDetails3 (Err s) -> ({model | info = toString s}, Cmd.none)
+    InfoFileDetails (Err s) -> ({model | info = toString s}, Cmd.none)
