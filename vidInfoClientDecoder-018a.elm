@@ -65,11 +65,15 @@ view model =
         ]
       , div []
         [
-          text <| "Count - "          ++ toString model.count
+          text <| "Count - "            ++ toString model.count
         ]
       , div []
         [
-          text <| "Info - "           ++ toString model.info
+          text <| "Info - "             ++ toString model.info
+        ]
+      , div []
+        [
+          text <| "First file name - "  ++ toString model.firstFileName
         ]
       , div []
         [
@@ -79,7 +83,17 @@ view model =
       , div []
         [
           text "Title details - "
-        , ul [] <| infoListItems model.titleDetails
+        , ul [] <| infoListItems <| 
+                    -- List.sortBy .length
+                    List.sortWith 
+                      (\td1 td2 -> 
+                        case model.sortDetailsByLength of
+                          True ->
+                            compare td1.length td2.length
+                          False ->
+                            compare td1.titleNumber td2.titleNumber
+                        )
+                        model.titleDetails
         ]
       , div []
         [
@@ -330,7 +344,12 @@ getTitleDetails details =
 
 -- WIRING
 
-main = Html.program { init = init, view = view, update = update, subscriptions = subscriptions }
+main = Html.program { 
+    init = init
+  , view = view
+  , update = update
+  , subscriptions = subscriptions 
+  }
 
 -- These functions were removed from the Signal package. 
 -- They allow the equivalent of map6 and beyond.
@@ -343,7 +362,17 @@ main = Html.program { init = init, view = view, update = update, subscriptions =
 
 --infixl 4 ~
 
-model = { count = 0, info = "test", fileNames = [], xvals = [], titleDetails = [] }
+model : Model
+model = { 
+    count = 0
+  , info = "initial state"
+  , firstFileName = "firstFileName"
+  , fileNames = []
+  , xvals = []
+  , titleDetails = [] 
+  -- , sortDetailsByLength = True
+  , sortDetailsByLength = False
+  }
 
 init = (
     model
@@ -417,14 +446,14 @@ update msg model =
     ButtonGetFileDetailsWrapped  ->
       ( {model | count = model.count + 1 }, getFileDetailsWrapped "red-info.txt" )
 
-    Info (Ok jsonInfo) -> ( {model | info = jsonInfo }, Cmd.none)    
+    Info (Ok jsonInfo) -> ( {model | firstFileName = jsonInfo }, Cmd.none)    
     Info (Err _) -> (model, Cmd.none)
 
     InfoFileNames (Ok fileNames) -> ( {model | fileNames = fileNames }, Cmd.none)    
     InfoFileNames (Err _) -> (model, Cmd.none)
 
-    InfoFirstFileName (Ok fileName) -> ( {model | info = fileName }, Cmd.none)    
+    InfoFirstFileName (Ok fileName) -> ( {model | firstFileName = fileName }, Cmd.none)    
     InfoFirstFileName (Err _) -> (model, Cmd.none)
 
-    InfoTitleDetails (Ok jsonInfo) -> ( {model | titleDetails = jsonInfo }, Cmd.none)    
+    InfoTitleDetails (Ok titleDetails) -> ( {model | titleDetails = titleDetails }, Cmd.none)    
     InfoTitleDetails (Err s) -> ({model | info = toString s}, Cmd.none)

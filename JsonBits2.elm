@@ -5,10 +5,12 @@ import Http exposing (..)
 
 type alias Model = {
     count : Int
-  , info : String 
+  , info : String
+  , firstFileName : String 
   , fileNames : List String
   , xvals : List Int
   , titleDetails : List TitleDetail
+  , sortDetailsByLength : Bool
   }
 
 type alias TitleDetail =
