@@ -27,23 +27,7 @@ import List exposing (..)
 -- specificDetailsChnl : Signal.Mailbox (List TitleDetail)
 -- specificDetailsChnl = Signal.mailbox [TitleDetail 0 0.0]
 
--- type Msg =
---   -- queryChnl : Signal.Mailbox String
---   queryChnl = Signal.mailbox "red-info.txt"
-
--- resultChnl : Signal.Mailbox String
--- resultChnl = Signal.mailbox "filename"
-
--- resultsChnl : Signal.Mailbox (List String)
--- resultsChnl = Signal.mailbox ["filename"]
-
--- detailsChnl : Signal.Mailbox (List String)
--- detailsChnl = Signal.mailbox ["details"]
-
--- specificDetailsChnl : Signal.Mailbox (List TitleDetail)
--- specificDetailsChnl = Signal.mailbox [TitleDetail 0 0.0]
-
-infoListItems : List a -> List (Html Msg)
+-- infoListItems : List a -> List (Html Msg)
 infoListItems xs = 
   List.map (\s -> li [] [text <| toString s]) xs
   -- [ text <| toString model.info
@@ -53,7 +37,7 @@ infoListItems xs =
   -- ]
 
               -- li []f
-              -- <| infoListItems model
+              -- <| infoFileNamesItems model
 
 
 -- VIEW
@@ -76,37 +60,31 @@ view model =
           button [ onClick ButtonGet ]              [ text "send request" ]
         , button [ onClick ButtonGetFirstFileName ] [ text "send request - first file name" ]
         , button [ onClick ButtonGetFileNames ]     [ text "send request - file names" ]
-        , button [ onClick ButtonGetFileNames ]     [ text "send request - file names" ]
-        , button [ onClick ButtonGetFileDetails ]   [ text "send request - file details" ]
-        , button [ onClick ButtonGetFileDetails3 ]   [ text "send request - file details3" ]
+        , button [ onClick ButtonGetFileDetails ]   [ text "send request - file details3" ]
         , button [ onClick ButtonGetFileDetailsWrapped ]   [ text "send request - file details wrapped" ]        
         ]
       , div []
         [
-          text <| toString model.count
-        ]
-
-      , div []
-        [
-          text <| toString model.info
-        ]
-
-      , div []
-        [
-          ul []
-          -- [ 
-            -- li []
-              -- <| 
-                <| infoListItems model.fileNames
-          -- ]
+          text <| "Count - "          ++ toString model.count
         ]
       , div []
         [
-          ul [] <| infoListItems model.xvals
+          text <| "Info - "           ++ toString model.info
         ]
       , div []
         [
-          ul [] <| infoListItems model.titleDetails
+          text "File names - "
+        , ul [] <| infoListItems model.fileNames
+        ]
+      , div []
+        [
+          text "Title details - "
+        , ul [] <| infoListItems model.titleDetails
+        ]
+      , div []
+        [
+          text "xvals - "
+        , ul [] <| infoListItems model.xvals
         ]
         
       -- ,
@@ -147,9 +125,6 @@ firstSpecific details =
     case m of 
       Just detail -> detail
       Nothing     -> TitleDetail 0 0.0
-
---specificsAsString : List TitleDetail -> String
---specificsAsString results = String.join ", " results
 
 resultsAsString2 : List String -> String
 resultsAsString2 results = String.join ", " results
@@ -203,55 +178,7 @@ imgStyle h src =
 --     |> Signal.sampleOn trigger
 --     |> Signal.map (\task -> task `andThen` 
 --                     Signal.send detailsChnl)
-
---port
--- getVidInfoFileSpecifics : Signal (Task Http.Error ())
--- getVidInfoFileSpecifics =
---   Signal.map getFileSpecifics queryChnl.signal
---     |> Signal.sampleOn trigger
---     |> Signal.map (\task -> task `andThen` 
---                     Signal.send specificDetailsChnl)
-
--- DONE
---port 
--- getVidInfoFirstFile : Signal (Task Http.Error ())
--- getVidInfoFirstFile =
---       Signal.map getFirstFileName queryChnl.signal
---         |> Signal.sampleOn trigger
---         |> Signal.map (\task -> task `andThen` Signal.send 
---             resultChnl)
-
--- DONE
---port 
--- getVidInfoFiles : Signal (Task Http.Error ())
--- getVidInfoFiles =
---       Signal.map getFileNames queryChnl.signal
---       |> Signal.sampleOn trigger    
---       |> Signal.map (\task -> task `andThen` Signal.send 
---           resultsChnl) 
-
--- DONE
---port 
--- getVidInfoFilesAsString : Signal (Task Http.Error ())
--- getVidInfoFilesAsString =
---   Signal.map getFileNamesAsString queryChnl.signal
---     |> Signal.sampleOn trigger
---     |> Signal.map (\task -> task `andThen` Signal.send    
---         resultChnl)
-
--- getFileSpecifics : String -> Task Http.Error (List TitleDetail)
--- getFileSpecifics string = 
---   Http.get
---     titleDetailsList
--- --      (vidInfoURL ++ "\\" ++ string)
---       (vidInfoURL)
---         `andThen` getTitleSpecifics
-
     
---titleDetailsDecoder : Json.Decoder (List String)    
---getDetails : List String -> Task Http.Error (List String)
-
-
 -- JSON DECODERS
 
 type alias Photo =
@@ -310,9 +237,7 @@ type alias Size =
 -- HANDLE RESPONSES
 
 getDetail : String -> Task Http.Error (List String)
-getDetail string =
---    succeed ["file details"]
-    succeed [string]
+getDetail string = succeed [string]
 
 getDetails : List String -> Task Http.Error (List String)
 getDetails strings =
@@ -405,16 +330,7 @@ getTitleDetails details =
 
 -- WIRING
 
--- main : Signal Html
--- main =
--- --  Signal.map2 view Window.height queryChnl.signal 
---   view <~ Window.height ~ queryChnl.signal ~ resultChnl.signal ~ 
---     resultsChnl.signal ~ detailsChnl.signal ~       
---     specificDetailsChnl.signal
-
 main = Html.program { init = init, view = view, update = update, subscriptions = subscriptions }
--- main = Html.beginnerProgram { model = model, view = view, update = update }
-
 
 -- These functions were removed from the Signal package. 
 -- They allow the equivalent of map6 and beyond.
@@ -488,18 +404,15 @@ update msg model =
     NoOp -> (model, Cmd.none)
     ButtonGet -> 
       ( {model | count = model.count + 1 }, getFileNamesAsStringCmd )
-    -- ButtonGet -> ( {model | count = model.count + 1 }, getFirstFileNameNew "string" )
-    ButtonGetFirstFileName -> 
-      ( {model | count = model.count + 1 }, getFirstFileName "string" )
+
     ButtonGetFileNames -> 
       ( {model | count = model.count + 1 }, getFileNames "string" )
 
-    ButtonGetFileDetails  -> 
-      -- ( {model | count = model.count + 1 }, getFileDetails "red-info.txt" )
-      ( {model | count = model.count + 1 }, getFileDetails2 "red-info.txt" )
+    ButtonGetFirstFileName -> 
+      ( {model | count = model.count + 1 }, getFirstFileName "string" )
 
-    ButtonGetFileDetails3 ->
-      ( {model | count = model.count + 1 }, getFileDetails3 "red-info.txt" )
+    ButtonGetFileDetails ->
+      ( {model | count = model.count + 1 }, getFileDetails "red-info.txt" )
 
     ButtonGetFileDetailsWrapped  ->
       ( {model | count = model.count + 1 }, getFileDetailsWrapped "red-info.txt" )
@@ -507,27 +420,11 @@ update msg model =
     Info (Ok jsonInfo) -> ( {model | info = jsonInfo }, Cmd.none)    
     Info (Err _) -> (model, Cmd.none)
 
-    InfoFirstFileName (Ok jsonInfo) -> ( {model | info = jsonInfo }, Cmd.none)    
+    InfoFileNames (Ok fileNames) -> ( {model | fileNames = fileNames }, Cmd.none)    
+    InfoFileNames (Err _) -> (model, Cmd.none)
+
+    InfoFirstFileName (Ok fileName) -> ( {model | info = fileName }, Cmd.none)    
     InfoFirstFileName (Err _) -> (model, Cmd.none)
 
-    InfoList (Ok jsonInfo) -> 
-      let 
-        -- item = Maybe.withDefault "" <| head jsonInfo
-        items = -- toString 
-          jsonInfo
-      in 
-        ( {model | fileNames = items }, Cmd.none)    
-    InfoList (Err _) -> (model, Cmd.none)
-
-  -- | InfoFileDetails (Result Http.Error (List TitleDetail))
-    InfoFileDetails1 (Ok jsonInfo) -> ( {model | info = toString jsonInfo }, Cmd.none)    
-    -- InfoFileDetails (Ok jsonInfo) -> ( {model | info = jsonInfo }, Cmd.none)    
-    InfoFileDetails1 (Err s) -> ({model | info = toString s}, Cmd.none)
-
-    InfoFileDetails2 (Ok jsonInfo) -> ( {model | xvals = jsonInfo }, Cmd.none)    
-    -- InfoFileDetails (Ok jsonInfo) -> ( {model | info = jsonInfo }, Cmd.none)    
-    InfoFileDetails2 (Err s) -> ({model | info = toString s}, Cmd.none)
-
-    InfoFileDetails (Ok jsonInfo) -> ( {model | titleDetails = jsonInfo }, Cmd.none)    
-    -- InfoFileDetails (Ok jsonInfo) -> ( {model | info = jsonInfo }, Cmd.none)    
-    InfoFileDetails (Err s) -> ({model | info = toString s}, Cmd.none)
+    InfoTitleDetails (Ok jsonInfo) -> ( {model | titleDetails = jsonInfo }, Cmd.none)    
+    InfoTitleDetails (Err s) -> ({model | info = toString s}, Cmd.none)

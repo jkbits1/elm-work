@@ -1,6 +1,5 @@
 module JsonBits2 exposing (..)
 
--- import List exposing (..)
 import Json.Decode exposing (..)
 import Http exposing (..)
 
@@ -24,102 +23,27 @@ type Msg =
   | ButtonGetFirstFileName
   | ButtonGetFileNames
   | ButtonGetFileDetails
-  | ButtonGetFileDetails3
   | ButtonGetFileDetailsWrapped
+
   | Info (Result Http.Error String)
   | InfoFirstFileName (Result Http.Error String)
-  | InfoList (Result Http.Error (List String))
-  | InfoFileDetails1 (Result Http.Error (List String))
-  -- | InfoFileDetails (Result Http.Error String)
-  | InfoFileDetails2 (Result Http.Error (List Int))
-  | InfoFileDetails (Result Http.Error (List TitleDetail))
+  | InfoFileNames (Result Http.Error (List String))
+  | InfoTitleDetails (Result Http.Error (List TitleDetail))
 
 vidInfoFilesURL : String
-vidInfoFilesURL =
-  -- url 
-  -- "http://localhost:9090/vidInfo/files" 
-  "http://localhost:8000/vidInfo/files" 
-  -- ("https://api.giphy.com/v1/gifs/random?api_key=dc6zaTOxFJmzC&tag=" ++ "kitten")
-  -- []
+vidInfoFilesURL = "http://localhost:8000/vidInfo/files" 
 
 vidInfoURL : String
-vidInfoURL =
- "http://localhost:8000/vidInfo"
---  Http.url "http://localhost:9090/vidInfo" []
---   Http.url "http://localhost:9090/vidInfoWrapped" []
+vidInfoURL = "http://localhost:8000/vidInfo"
 
 vidInfoURLWrapped : String
-vidInfoURLWrapped =
-  "http://localhost:8000/vidInfoWrapped"
+vidInfoURLWrapped = "http://localhost:8000/vidInfoWrapped"
 
 
     -- titleDetailsDecoder : Json.DecodeDecoder (List String)    
 -- titleDetailsDecoder = 
 -- --  Debug.log "titleDetails" <|
---     "titleDetails" |> field Json.Decodelist Json.Decodestring
-    
--- getFileDetailsReq : String -> Http.Request String
-getFileDetailsReq : String -> Http.Request (List String)
--- getFileDetailsReq : String -> Http.Request (List TitleDetail)
-getFileDetailsReq string =
-  Http.get 
-    (vidInfoURL ++ "\\" ++ string)
-    titleDetailsList2
-    -- andThen
-    --     getTitleDetails
-
--- original version
--- getFileDetails : String -> Task Http.Error (List String)
--- getFileDetails string = 
---   Http.get 
---     titleDetailsList
---       (vidInfoURL ++ "\\" ++ string)
---       -- (vidInfoURL)
---       `andThen`
---         getTitleDetails
-
-getFileDetails : String -> Cmd Msg
-getFileDetails string = 
-  Http.send InfoFileDetails1 <|
-    getFileDetailsReq string
-
-getFileDetailsReq2 : String -> Http.Request (List Int)
-getFileDetailsReq2 string =
-  Http.get 
-    (vidInfoURL ++ "\\" ++ string)
-    titleDetailsList4
-
-getFileDetails2 : String -> Cmd Msg
-getFileDetails2 string = 
-  Http.send InfoFileDetails2 <|
-    getFileDetailsReq2 string
-
-getFileDetailsReq3 : String -> Http.Request (List TitleDetail)
-getFileDetailsReq3 string =
-  Http.get 
-    (vidInfoURL ++ "\\" ++ string)
-    -- titleDetailsListOrig
-    titleDetailsList
-
-getFileDetails3 : String -> Cmd Msg
-getFileDetails3 string = 
-  Http.send InfoFileDetails <|
-    getFileDetailsReq3 string
-
--- this was required for Signals. It created a task from
--- the list of data that was used as an input to a Signal.
--- getTitleDetails : List TitleDetail -> Task Http.Error (List String)
--- getTitleDetails details =
---   case details of
---     string :: _ -> succeed 
---       (List.map (toString) details)
--- --      [
--- ----      Debug.log "files dets" "file details"
--- --        "dummy title dets"
--- --      ]
---     [] ->
--- --      fail (Http.UnexpectedPayload "expecting 1 or more strings from server")
---         succeed ["no details found"]
+--     "titleDetails" |> field Json.Decodelist Json.Decodestring   
 
 -- this was required for Signals. It created a task from
 -- the list of data that was used as an input to a Signal.
@@ -133,13 +57,13 @@ getFileDetails3 string =
 --         succeed 
 --           [TitleDetail 0 0.0]
 
-titleDetailsList2 : Json.Decode.Decoder (List String)
-titleDetailsList2 =
-  field "titleDetails" <| Json.Decode.list Json.Decode.string
+-- titleDetailsList2 : Json.Decode.Decoder (List String)
+-- titleDetailsList2 =
+--   field "titleDetails" <| Json.Decode.list Json.Decode.string
 
-titleDetailsList3 : Json.Decode.Decoder (String)
-titleDetailsList3 =
-  field "titleDetails" Json.Decode.string
+-- titleDetailsList3 : Json.Decode.Decoder (String)
+-- titleDetailsList3 =
+--   field "titleDetails" Json.Decode.string
 
 titleDetailsList3a : Json.Decode.Decoder (String)
 titleDetailsList3a =
@@ -164,29 +88,6 @@ titleDetailsList4 =
           )
       )
 
--- original code from earlier Elm version, adjusted as field params reversed.
--- No longer works, seems to need intermediate string conversion now
-titleDetailsListOrig : Json.Decode.Decoder (List TitleDetail)
-titleDetailsListOrig =
-  (field "titleDetails" 
-    (list <|
-      Json.Decode.map2 TitleDetail
-        (field "titleNumber" int)
-        (field "length" float)
-    )
-  )
-
--- original code
---titleDetailsList : Json.DecodeDecoder (List TitleDetail)
---titleDetailsList =
---  ("titleDetails" |> field (Json.Decodelist <|
---      Json.Decodemap2 TitleDetail
---        ("titleNumber" |> field Json.Decodeint)
---        ("length" |> field Json.Decodefloat)
---    )
---  )
-
-
 titleDetailDecoder : Decoder TitleDetail
 titleDetailDecoder = map2 TitleDetail (field "titleNumber" int) (field "length" float)
 
@@ -203,7 +104,6 @@ titleDetailsList =
           )
       )
 
-
 -- original code for wrapped details api
 -- getFileSpecifics : String -> Task Http.Error (List TitleDetail)
 -- getFileSpecifics string = 
@@ -219,11 +119,16 @@ getFileDetailsReqWrapped string =
     (vidInfoURLWrapped ++ "\\" ++ string)
     titleDetailsListWrapped
 
+httpSendTitleDetails : Request (List TitleDetail) -> Cmd Msg
+httpSendTitleDetails = Http.send InfoTitleDetails
+
 getFileDetailsWrapped : String -> Cmd Msg
 getFileDetailsWrapped string = 
-  Http.send InfoFileDetails <|
-    getFileDetailsReqWrapped string
+  httpSendTitleDetails <| getFileDetailsReqWrapped string
 
+getFileDetails : String -> Cmd Msg
+getFileDetails string = 
+  httpSendTitleDetails <| getFileDetailsReq string
 
 titleDetailsListWrapped : Json.Decode.Decoder (List TitleDetail)
 titleDetailsListWrapped =
@@ -235,19 +140,39 @@ titleDetailsListWrapped =
       -- this function contains the map2 code above
       titleDetailDecoder
 
--- original code for wrapped api
--- titleDetailsList : Json.DecodeDecoder (List TitleDetail)
--- titleDetailsList =
---   Json.Decode.at ["wrapper", "titleDetails"] <| 
---     Json.Decode.list <|
---       Json.Decode.object2 TitleDetail
--- --        ("titleNumber" := Json.string)
--- --        ("length" := Json.string)
---         ("titleNumber" := Json.Decode.int)
---         ("length" := Json.Decode.float)
-      
+-- original version
+-- getFileDetails : String -> Task Http.Error (List String)
+-- getFileDetails string = 
+--   Http.get 
+--     titleDetailsList
+--       (vidInfoURL ++ "\\" ++ string)
+--       -- (vidInfoURL)
+--       `andThen`
+--         getTitleDetails
 
+getFileDetailsReq : String -> Http.Request (List TitleDetail)
+getFileDetailsReq string =
+  Http.get 
+    (vidInfoURL ++ "\\" ++ string)
+    -- titleDetailsListOrig
+    titleDetailsList
 
+-- this was required for Signals. It created a task from
+-- the list of data that was used as an input to a Signal.
+-- getTitleDetails : List TitleDetail -> Task Http.Error (List String)
+-- getTitleDetails details =
+--   case details of
+--     string :: _ -> succeed 
+--       (List.map (toString) details)
+-- --      [
+-- ----      Debug.log "files dets" "file details"
+-- --        "dummy title dets"
+-- --      ]
+--     [] ->
+-- --      fail (Http.UnexpectedPayload "expecting 1 or more strings from server")
+--         succeed ["no details found"]
+
+  
 -- decodeString : Decoder a -> String -> Result String a
 -- succeed : a -> Decoder a
 
@@ -264,19 +189,6 @@ titleDetailsListWrapped =
 -- Ok "[1,2]" : Result.Result String String
 -- decodeString (list (field "titleNumber" int)) "[{\"line\":\"ID_DVD_TITLE_1_LENGTH=0.480\",\"titleNumber\":1,\"length\":0.48}]"
 -- Ok [1] : Result.Result String (List Int)
-
-
--- titleDetailsList3b : Json.Decode.Decoder (String)
--- titleDetailsList3b =
---   (field "titleDetails" 
---     Json.Decode.string <| Json.Decode.string
---   ) 
-
--- titleDetailsList3c : Json.Decode.Decoder (String)
--- titleDetailsList3c =
---   (field "titleDetails" 
---     <| Json.Decode.list Json.Decode.string
---   )
 
 
 -- from elm packages page, works in elm repl
@@ -305,11 +217,6 @@ getFirstStringx strings =
   --   string :: _ -> succeed string
   --   [] ->
   --     fail (Http.UnexpectedPayload "expecting 1 or more strings from server")
-
-
-
-
--- (List String -> Decoder String) -> Decoder (List String) -> Decoder String
 
 getFirstString : Decoder String
 getFirstString = 
@@ -365,15 +272,10 @@ getFirstFileName string =
 --     vidInfoFilesURL `andThen` getStrings
 
 getFileNames : String -> Cmd Msg
-getFileNames string = 
-  Http.send InfoList <|
-    getFileNamesReq
+getFileNames string = Http.send InfoFileNames <| getFileNamesReq
 
 getFileNamesReq : Http.Request (List String)
-getFileNamesReq =
-    Http.get 
-      vidInfoFilesURL 
-      stringList
+getFileNamesReq = Http.get vidInfoFilesURL stringList
 
 -- this was required for Signals. It created a task from
 -- the list of data that was used as an input to a Signal.
@@ -406,21 +308,11 @@ getFirstStringTest =
 -- getFileNamesAsString string = 
 --   Http.getString vidInfoFilesURL        
 
--- getFileNamesAsString : String -> Task Http.Error String
 getFileNamesAsStringReq : String -> Http.Request String
-getFileNamesAsStringReq string = 
-  Http.getString 
-    vidInfoFilesURL        
-    -- Http.url 
-    -- "http://localhost:9090/vidInfo/files" 
-    -- "http://localhost:8000/vidInfo/files" 
-    -- "https://www.google.co.uk" 
-    -- <| "https://api.giphy.com/v1/gifs/random?api_key=dc6zaTOxFJmzC&tag=" ++ "kitten"
-    -- []
+getFileNamesAsStringReq string = Http.getString vidInfoFilesURL        
 
 getFileNamesAsStringCmd : Cmd Msg
-getFileNamesAsStringCmd = 
-  Http.send Info <| getFileNamesAsStringReq ""
+getFileNamesAsStringCmd = Http.send Info <| getFileNamesAsStringReq ""
 
 --getFileNamesAsString string = getStringCors "http://localhost:9090/vidInfo/files"
 
