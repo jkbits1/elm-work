@@ -1,7 +1,9 @@
 module JsonBits2 exposing (..)
 
-import Json.Decode exposing (..)
 import Http exposing (..)
+import Json.Decode exposing (..)
+import Html exposing (Attribute)
+import Html.Events exposing (..)
 
 type alias Model = {
     count : Int
@@ -27,10 +29,25 @@ type Msg =
   | ButtonGetFileDetails
   | ButtonGetFileDetailsWrapped
 
+  | SortDetailsByLength
+  | SortDetailsByNumber
+
   | Info (Result Http.Error String)
   | InfoFirstFileName (Result Http.Error String)
   | InfoFileNames (Result Http.Error (List String))
   | InfoTitleDetails (Result Http.Error (List TitleDetail))
+
+-- Html Event for select onChange
+onChange : (String -> msg) -> Attribute msg
+onChange f = on "change" <| Json.Decode.map f Html.Events.targetValue
+
+onChangeSort : Attribute Msg
+onChangeSort = 
+  onChange 
+    (\val ->  
+      ( case val of 
+          "length"  -> SortDetailsByLength
+          _         -> SortDetailsByNumber ))
 
 vidInfoFilesURL : String
 vidInfoFilesURL = "http://localhost:8000/vidInfo/files" 

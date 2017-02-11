@@ -3,6 +3,7 @@ import Html exposing (..)
 import Html.Attributes as Attr exposing (..)
 import Html.Events exposing (..)
 import Http exposing (..)
+-- import Json.Decode exposing (field)
 import Json.Decode exposing (field)
 import String
 import Task exposing (..)
@@ -38,7 +39,6 @@ infoListItems xs =
 
               -- li []f
               -- <| infoFileNamesItems model
-
 
 -- VIEW
 
@@ -80,6 +80,30 @@ view model =
           text "File names - "
         , ul [] <| infoListItems model.fileNames
         ]
+      , div []
+        [
+          text "Sort:"
+        , select [
+              onChangeSort
+            ]
+            [
+              option [] [ text <| "number" ]
+            , option [] [ text <| "length" ]
+            ]
+        ]
+      -- , div []
+      --   [
+      --     br [][],
+      --     br [][],
+      --     text <| "Sort by: " ++
+      --       (                        
+      --         case model.sortDetailsByLength of
+      --                     True ->
+      --                       "leng"
+      --                     False ->
+      --                       "num"
+      --       )
+      --   ]
       , div []
         [
           text "Title details - "
@@ -445,6 +469,12 @@ update msg model =
 
     ButtonGetFileDetailsWrapped  ->
       ( {model | count = model.count + 1 }, getFileDetailsWrapped "red-info.txt" )
+
+    SortDetailsByLength ->
+      ( {model | count = model.count + 1, sortDetailsByLength = True }, Cmd.none )
+
+    SortDetailsByNumber ->
+      ( {model | count = model.count + 1, sortDetailsByLength = False }, Cmd.none )
 
     Info (Ok jsonInfo) -> ( {model | firstFileName = jsonInfo }, Cmd.none)    
     Info (Err _) -> (model, Cmd.none)
