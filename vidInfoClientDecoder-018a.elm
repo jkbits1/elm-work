@@ -12,6 +12,8 @@ import JsonBits2 exposing (..)
 import List exposing (..)
 -- import Window
 
+--  elm make vidInfoClientDecoder-018a.elm --output=vic.js
+
 
 -- queryChnl : Signal.Mailbox String
 -- queryChnl = Signal.mailbox "red-info.txt"
@@ -60,28 +62,32 @@ view model =
         , button [ onClick ButtonGetFileDetails ]   [ text "send request - file details3" ]
         , button [ onClick ButtonGetFileDetailsWrapped ]   [ text "send request - file details wrapped" ]        
         ]
-      , div []
+      , div [class "count"]
         [
           text <| "Count - "            ++ toString model.count
         ]
-      , div []
+      , div [class "info"]
         [
           text <| "Info - "             ++ toString model.info
         ]
-      , div []
+      , div [class "firstFileName"]
         [
           text <| "First file name - "  ++ toString model.firstFileName
         ]
-      , div []
+      , div [class "fileNames"]
         [
           text "File names - "
         , ul [] <| infoListItems model.fileNames
         ]
-      , div []
+      , div [ class "filters" ]
         [
-          -- text "Filter:"
-        -- , 
-        checkbox Filter "On"
+          text "Filter:"
+        , checkbox Filter "On"
+        , input 
+            [ placeholder "length"
+            , onInput FilterLen 
+            ]
+            []
         ]
       , div []
         [
@@ -403,6 +409,7 @@ model = {
   -- , sortDetailsByLength = True
   , sortDetailsByLength = False
   , filter = False
+  , filterLength = 1000000
   }
 
 init = (
@@ -486,6 +493,16 @@ update msg model =
 
     Filter ->
       ( {model | count = model.count + 1, filter = not model.filter }, Cmd.none )
+
+    FilterLen s ->
+      ( {model | count = model.count + 1, 
+          filterLength = 
+              (\s -> 
+                case String.toInt s of 
+                  Ok val -> val
+                  Err a  -> 1000000
+              ) s
+        }, Cmd.none )
       
     Info (Ok jsonInfo) -> ( {model | firstFileName = jsonInfo }, Cmd.none)    
     Info (Err _) -> (model, Cmd.none)

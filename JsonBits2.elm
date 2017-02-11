@@ -15,6 +15,7 @@ type alias Model = {
   , titleDetails : List TitleDetail
   , sortDetailsByLength : Bool
   , filter : Bool
+  , filterLength : Int
   }
 
 type alias TitleDetail =
@@ -36,6 +37,7 @@ type Msg =
   | SortDetails SortBy
 
   | Filter
+  | FilterLen String
 
   | Info (Result Http.Error String)
   | InfoFirstFileName (Result Http.Error String)
