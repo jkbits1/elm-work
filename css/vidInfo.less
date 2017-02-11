@@ -1,47 +1,59 @@
+// lessc css/vidInfo.less css/vidInfo.css
+
+@bkg: blue;
+@bkg-g: green;
+@bkg-y: yellow;
+
 .count {
   width: 100px;
   height: 50px;
-  background-color: blue;
+  background-color: @bkg;
   float: left;
 }
+
 .info {
   width: 100px;
   height: 50px;
-  background-color: green;
+  background-color: @bkg-g;
   float: left;
 }
+
 .firstFileName {
   width: 300px;
   height: 50px;
-  background-color: yellow;
+  background-color: @bkg-y;
   clear: both;
   float: left;
 }
+
 .fileNames {
   width: 100px;
   /*height: 100px;*/
-  background-color: yellow;
+  background-color: @bkg-y;
   clear: both;
   float: left;
 }
+
 .filters {
   width: 200px;
   height: 75px;
-  background-color: blue;
+  background-color: @bkg;
   clear: both;
   float: left;
 }
+
 .sortOptions {
   width: 100px;
   height: 75px;
-  background-color: green;
+  background-color: @bkg-g;
   /*clear: both;*/
   float: left;
 }
+
 .titleDetails {
   width: 300px;
   /*height: 100px;*/
-  background-color: green;
+  background-color: @bkg-g;
   clear: both;
-  float: left;
+  float: left;  
 }
