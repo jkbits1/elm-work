@@ -1,47 +1,190 @@
+.contain {
+  max-width: 1600px;
+  line-height: 2.1em;
+  margin-left: 10px;
+}
+@media screen and (max-width: 520px) {
+  .two-col-width {
+    width: 100%;
+  }
+}
+@media screen and (min-width: 520px) and (max-width: 1280px) {
+  .two-col-width {
+    width: 33.33%;
+  }
+}
+@media screen and (min-width: 1280px) {
+  .two-col-width {
+    width: 16.66%;
+  }
+}
+@media screen and (max-width: 520px) {
+  .four-col-width {
+    width: 100%;
+  }
+}
+@media screen and (min-width: 520px) and (max-width: 1280px) {
+  .four-col-width {
+    width: 66.66%;
+  }
+}
+@media screen and (min-width: 1280px) {
+  .four-col-width {
+    width: 33.33%;
+  }
+}
+@media screen and (max-width: 520px) {
+  .six-col-width {
+    width: 100%;
+  }
+}
+@media screen and (min-width: 520px) and (max-width: 1280px) {
+  .six-col-width {
+    width: 100%;
+  }
+}
+@media screen and (min-width: 1280px) {
+  .six-col-width {
+    width: 50%;
+  }
+}
 .count {
-  width: 100px;
-  height: 50px;
   background-color: white;
   float: left;
+}
+@media screen and (max-width: 520px) {
+  .count {
+    width: 100%;
+  }
+}
+@media screen and (min-width: 520px) and (max-width: 1280px) {
+  .count {
+    width: 33.33%;
+  }
+}
+@media screen and (min-width: 1280px) {
+  .count {
+    width: 16.66%;
+  }
 }
 .info {
-  width: 100px;
-  height: 50px;
   background-color: white;
   float: left;
 }
+@media screen and (max-width: 520px) {
+  .info {
+    width: 100%;
+  }
+}
+@media screen and (min-width: 520px) and (max-width: 1280px) {
+  .info {
+    width: 33.33%;
+  }
+}
+@media screen and (min-width: 1280px) {
+  .info {
+    width: 16.66%;
+  }
+}
 .firstFileName {
-  width: 300px;
-  height: 50px;
   background-color: white;
   clear: both;
   float: left;
 }
+@media screen and (max-width: 520px) {
+  .firstFileName {
+    width: 100%;
+  }
+}
+@media screen and (min-width: 520px) and (max-width: 1280px) {
+  .firstFileName {
+    width: 100%;
+  }
+}
+@media screen and (min-width: 1280px) {
+  .firstFileName {
+    width: 50%;
+  }
+}
 .fileNames {
-  width: 100px;
   /*height: 100px;*/
   background-color: white;
   clear: both;
   float: left;
 }
+@media screen and (max-width: 520px) {
+  .fileNames {
+    width: 100%;
+  }
+}
+@media screen and (min-width: 520px) and (max-width: 1280px) {
+  .fileNames {
+    width: 33.33%;
+  }
+}
+@media screen and (min-width: 1280px) {
+  .fileNames {
+    width: 16.66%;
+  }
+}
 .filters {
-  width: 200px;
-  height: 75px;
   background-color: white;
   clear: both;
   float: left;
 }
+@media screen and (max-width: 520px) {
+  .filters {
+    width: 100%;
+  }
+}
+@media screen and (min-width: 520px) and (max-width: 1280px) {
+  .filters {
+    width: 66.66%;
+  }
+}
+@media screen and (min-width: 1280px) {
+  .filters {
+    width: 33.33%;
+  }
+}
 .sortOptions {
-  width: 100px;
-  height: 75px;
   background-color: white;
   /*clear: both;*/
   float: left;
 }
+@media screen and (max-width: 520px) {
+  .sortOptions {
+    width: 100%;
+  }
+}
+@media screen and (min-width: 520px) and (max-width: 1280px) {
+  .sortOptions {
+    width: 33.33%;
+  }
+}
+@media screen and (min-width: 1280px) {
+  .sortOptions {
+    width: 16.66%;
+  }
+}
 .titleDetails {
-  width: 300px;
   /*height: 100px;*/
   background-color: white;
   clear: both;
   float: left;
+}
+@media screen and (max-width: 520px) {
+  .titleDetails {
+    width: 100%;
+  }
+}
+@media screen and (min-width: 520px) and (max-width: 1280px) {
+  .titleDetails {
+    width: 100%;
+  }
+}
+@media screen and (min-width: 1280px) {
+  .titleDetails {
+    width: 50%;
+  }
 }

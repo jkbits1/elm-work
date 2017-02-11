@@ -47,6 +47,7 @@ import List exposing (..)
 view model =
   div [ 
         -- style (imgStyle height "") 
+        class "contain"
       ]
     [ 
       div []
@@ -72,13 +73,25 @@ view model =
         ]
       , div [ class "filters" ]
         [
-          text "Filter:"
-        , checkbox Filter "On"
+          checkbox Filter "Apply Filter"
+        , br [] []
+        , label [
+            for "filterLen"
+          ] [text "Filter:"]
         , input 
-            [ placeholder "0.0001"
+            [ id "filterLen"
+            , placeholder "0.0001"
             , onInput FilterLen 
             ]
             []
+
+      --   , classList [("control-label", True),("col-sm-4", True), ("wheelInputLabel", True)]
+      --   ] [
+      --     text <| "Wheel " ++ lbl
+      --   ]
+      -- , inputField2 idVal lbl val updateItem style
+
+
         -- , text <| toString model.filterLength
         ]
       , div [class "sortOptions"]

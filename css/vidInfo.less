@@ -4,30 +4,90 @@
 @bkg-g: white;
 @bkg-y: white;
 
+// medium maybe
+@two-col: 33.33%;
+@four-col: 66.66%;
+@six-col: 100.0%;
+
+@two-col-lg: 16.66%;
+@four-col-lg: 33.33%;
+@six-col-lg: 50.0%;
+
+@two-col-sm:  100.00%;
+@four-col-sm: 100.00%;
+@six-col-sm:  100.00%;
+
+.contain {
+  max-width: 1600px;
+  line-height: 2.1em;
+
+  margin-left: 10px;
+}
+
+@media-small-width: 520px;
+
+.two-col-width {
+  @media screen and (max-width: @media-small-width) {
+    width:  @two-col-sm;
+  }
+  @media screen and (min-width: @media-small-width) and (max-width: 1280px) {
+    width:  @two-col;
+  }
+  @media screen and (min-width: 1280px) {
+    width:  @two-col-lg;
+  }
+}
+
+.four-col-width {
+  @media screen and (max-width: @media-small-width) {
+    width:  @four-col-sm;
+  }
+  @media screen and (min-width: @media-small-width) and (max-width: 1280px) {
+    width:  @four-col;
+  }
+  @media screen and (min-width: 1280px) {
+    width:  @four-col-lg;
+  }
+}
+
+.six-col-width {
+  @media screen and (max-width: @media-small-width) {
+    width:  @six-col-sm;
+  }
+  @media screen and (min-width: @media-small-width) and (max-width: 1280px) {
+    width:  @six-col;
+  }
+  @media screen and (min-width: 1280px) {
+    width:  @six-col-lg;
+  }
+}
+
 .count {
-  width: 100px;
-  height: 50px;
+  .two-col-width;
+
+  // height: 50px;
   background-color: @bkg;
   float: left;
 }
 
 .info {
-  width: 100px;
-  height: 50px;
+  .two-col-width;
+  // height: 50px;
   background-color: @bkg-g;
   float: left;
 }
 
 .firstFileName {
-  width: 300px;
-  height: 50px;
+  // width: @six-col;
+  .six-col-width;
+  // height: 50px;
   background-color: @bkg-y;
   clear: both;
   float: left;
 }
 
 .fileNames {
-  width: 100px;
+  .two-col-width;
   /*height: 100px;*/
   background-color: @bkg-y;
   clear: both;
@@ -35,23 +95,23 @@
 }
 
 .filters {
-  width: 200px;
-  height: 75px;
+  .four-col-width;
+  // height: 75px;
   background-color: @bkg;
   clear: both;
   float: left;
 }
 
 .sortOptions {
-  width: 100px;
-  height: 75px;
+  .two-col-width;
+  // height: 75px;
   background-color: @bkg-g;
   /*clear: both;*/
   float: left;
 }
 
 .titleDetails {
-  width: 300px;
+  .six-col-width;
   /*height: 100px;*/
   background-color: @bkg-g;
   clear: both;
