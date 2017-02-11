@@ -28,9 +28,6 @@ import List exposing (..)
 -- specificDetailsChnl : Signal.Mailbox (List TitleDetail)
 -- specificDetailsChnl = Signal.mailbox [TitleDetail 0 0.0]
 
--- infoListItems : List a -> List (Html Msg)
-infoListItems xs = 
-  List.map (\s -> li [] [text <| toString s]) xs
   -- [ text <| toString model.info
   -- , ul [] [
   --     li [] [ text "2nd level item" ]
@@ -82,6 +79,12 @@ view model =
         ]
       , div []
         [
+          -- text "Filter:"
+        -- , 
+        checkbox Filter "On"
+        ]
+      , div []
+        [
           text "Sort:"
         , select [
               onChangeSort
@@ -107,7 +110,10 @@ view model =
       , div []
         [
           text "Title details - "
-        , ul [] <| infoListItems <| 
+        , ul [] <| infoListItems 
+                    <| 
+                    List.filter (\td -> td.length > 0.5)
+                    <| 
                     -- List.sortBy .length
                     List.sortWith 
                       (\td1 td2 -> 
@@ -396,6 +402,7 @@ model = {
   , titleDetails = [] 
   -- , sortDetailsByLength = True
   , sortDetailsByLength = False
+  , filter = False
   }
 
 init = (
@@ -470,12 +477,16 @@ update msg model =
     ButtonGetFileDetailsWrapped  ->
       ( {model | count = model.count + 1 }, getFileDetailsWrapped "red-info.txt" )
 
-    SortDetailsByLength ->
-      ( {model | count = model.count + 1, sortDetailsByLength = True }, Cmd.none )
+    SortDetails sort ->
+      case sort of 
+        SortByLength ->
+          ( {model | count = model.count + 1, sortDetailsByLength = True }, Cmd.none )
+        SortByNumber ->
+          ( {model | count = model.count + 1, sortDetailsByLength = False }, Cmd.none )
 
-    SortDetailsByNumber ->
-      ( {model | count = model.count + 1, sortDetailsByLength = False }, Cmd.none )
-
+    Filter ->
+      ( {model | count = model.count + 1, filter = not model.filter }, Cmd.none )
+      
     Info (Ok jsonInfo) -> ( {model | firstFileName = jsonInfo }, Cmd.none)    
     Info (Err _) -> (model, Cmd.none)
 

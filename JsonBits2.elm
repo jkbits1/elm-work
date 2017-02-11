@@ -2,8 +2,9 @@ module JsonBits2 exposing (..)
 
 import Http exposing (..)
 import Json.Decode exposing (..)
-import Html exposing (Attribute)
+import Html exposing (..)
 import Html.Events exposing (..)
+import Html.Attributes exposing (..)
 
 type alias Model = {
     count : Int
@@ -13,6 +14,7 @@ type alias Model = {
   , xvals : List Int
   , titleDetails : List TitleDetail
   , sortDetailsByLength : Bool
+  , filter : Bool
   }
 
 type alias TitleDetail =
@@ -20,6 +22,8 @@ type alias TitleDetail =
     titleNumber : Int
   , length: Float
   }
+
+type SortBy = SortByLength | SortByNumber
 
 type Msg = 
     NoOp
@@ -29,8 +33,9 @@ type Msg =
   | ButtonGetFileDetails
   | ButtonGetFileDetailsWrapped
 
-  | SortDetailsByLength
-  | SortDetailsByNumber
+  | SortDetails SortBy
+
+  | Filter
 
   | Info (Result Http.Error String)
   | InfoFirstFileName (Result Http.Error String)
@@ -46,8 +51,22 @@ onChangeSort =
   onChange 
     (\val ->  
       ( case val of 
-          "length"  -> SortDetailsByLength
-          _         -> SortDetailsByNumber ))
+          "length"  -> SortDetails SortByLength
+          _         -> SortDetails SortByNumber ))
+
+checkbox : Msg -> String -> Html.Html Msg
+checkbox msg name =
+  label
+    [ 
+      -- style [("padding", "20px")]
+    ]
+    [ input [ type_ "checkbox", onClick msg ] []
+    , Html.text name
+    ]
+
+infoListItems : List a -> List (Html Msg)
+infoListItems xs = 
+  List.map (\s -> li [] [text <| toString s]) xs
 
 vidInfoFilesURL : String
 vidInfoFilesURL = "http://localhost:8000/vidInfo/files" 
@@ -99,7 +118,7 @@ titleDetailsList4 =
   (field "titleDetails" string) |> 
     andThen 
       (\s ->
-        decodeString (list (field "titleNumber" int)) s |>
+        decodeString (Json.Decode.list (field "titleNumber" int)) s |>
           (\r ->
             case r of 
               Ok xs -> Json.Decode.succeed xs
@@ -115,7 +134,7 @@ titleDetailsList =
   (field "titleDetails" string) |> 
     andThen 
       (\s ->
-        decodeString (list titleDetailDecoder) s |>
+        decodeString (Json.Decode.list titleDetailDecoder) s |>
           (\result ->
             case result of 
               Ok xs -> Json.Decode.succeed xs
