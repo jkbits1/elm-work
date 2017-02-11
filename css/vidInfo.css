@@ -1,47 +1,47 @@
 .count {
   width: 100px;
   height: 50px;
-  background-color: blue;
+  background-color: white;
   float: left;
 }
 .info {
   width: 100px;
   height: 50px;
-  background-color: green;
+  background-color: white;
   float: left;
 }
 .firstFileName {
   width: 300px;
   height: 50px;
-  background-color: yellow;
+  background-color: white;
   clear: both;
   float: left;
 }
 .fileNames {
   width: 100px;
   /*height: 100px;*/
-  background-color: yellow;
+  background-color: white;
   clear: both;
   float: left;
 }
 .filters {
   width: 200px;
   height: 75px;
-  background-color: blue;
+  background-color: white;
   clear: both;
   float: left;
 }
 .sortOptions {
   width: 100px;
   height: 75px;
-  background-color: green;
+  background-color: white;
   /*clear: both;*/
   float: left;
 }
 .titleDetails {
   width: 300px;
   /*height: 100px;*/
-  background-color: green;
+  background-color: white;
   clear: both;
   float: left;
 }
