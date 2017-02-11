@@ -15,7 +15,7 @@ type alias Model = {
   , titleDetails : List TitleDetail
   , sortDetailsByLength : Bool
   , filter : Bool
-  , filterLength : Int
+  , filterLength : Float
   }
 
 type alias TitleDetail =

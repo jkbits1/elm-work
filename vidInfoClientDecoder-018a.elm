@@ -75,10 +75,11 @@ view model =
           text "Filter:"
         , checkbox Filter "On"
         , input 
-            [ placeholder "length"
+            [ placeholder "0.0001"
             , onInput FilterLen 
             ]
             []
+        -- , text <| toString model.filterLength
         ]
       , div [class "sortOptions"]
         [
@@ -124,7 +125,13 @@ view model =
           text "Title details - "
         , ul [] <| infoListItems 
                     <| 
-                    List.filter (\td -> td.length > 0.5)
+                    List.filter 
+                      (\td -> 
+                        case model.filter of 
+                          True -> td.length > 
+                            model.filterLength
+                            -- 5
+                          False -> True)
                     <| 
                     -- List.sortBy .length
                     List.sortWith 
@@ -410,7 +417,7 @@ model = {
   -- , sortDetailsByLength = True
   , sortDetailsByLength = False
   , filter = False
-  , filterLength = 1000000
+  , filterLength = 0.0001
   }
 
 init = (
@@ -499,9 +506,9 @@ update msg model =
       ( {model | count = model.count + 1, 
           filterLength = 
               (\s -> 
-                case String.toInt s of 
+                case String.toFloat s of 
                   Ok val -> val
-                  Err a  -> 1000000
+                  Err a  -> 0.0001
               ) s
         }, Cmd.none )
       
