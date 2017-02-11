@@ -70,15 +70,6 @@ view model =
         [
           text <| "Info - "             ++ toString model.info
         ]
-      , div [class "firstFileName"]
-        [
-          text <| "First file name - "  ++ toString model.firstFileName
-        ]
-      , div [class "fileNames"]
-        [
-          text "File names - "
-        , ul [] <| infoListItems model.fileNames
-        ]
       , div [ class "filters" ]
         [
           text "Filter:"
@@ -89,7 +80,7 @@ view model =
             ]
             []
         ]
-      , div []
+      , div [class "sortOptions"]
         [
           text "Sort:"
         , select [
@@ -99,6 +90,15 @@ view model =
               option [] [ text <| "number" ]
             , option [] [ text <| "length" ]
             ]
+        ]
+      , div [class "firstFileName"]
+        [
+          text <| "First file name - "  ++ toString model.firstFileName
+        ]
+      , div [class "fileNames"]
+        [
+          text "File names - "
+        , ul [] <| infoListItems model.fileNames
         ]
       -- , div []
       --   [
@@ -115,6 +115,11 @@ view model =
       --   ]
       , div []
         [
+          text "xvals - "
+        , ul [] <| infoListItems model.xvals
+        ]
+      , div [class "titleDetails"]
+        [
           text "Title details - "
         , ul [] <| infoListItems 
                     <| 
@@ -130,11 +135,6 @@ view model =
                             compare td1.titleNumber td2.titleNumber
                         )
                         model.titleDetails
-        ]
-      , div []
-        [
-          text "xvals - "
-        , ul [] <| infoListItems model.xvals
         ]
         
       -- ,

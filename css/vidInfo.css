@@ -1,0 +1,54 @@
+
+.count {
+  width: 100px;
+  height: 50px;
+  background-color: blue;
+  float: left;
+}
+
+.info {
+  width: 100px;
+  height: 50px;
+  background-color: green;
+  float: left;
+}
+
+.firstFileName {
+  width: 100px;
+  height: 100px;
+  background-color: yellow;
+  clear: both;
+  float: left;
+}
+
+.fileNames {
+  width: 100px;
+  /*height: 100px;*/
+  background-color: yellow;
+  clear: both;
+  float: left;
+}
+
+.filters {
+  width: 200px;
+  height: 75px;
+  background-color: blue;
+  clear: both;
+  float: left;
+}
+
+.sortOptions {
+  width: 100px;
+  height: 75px;
+  background-color: green;
+  /*clear: both;*/
+  float: left;
+}
+
+.titleDetails {
+  /*width: 100px;*/
+  height: 100px;
+  background-color: green;
+  clear: both;
+  float: left;  
+}
