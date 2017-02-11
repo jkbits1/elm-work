@@ -14,8 +14,8 @@
 }
 
 .firstFileName {
-  width: 100px;
-  height: 100px;
+  width: 300px;
+  height: 50px;
   background-color: yellow;
   clear: both;
   float: left;
@@ -46,8 +46,8 @@
 }
 
 .titleDetails {
-  /*width: 100px;*/
-  height: 100px;
+  width: 300px;
+  /*height: 100px;*/
   background-color: green;
   clear: both;
   float: left;  

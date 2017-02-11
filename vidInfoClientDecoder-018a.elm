@@ -83,6 +83,7 @@ view model =
       , div [class "sortOptions"]
         [
           text "Sort:"
+        , br [] []
         , select [
               onChangeSort
             ]
