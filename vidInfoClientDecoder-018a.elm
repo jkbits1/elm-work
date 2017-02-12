@@ -121,6 +121,19 @@ view model =
           text "File names - "
         , ul [] <| infoListItems model.fileNames
         ]
+      , div [class "sortOptions"]
+        [
+          label [
+            for "filesList"
+          ] [text "Files List:"]
+        , select [ 
+            id "filesList"
+            , onChangeFileName
+            ] 
+            <| List.map (\s -> option [] [ text <| s ]) model.fileNames
+        -- , text model.currentFileName
+        ]
+
       -- , div []
       --   [
       --     br [][],
@@ -429,11 +442,11 @@ model : Model
 model = { 
     count = 0
   , info = "initial state"
-  , firstFileName = "firstFileName"
+  , firstFileName = ""
+  , currentFileName = ""
   , fileNames = []
   , xvals = []
   , titleDetails = [] 
-  -- , sortDetailsByLength = True
   , sortDetailsByLength = False
   , filter = False
   , filterLength = 0.0001
@@ -506,10 +519,10 @@ update msg model =
       ( {model | count = model.count + 1 }, getFirstFileName "string" )
 
     ButtonGetFileDetails ->
-      ( {model | count = model.count + 1 }, getFileDetails "red-info.txt" )
+      ( {model | count = model.count + 1 }, getFileDetails model.currentFileName )
 
     ButtonGetFileDetailsWrapped  ->
-      ( {model | count = model.count + 1 }, getFileDetailsWrapped "red-info.txt" )
+      ( {model | count = model.count + 1 }, getFileDetailsWrapped model.currentFileName )
 
     SortDetails sort ->
       case sort of 
@@ -530,11 +543,18 @@ update msg model =
                   Err a  -> 0.0001
               ) s
         }, Cmd.none )
+
+    CurrentFileName s -> 
+      ( {model | count = model.count + 1, currentFileName = s }, getFileDetails s )
       
     Info (Ok jsonInfo) -> ( {model | firstFileName = jsonInfo }, Cmd.none)    
     Info (Err _) -> (model, Cmd.none)
 
-    InfoFileNames (Ok fileNames) -> ( {model | fileNames = fileNames }, Cmd.none)    
+    InfoFileNames (Ok fileNames) -> 
+      let 
+        firstFileName = Maybe.withDefault "" <| head fileNames
+      in
+        ( {model | fileNames = fileNames, currentFileName = firstFileName }, getFileDetails firstFileName)    
     InfoFileNames (Err _) -> (model, Cmd.none)
 
     InfoFirstFileName (Ok fileName) -> ( {model | firstFileName = fileName }, Cmd.none)    

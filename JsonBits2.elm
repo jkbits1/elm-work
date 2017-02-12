@@ -10,6 +10,7 @@ type alias Model = {
     count : Int
   , info : String
   , firstFileName : String 
+  , currentFileName : String
   , fileNames : List String
   , xvals : List Int
   , titleDetails : List TitleDetail
@@ -39,6 +40,8 @@ type Msg =
   | Filter
   | FilterLen String
 
+  | CurrentFileName String
+
   | Info (Result Http.Error String)
   | InfoFirstFileName (Result Http.Error String)
   | InfoFileNames (Result Http.Error (List String))
@@ -55,6 +58,9 @@ onChangeSort =
       ( case val of 
           "length"  -> SortDetails SortByLength
           _         -> SortDetails SortByNumber ))
+
+onChangeFileName : Attribute Msg
+onChangeFileName = onChange (\s -> CurrentFileName s)          
 
 checkbox : Msg -> String -> Html.Html Msg
 checkbox msg name =
