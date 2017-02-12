@@ -71,11 +71,24 @@ view model =
         [
           text <| "Info - "             ++ toString model.info
         ]
+      , div [class "sortOptions"]
+        [
+        --   text "Sort:"
+        -- , br [] []
+          label [
+            for "sortDetails"
+          ] [text "Sort Details:"]
+        , select [ id "sortDetails"
+            , onChangeSort
+            ]
+            [
+              option [] [ text <| "number" ]
+            , option [] [ text <| "length" ]
+            ]
+        ]
       , div [ class "filters" ]
         [
-          checkbox Filter "Apply Filter"
-        , br [] []
-        , label [
+          label [
             for "filterLen"
           ] [text "Filter:"]
         , input 
@@ -94,17 +107,10 @@ view model =
 
         -- , text <| toString model.filterLength
         ]
-      , div [class "sortOptions"]
+      , div [ class "filters" ]
         [
-          text "Sort:"
-        , br [] []
-        , select [
-              onChangeSort
-            ]
-            [
-              option [] [ text <| "number" ]
-            , option [] [ text <| "length" ]
-            ]
+          -- br [] [], 
+          checkbox Filter "Apply Filter"
         ]
       , div [class "firstFileName"]
         [
@@ -128,15 +134,15 @@ view model =
       --                       "num"
       --       )
       --   ]
-      , div []
-        [
-          text "xvals - "
-        , ul [] <| infoListItems model.xvals
-        ]
+      -- , div []
+      --   [
+      --     text "xvals - "
+      --   , ul [] <| infoListItems model.xvals
+      --   ]
       , div [class "titleDetails"]
         [
           text "Title details - "
-        , ul [] <| infoListItems 
+        , ul [] <| detailsListItems 
                     <| 
                     List.filter 
                       (\td -> 

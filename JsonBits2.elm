@@ -66,9 +66,18 @@ checkbox msg name =
     , Html.text name
     ]
 
-infoListItems : List a -> List (Html Msg)
+infoListItems : List String -> List (Html Msg)
 infoListItems xs = 
-  List.map (\s -> li [] [text <| toString s]) xs
+  List.map (\s -> li [] [text <| s]) xs
+
+detailsDisplay : TitleDetail -> String
+detailsDisplay td = 
+  (String.padRight 20 '.' <| toString td.titleNumber) ++ " " ++ 
+    (toString td.length)
+
+detailsListItems : List TitleDetail -> List (Html Msg)
+detailsListItems tds = 
+  List.map (\td -> li [] [text <| detailsDisplay td]) tds
 
 vidInfoFilesURL : String
 vidInfoFilesURL = "http://localhost:8000/vidInfo/files" 
