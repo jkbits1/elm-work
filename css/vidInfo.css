@@ -78,12 +78,12 @@
 }
 @media screen and (min-width: 520px) and (max-width: 1280px) {
   .info {
-    width: 33.33%;
+    width: 66.66%;
   }
 }
 @media screen and (min-width: 1280px) {
   .info {
-    width: 16.66%;
+    width: 33.33%;
   }
 }
 .firstFileName {
@@ -129,7 +129,6 @@
 }
 .filters {
   background-color: white;
-  clear: both;
   float: left;
 }
 @media screen and (max-width: 520px) {
@@ -139,12 +138,12 @@
 }
 @media screen and (min-width: 520px) and (max-width: 1280px) {
   .filters {
-    width: 66.66%;
+    width: 33.33%;
   }
 }
 @media screen and (min-width: 1280px) {
   .filters {
-    width: 33.33%;
+    width: 16.66%;
   }
 }
 .sortOptions {
@@ -187,4 +186,15 @@
   .titleDetails {
     width: 50%;
   }
+}
+li {
+  line-height: 1.4em;
+}
+ul {
+  margin-top: 2px;
+  margin-bottom: 2px;
+}
+input,
+select {
+  margin-left: 5px;
 }
