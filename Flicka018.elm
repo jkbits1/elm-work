@@ -53,6 +53,9 @@ imgStyle h src =
 type Msg = 
       Info (Result Http.Error (List Photo))
     | Photos (List Photo)
+    | Pic Photo
+    | Sizes (List Size)
+    | Source String
     | InfoS (Result Http.Error String)
     | Search String
 
@@ -60,6 +63,9 @@ type alias Model = {
     count     : Int
   , info      : String
   , photos : List Photo
+  , photo  : Photo
+  , sizes  : List Size
+  , source : String
   }
 
 main = Html.program { 
@@ -73,6 +79,9 @@ model = {
     count = 0
   , info = "initial state"
   , photos = []
+  , photo =  { id = "1", title = "init" }
+  , sizes = []
+  , source = ""
   }
 
 init = (
@@ -85,11 +94,12 @@ update : Msg -> Model -> (Model, Cmd Msg )
 update msg model = 
   let 
     flikr s = 
-      -- Task.perform Info (getFlickrImage (10, 10) s)
-      -- Task.perform Photos (getFlickrImage (10, 10) s)
       -- Cmd.none
       -- Task.perform Photos (Task.succeed [])
-      Task.perform Photos (getFlickrImage (10, 10) s)
+      -- Task.perform Photos (getFlickrImageChain (10, 10) s)
+      -- Task.perform Pic (getFlickrImageSingle (10, 10) s)
+      -- Task.perform Sizes (getFlickrImageSizes (10, 10) s)
+      Task.perform Source (getFlickrImage (10, 10) s)
   in
   case msg of 
     Info r -> 
@@ -102,6 +112,12 @@ update msg model =
       ( {model | count = model.count + 1 }, flikr s)
     Photos ps ->
       ( {model | count = model.count + 1, photos = ps }, Cmd.none)
+    Pic pic ->
+      ( { model | count = model.count + 1, photo = pic }, Cmd.none)
+    Sizes zs ->
+      ( { model | count = model.count + 1, sizes = zs }, Cmd.none )
+    Source s ->
+      ( { model | count = model.count + 1, source = s }, Cmd.none )
     
 view : Model -> Html Msg
 view model =
@@ -119,6 +135,11 @@ view model =
       []
     , ol []
       (List.map (\p -> option [] [text <| toString p] ) model.photos)
+    , text <| "pic: " ++ ( toString model.photo )
+    , ol []
+      (List.map (\sz -> option [] [text <| toString sz] ) model.sizes)
+    , text model.source
+    
     ]
 -- view : Int -> String -> String -> Html
 -- view height string imgUrl =
@@ -198,8 +219,8 @@ getFlickrImageBasic dimensions tag =
 --             pickSize dimensions
 
 -- getFlickrImage : (Int,Int) -> String -> Task x Msg
-getFlickrImage : (Int,Int) -> String -> Task x (List Photo)
-getFlickrImage dimensions tag =
+getFlickrImageChain : (Int,Int) -> String -> Task x (List Photo)
+getFlickrImageChain dimensions tag =
   let searchArgs =
         [ ("sort", "random"), ("per_page", "10"), ("tags", tag) ]
   in
@@ -209,11 +230,11 @@ getFlickrImage dimensions tag =
       |>
         -- Task x a -> Task x (List b) 
         -- Task Error a -> Task Error (List b) 
-        (Task.andThen (\_ -> Task.succeed [
-            { id = "1"
-            , title = "success"
-            }
-          ])) 
+        (Task.andThen           
+          (\ps -> Task.succeed ps
+            -- Task.fail Http.Timeout -- forces a failure
+          -- [ { id = "1", title = "success"} ] -- default data
+          )) 
 
       -- pass empty list if an error occurred
       -- Task a (List b) -> Task x (List b)
@@ -224,14 +245,69 @@ getFlickrImage dimensions tag =
             }
           ]))
 
-            -- selectPhoto
+getFlickrImageSingle : (Int,Int) -> String -> Task x Photo
+getFlickrImageSingle dimensions tag =
+  let searchArgs =
+        [ ("sort", "random"), ("per_page", "10"), ("tags", tag) ]
+  in
+    --  toTask : Request a -> Task Error a
+    -- Task Http.Error (List Photo)
+    (Http.toTask (Http.get (createFlickrURL "search" searchArgs) photoList ))
+      |>
+        -- Task Error (List a) -> Task Error a
+        (Task.andThen selectPhoto)
+      -- pass default data if an error occurred
+      -- Task Error ?? -> Task Never a
+      |> (onError (\_ -> succeed 
+            -- [
+            { id = "2"
+            , title = "error"
+            }
+            -- ]
+          ))
+
+getFlickrImageSizes : (Int,Int) -> String -> Task x (List Size)
+getFlickrImageSizes dimensions tag =
+  let searchArgs =
+        [ ("sort", "random"), ("per_page", "10"), ("tags", tag) ]
+  in
+    --  toTask : Request a -> Task Error a
+    -- Task Http.Error (List Photo)
+    (Http.toTask (Http.get (createFlickrURL "search" searchArgs) photoList ))
+      |> (Task.andThen selectPhoto)
+      |> (Task.andThen 
+            (\photo -> 
+              (Http.toTask 
+                (Http.get (createFlickrURL "getSizes" [ ("photo_id", photo.id) ]) sizeList )))
+         )
+      |> (onError (\_ -> succeed [] ))
+
+getFlickrImage : (Int,Int) -> String -> Task x String
+getFlickrImage dimensions tag =
+  let searchArgs =
+        [ ("sort", "random"), ("per_page", "10"), ("tags", tag) ]
+  in
+    --  toTask : Request a -> Task Error a
+    -- Task Http.Error (List Photo)
+    (Http.toTask (Http.get (createFlickrURL "search" searchArgs) photoList ))
+      |> (Task.andThen selectPhoto)
+      |> (Task.andThen 
+            (\photo -> 
+              (Http.toTask 
+                (Http.get (createFlickrURL "getSizes" [ ("photo_id", photo.id) ]) sizeList )))
+         )
+      |> (Task.andThen <| pickSize dimensions)
+      |> (onError (\_ -> succeed "no photo size" ))
              
 -- from upgrade doc
         -- onError : (x -> Task y a) -> Task x a -> Task y a
         -- |> Task.onError (\error -> Task.succeed DidNotLoad)
 
+-- Function `perform` is expecting the 2nd argument to be:
+--     Task Never (List Photo)
+-- But it is:
+--     Task Http.Error (List Photo)
 
--- sendBlankPhotos :  a -> Task.Task x (List b)
 sendBlankPhotos :  a -> Task.Task x (List Photo)
 sendBlankPhotos = (\_ -> Task.succeed [])
 
@@ -239,22 +315,11 @@ blankPhotos : Cmd Msg
   -- perform : (a -> msg) -> Task Never a -> Cmd msg
 blankPhotos = Task.perform Photos (Task.succeed [])
 
-
--- Function `perform` is expecting the 2nd argument to be:
-
---     Task Never (List Photo)
-
--- But it is:
-
---     Task Http.Error (List Photo)
-
 -- JSON DECODERS
-
 type alias Photo =
     { id : String
     , title : String
     }
-
 
 type alias Size =
     { source : String
@@ -262,14 +327,12 @@ type alias Size =
     , height : Int
     }
 
-
 photoList : Json.Decode.Decoder (List Photo)
 photoList =
   Json.Decode.at ["photos","photo"] <| Json.Decode.list <|
       Json.Decode.map2 Photo
         (field "id" Json.Decode.string)
         (field "title" Json.Decode.string)
-
 
 sizeList : Json.Decode.Decoder (List Size)
 sizeList =
@@ -283,13 +346,34 @@ sizeList =
             (field "height" number)
 
 customDecoder decoder toResult = 
-   Json.Decode.andThen
-           (\a ->
-                 case toResult a of 
-                    Ok b -> Json.Decode.succeed b
-                    Err err -> Json.Decode.fail err
-           )
-           decoder
+   Json.Decode.andThen (\a ->
+                          case toResult a of 
+                            Ok b -> Json.Decode.succeed b
+                            Err err -> Json.Decode.fail err
+                       )
+                       decoder
+
+
+-- HANDLE RESPONSES
+selectPhoto : List Photo -> Task Http.Error Photo
+selectPhoto photos =
+  case photos of
+    photo :: _ -> succeed photo
+    [] -> fail Http.Timeout -- easier to return this error in 018 for now
+--       fail (Http.UnexpectedPayload "expecting 1 or more photos from Flickr")
+
+pickSize : (Int,Int) -> List Size -> Task Http.Error String
+pickSize (width,height) sizes =
+  let sizeRating size =
+        let penalty =
+              if size.width > width || size.height > height then 400 else 0
+        in
+            abs (width - size.width) + abs (height - size.height) + penalty
+  in
+      case List.sortBy sizeRating sizes of
+        size :: _ -> succeed size.source
+        [] -> fail Http.Timeout -- easier to return this error in 018 for now
+          -- fail (Http.UnexpectedPayload "expecting 1 or more image sizes to choose from")
 
 
 --  FLICKR URLS
@@ -329,45 +413,16 @@ createFlickrURL method args =
     , ("method", "flickr.photos." ++ method)
     ] ++ args
 
-
 url : String -> List (String,String) -> String
 url baseUrl args =
   case args of
-    [] ->
-        baseUrl
-
-    _ ->
-        baseUrl ++ "?" ++ String.join "&" (List.map queryPair args)
+    [] -> baseUrl
+    _  -> baseUrl ++ "?" ++ String.join "&" (List.map queryPair args)
 
 queryPair : (String,String) -> String
 queryPair (key,value) =
   queryEscape key ++ "=" ++ queryEscape value
 
-
 queryEscape : String -> String
 queryEscape string =
   String.join "+" (String.split "%20" (Http.encodeUri string))
-
-
--- HANDLE RESPONSES
-
--- selectPhoto : List Photo -> Task Http.Error Photo
--- selectPhoto photos =
---   case photos of
---     photo :: _ -> succeed photo
---     [] ->
---       fail (Http.UnexpectedPayload "expecting 1 or more photos from Flickr")
-
-
--- pickSize : (Int,Int) -> List Size -> Task Http.Error String
--- pickSize (width,height) sizes =
---   let sizeRating size =
---         let penalty =
---               if size.width > width || size.height > height then 400 else 0
---         in
---             abs (width - size.width) + abs (height - size.height) + penalty
---   in
---       case List.sortBy sizeRating sizes of
---         size :: _ -> succeed size.source
---         [] ->
---           fail (Http.UnexpectedPayload "expecting 1 or more image sizes to choose from")
