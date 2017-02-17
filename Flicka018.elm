@@ -139,6 +139,7 @@ view model =
     , ol []
       (List.map (\sz -> option [] [text <| toString sz] ) model.sizes)
     , text model.source
+    , img [src model.source ] []
     
     ]
 -- view : Int -> String -> String -> Html
