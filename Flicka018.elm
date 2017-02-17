@@ -1,3 +1,5 @@
+module Flicka018 exposing (..)
+
 import Html exposing (..)
 import Html.Attributes as Attr exposing (..)
 import Html.Events exposing (..)
@@ -81,17 +83,26 @@ subscriptions model = Sub.none
 
 update : Msg -> Model -> (Model, Cmd Msg )
 update msg model = 
+  let 
+    flikr s = 
+      -- Task.perform Info (getFlickrImage (10, 10) s)
+      -- Task.perform Photos (getFlickrImage (10, 10) s)
+      -- Cmd.none
+      -- Task.perform Photos (Task.succeed [])
+      Task.perform Photos (getFlickrImage (10, 10) s)
+  in
   case msg of 
     Info r -> 
       case r of 
         Ok ps ->  ( {model | photos = ps}, Cmd.none)
         Err s ->  (model, Cmd.none)
     InfoS a -> 
-      ( {model | count = model.count + 1 }, getFlickrImage (10, 10) "kitten" )
+      ( {model | count = model.count + 1 }, flikr "kitten" )
     Search s ->
-      ( {model | count = model.count + 1 }, getFlickrImage (10, 10) s )
+      ( {model | count = model.count + 1 }, flikr s)
+    Photos ps ->
+      ( {model | count = model.count + 1 }, Cmd.none)
     
-
 view : Model -> Html Msg
 view model =
   div [ 
@@ -186,21 +197,44 @@ getFlickrImage2 dimensions tag =
 --         `andThen`
 --             pickSize dimensions
 
-getFlickrImage : (Int,Int) -> String -> Task x Msg
+-- getFlickrImage : (Int,Int) -> String -> Task x Msg
+-- getFlickrImage : (Int,Int) -> String -> Task x List Photo
 getFlickrImage dimensions tag =
   let searchArgs =
         [ ("sort", "random"), ("per_page", "10"), ("tags", tag) ]
-  in 
-    (Http.toTask 
-      (Http.get 
-        (createFlickrURL "search" searchArgs)
-        photoList ))
-      |> Task.andThen 
-          (\ps -> 
-            Task.succeed 
-            (Photos ps) 
-            )
+  in
+  --  toTask : Request a -> Task Error a
+    (Http.toTask (Http.get (createFlickrURL "search" searchArgs) photoList ))
+      |> 
+        -- (Task.andThen (\_ -> Task.succeed (Photos [])))
+
+        -- Task.Task x a -> Task.Task x (List b)
+        -- (Task.andThen (\_ -> Task.succeed []))
+        (Task.andThen sendBlankPhotos)
             -- selectPhoto
+            |> (onError (\_ -> succeed []))
+             
+-- from upgrade doc
+        -- onError : (x -> Task y a) -> Task x a -> Task y a
+        -- |> Task.onError (\error -> Task.succeed DidNotLoad)
+
+
+-- sendBlankPhotos :  a -> Task.Task x (List b)
+sendBlankPhotos :  a -> Task.Task x (List Photo)
+sendBlankPhotos = (\_ -> Task.succeed [])
+
+blankPhotos : Cmd Msg
+  -- perform : (a -> msg) -> Task Never a -> Cmd msg
+blankPhotos = Task.perform Photos (Task.succeed [])
+
+
+-- Function `perform` is expecting the 2nd argument to be:
+
+--     Task Never (List Photo)
+
+-- But it is:
+
+--     Task Http.Error (List Photo)
 
 -- JSON DECODERS
 
