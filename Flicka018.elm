@@ -101,7 +101,7 @@ update msg model =
     Search s ->
       ( {model | count = model.count + 1 }, flikr s)
     Photos ps ->
-      ( {model | count = model.count + 1 }, Cmd.none)
+      ( {model | count = model.count + 1, photos = ps }, Cmd.none)
     
 view : Model -> Html Msg
 view model =
@@ -181,8 +181,8 @@ view model =
 --             pickSize dimensions
 
 -- getFlickrImage : (Int,Int) -> String -> Task Http.Error String
-getFlickrImage2 : (Int,Int) -> String -> Cmd Msg
-getFlickrImage2 dimensions tag =
+getFlickrImageBasic : (Int,Int) -> String -> Cmd Msg
+getFlickrImageBasic dimensions tag =
   let searchArgs =
         [ ("sort", "random"), ("per_page", "10"), ("tags", tag) ]
   in 
@@ -198,21 +198,33 @@ getFlickrImage2 dimensions tag =
 --             pickSize dimensions
 
 -- getFlickrImage : (Int,Int) -> String -> Task x Msg
--- getFlickrImage : (Int,Int) -> String -> Task x List Photo
+getFlickrImage : (Int,Int) -> String -> Task x (List Photo)
 getFlickrImage dimensions tag =
   let searchArgs =
         [ ("sort", "random"), ("per_page", "10"), ("tags", tag) ]
   in
-  --  toTask : Request a -> Task Error a
+    --  toTask : Request a -> Task Error a
+    -- Task Http.Error (List Photo)
     (Http.toTask (Http.get (createFlickrURL "search" searchArgs) photoList ))
-      |> 
-        -- (Task.andThen (\_ -> Task.succeed (Photos [])))
+      |>
+        -- Task x a -> Task x (List b) 
+        -- Task Error a -> Task Error (List b) 
+        (Task.andThen (\_ -> Task.succeed [
+            { id = "1"
+            , title = "success"
+            }
+          ])) 
 
-        -- Task.Task x a -> Task.Task x (List b)
-        -- (Task.andThen (\_ -> Task.succeed []))
-        (Task.andThen sendBlankPhotos)
+      -- pass empty list if an error occurred
+      -- Task a (List b) -> Task x (List b)
+      -- Task Error (List b) -> Task Never (List b)
+      |> (onError (\_ -> succeed [
+            { id = "2"
+            , title = "error"
+            }
+          ]))
+
             -- selectPhoto
-            |> (onError (\_ -> succeed []))
              
 -- from upgrade doc
         -- onError : (x -> Task y a) -> Task x a -> Task y a
