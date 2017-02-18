@@ -121,6 +121,7 @@ view model =
           text "File names - "
         , ul [] <| infoListItems model.fileNames
         , text <| toString model.fileNames
+        , text <| ("httpInfo: " ++ model.httpInfo)
         ]
       , div [class "sortOptions"]
         [
@@ -506,6 +507,28 @@ customDecoder decoder toResult =
              )
              decoder
 
+respInfo : Http.Response String -> String
+respInfo resp = 
+             resp.url 
+          ++ " " ++ (toString resp.status.code) 
+          ++ " " ++ resp.status.message
+          ++ " " ++ (toString resp.headers) 
+          ++ " " ++ resp.body        
+
+handleError model s = ( {model | httpInfo = s }, Cmd.none)       
+
+handleHttpError model err = 
+  case err of 
+    Timeout         -> handleError model "timeout"
+    NetworkError    -> handleError model "nw error"
+    BadUrl s        -> handleError model <| "bad url: " ++ s
+    BadStatus resp  -> handleError model <| "bad status: " 
+                        ++ (respInfo resp)
+    BadPayload s resp  
+                    -> handleError model <| "bad payload: " 
+                        ++ s ++ " " 
+                        ++ (respInfo resp)
+
 
 update : Msg -> Model -> (Model, Cmd Msg )
 update msg model = 
@@ -515,7 +538,7 @@ update msg model =
       ( {model | count = model.count + 1 }, getFileNamesAsStringCmd )
 
     ButtonGetFileNames -> 
-      ( {model | count = model.count + 1 }, 
+      ( {model | count = model.count + 1, httpInfo = "reset" }, 
           -- getFileNames "string" 
           getFileNamesMaybe "string" 
           )
@@ -561,14 +584,18 @@ update msg model =
       in
         ( {model | fileNames = fileNames, currentFileName = firstFileName }, getFileDetails firstFileName)    
     -- InfoFileNames (Err s) -> ( {model | httpInfo = s }, Cmd.none)
-    InfoFileNames (Err _) -> ( model, Cmd.none)
+    InfoFileNames (Err err) -> 
+      handleHttpError model err
+          -- _               -> handleError "unknown http error"
 
     InfoFileNamesMaybe (Ok fileNames) ->
       let 
         firstFileName = Maybe.withDefault (Just "") <| head fileNames
       in
         ( {model | fileNames = ["123"], count = model.count +3 }, Cmd.none)       
-    InfoFileNamesMaybe (Err _) -> ( model, Cmd.none)
+
+    InfoFileNamesMaybe (Err err) -> 
+      handleHttpError model err
 
     InfoFirstFileName (Ok fileName) -> ( {model | firstFileName = fileName }, Cmd.none)    
     InfoFirstFileName (Err _) -> (model, Cmd.none)
