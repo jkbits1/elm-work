@@ -34,7 +34,6 @@ myStyle =
     , ("text-align", "center")
     ]
 
-
 imgStyle : Int -> String -> List (String, String)
 imgStyle h src =
     [ ("background-image", "url('" ++ src ++ "')")
@@ -58,6 +57,7 @@ type Msg =
     | Source String
     | InfoS (Result Http.Error String)
     | Search String
+    | SizeChange Window.Size
 
 type alias Model = {
     count     : Int
@@ -66,6 +66,7 @@ type alias Model = {
   , photo  : Photo
   , sizes  : List Size
   , source : String
+  , winSize : Window.Size
   }
 
 main = Html.program { 
@@ -81,14 +82,17 @@ model = {
   , photos = []
   , photo =  { id = "1", title = "init" }
   , sizes = []
-  , source = ""
+  , source = "https://farm3.staticflickr.com/2270/32148136323_62f3449417_s.jpg"
+  , winSize = { width = 50, height = 50 }
   }
 
 init = (
     model
   , Cmd.none)
 
-subscriptions model = Sub.none
+subscriptions : Model -> Sub Msg
+-- subscriptions model = Sub.none
+subscriptions model = Window.resizes (\size -> SizeChange size)
 
 update : Msg -> Model -> (Model, Cmd Msg )
 update msg model = 
@@ -99,7 +103,7 @@ update msg model =
       -- Task.perform Photos (getFlickrImageChain (10, 10) s)
       -- Task.perform Pic (getFlickrImageSingle (10, 10) s)
       -- Task.perform Sizes (getFlickrImageSizes (10, 10) s)
-      Task.perform Source (getFlickrImage (10, 10) s)
+      Task.perform Source (getFlickrImage (model.winSize.width, model.winSize.height) s)
   in
   case msg of 
     Info r -> 
@@ -118,19 +122,22 @@ update msg model =
       ( { model | count = model.count + 1, sizes = zs }, Cmd.none )
     Source s ->
       ( { model | count = model.count + 1, source = s }, Cmd.none )
+    SizeChange size ->
+      ( { model | count = model.count + 1, winSize = size }, Cmd.none )
     
 view : Model -> Html Msg
 view model =
   div [ 
         -- style (imgStyle height "") 
-        class "contain"
+        -- class "contain"
+        style (imgStyle model.winSize.height model.source)
       ]
     [ 
       input
       [ placeholder "Flickr Query"
       -- -- , Attr.value string
       , onInput Search -- (Signal.message queryChnl.address)
-      -- , style myStyle
+      , style myStyle
       ]
       []
     , ol []
@@ -139,7 +146,8 @@ view model =
     , ol []
       (List.map (\sz -> option [] [text <| toString sz] ) model.sizes)
     , text model.source
-    , img [src model.source ] []
+    -- , img [src model.source ] []
+    , text <| "height: " ++ (toString model.winSize.height)
     
     ]
 -- view : Int -> String -> String -> Html
