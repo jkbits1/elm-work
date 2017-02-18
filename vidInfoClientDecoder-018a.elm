@@ -580,7 +580,7 @@ update msg model =
 
     InfoFileNames (Ok fileNames) -> 
       let 
-        firstFileName = Maybe.withDefault "" <| head fileNames
+        firstFileName = Maybe.withDefault "zzz" <| head fileNames
       in
         ( {model | fileNames = fileNames, currentFileName = firstFileName }, getFileDetails firstFileName)    
     -- InfoFileNames (Err s) -> ( {model | httpInfo = s }, Cmd.none)
@@ -590,9 +590,9 @@ update msg model =
 
     InfoFileNamesMaybe (Ok fileNames) ->
       let 
-        firstFileName = Maybe.withDefault (Just "") <| head fileNames
+        firstFileName = Maybe.withDefault "aaa" <| Maybe.withDefault (Just "xxx") <| head <| filterMaybes fileNames
       in
-        ( {model | fileNames = List.map (\m -> Maybe.withDefault "dodgy data" m) <| filterMaybes fileNames 
+        ( {model | currentFileName = firstFileName, fileNames = List.map (\m -> Maybe.withDefault "dodgy data" m) <| filterMaybes fileNames 
           -- ["123"]
           , count = model.count +3 }, Cmd.none)       
 
@@ -603,7 +603,8 @@ update msg model =
     InfoFirstFileName (Err _) -> (model, Cmd.none)
 
     InfoTitleDetails (Ok titleDetails) -> ( {model | titleDetails = titleDetails }, Cmd.none)    
-    InfoTitleDetails (Err s) -> ({model | info = toString s}, Cmd.none)
+    -- InfoTitleDetails (Err s) -> ({model | info = toString s}, Cmd.none)
+    InfoTitleDetails (Err err) -> handleHttpError model err
 
 filterMaybes ms = 
   List.filter

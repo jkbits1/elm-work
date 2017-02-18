@@ -174,7 +174,7 @@ titleDetailsList =
 getFileDetailsReqWrapped : String -> Http.Request (List TitleDetail)
 getFileDetailsReqWrapped string =
   Http.get 
-    (vidInfoURLWrapped ++ "\\" ++ string)
+    (vidInfoURLWrapped ++ "/" ++ string)
     titleDetailsListWrapped
 
 httpSendTitleDetails : Request (List TitleDetail) -> Cmd Msg
