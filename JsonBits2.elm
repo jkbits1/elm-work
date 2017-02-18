@@ -5,6 +5,7 @@ import Json.Decode exposing (..)
 import Html exposing (..)
 import Html.Events exposing (..)
 import Html.Attributes exposing (..)
+import Maybe exposing (Maybe)
 
 type alias Model = {
     count : Int
@@ -17,6 +18,7 @@ type alias Model = {
   , sortDetailsByLength : Bool
   , filter : Bool
   , filterLength : Float
+  , httpInfo : String
   }
 
 type alias TitleDetail =
@@ -45,6 +47,7 @@ type Msg =
   | Info (Result Http.Error String)
   | InfoFirstFileName (Result Http.Error String)
   | InfoFileNames (Result Http.Error (List String))
+  | InfoFileNamesMaybe (Result Http.Error (List (Maybe String)))
   | InfoTitleDetails (Result Http.Error (List TitleDetail))
 
 -- Html Event for select onChange
@@ -284,9 +287,14 @@ getFirstString =
                   Maybe.withDefault "" <| List.head xs 
              )
             --  decoder
-  
+
 stringList : Json.Decode.Decoder (List String)    
 stringList = Json.Decode.list Json.Decode.string
+
+maybeStringList : Json.Decode.Decoder (List (Maybe.Maybe String))    
+maybeStringList = Json.Decode.list (nullable Json.Decode.string)
+-- decodeString (list (nullable string)) """["42", null, "43"]"""
+-- decodeString maybeStringListx """["42", null, "43"]"""
 
 -- this was required for Signals. It created a task from
 -- the list of data that was used as an input to a Signal.
@@ -296,6 +304,7 @@ stringList = Json.Decode.list Json.Decode.string
 --     string :: _ -> succeed string
 --     [] ->
 --       fail (Http.UnexpectedPayload "expecting 1 or more strings from server")
+
 
 
 -- original version
@@ -331,6 +340,16 @@ getFileNames string = Http.send InfoFileNames <| getFileNamesReq
 
 getFileNamesReq : Http.Request (List String)
 getFileNamesReq = Http.get vidInfoFilesURL stringList
+
+-- getFileNames : String -> Cmd Msg
+-- getFileNames string = Http.send InfoFileNames <| getFileNamesReq
+
+getFileNamesMaybe : String -> Cmd Msg
+getFileNamesMaybe string = Http.send InfoFileNamesMaybe <| getFileNamesMaybeReq
+
+getFileNamesMaybeReq : Http.Request (List (Maybe String))
+getFileNamesMaybeReq = Http.get vidInfoFilesURL maybeStringList
+
 
 -- this was required for Signals. It created a task from
 -- the list of data that was used as an input to a Signal.

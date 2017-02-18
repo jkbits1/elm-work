@@ -120,6 +120,7 @@ view model =
         [
           text "File names - "
         , ul [] <| infoListItems model.fileNames
+        , text <| toString model.fileNames
         ]
       , div [class "sortOptions"]
         [
@@ -450,6 +451,7 @@ model = {
   , sortDetailsByLength = False
   , filter = False
   , filterLength = 0.0001
+  , httpInfo = ""
   }
 
 init = (
@@ -513,7 +515,10 @@ update msg model =
       ( {model | count = model.count + 1 }, getFileNamesAsStringCmd )
 
     ButtonGetFileNames -> 
-      ( {model | count = model.count + 1 }, getFileNames "string" )
+      ( {model | count = model.count + 1 }, 
+          -- getFileNames "string" 
+          getFileNamesMaybe "string" 
+          )
 
     ButtonGetFirstFileName -> 
       ( {model | count = model.count + 1 }, getFirstFileName "string" )
@@ -555,7 +560,15 @@ update msg model =
         firstFileName = Maybe.withDefault "" <| head fileNames
       in
         ( {model | fileNames = fileNames, currentFileName = firstFileName }, getFileDetails firstFileName)    
-    InfoFileNames (Err _) -> (model, Cmd.none)
+    -- InfoFileNames (Err s) -> ( {model | httpInfo = s }, Cmd.none)
+    InfoFileNames (Err _) -> ( model, Cmd.none)
+
+    InfoFileNamesMaybe (Ok fileNames) ->
+      let 
+        firstFileName = Maybe.withDefault (Just "") <| head fileNames
+      in
+        ( {model | fileNames = ["123"], count = model.count +3 }, Cmd.none)       
+    InfoFileNamesMaybe (Err _) -> ( model, Cmd.none)
 
     InfoFirstFileName (Ok fileName) -> ( {model | firstFileName = fileName }, Cmd.none)    
     InfoFirstFileName (Err _) -> (model, Cmd.none)
