@@ -592,7 +592,9 @@ update msg model =
       let 
         firstFileName = Maybe.withDefault (Just "") <| head fileNames
       in
-        ( {model | fileNames = ["123"], count = model.count +3 }, Cmd.none)       
+        ( {model | fileNames = List.map (\m -> Maybe.withDefault "dodgy data" m) <| filterMaybes fileNames 
+          -- ["123"]
+          , count = model.count +3 }, Cmd.none)       
 
     InfoFileNamesMaybe (Err err) -> 
       handleHttpError model err
@@ -602,3 +604,13 @@ update msg model =
 
     InfoTitleDetails (Ok titleDetails) -> ( {model | titleDetails = titleDetails }, Cmd.none)    
     InfoTitleDetails (Err s) -> ({model | info = toString s}, Cmd.none)
+
+filterMaybes ms = 
+  List.filter
+  (\m -> 
+    case m of 
+      Just x -> True
+      -- Nothing -> True
+      Nothing -> False
+  )
+  ms
