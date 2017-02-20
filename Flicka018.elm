@@ -10,6 +10,65 @@ import Task exposing (..)
 import Time
 import Window
 
+type Msg = 
+      Source String
+    | Search String
+    | SizeChange Window.Size
+
+type alias Model = {
+    count     : Int
+  , source : String
+  , winSize : Window.Size
+  }
+
+main = Html.program { 
+    init = init
+  , view = view
+  , update = update
+  , subscriptions = subscriptions 
+  }
+
+model = { 
+    count = 0
+  , source = "https://farm3.staticflickr.com/2270/32148136323_62f3449417_s.jpg"
+  , winSize = { width = 50, height = 50 }
+  }
+
+init = (
+    model
+  , Cmd.none)
+
+subscriptions : Model -> Sub Msg
+subscriptions model = Window.resizes (\size -> SizeChange size)
+
+update : Msg -> Model -> (Model, Cmd Msg )
+update msg model = 
+  let 
+    flikr s = 
+      Task.perform Source (getFlickrImage (model.winSize.width, model.winSize.height) s)
+  in
+  case msg of 
+    Search s ->
+      ( {model | count = model.count + 1 }, flikr s)
+    Source s ->
+      ( { model | count = model.count + 1, source = s }, Cmd.none )
+    SizeChange size ->
+      ( { model | count = model.count + 1, winSize = size }, Cmd.none )
+    
+view : Model -> Html Msg
+view model =
+  div [ 
+        style (imgStyle model.winSize.height model.source)
+      ]
+    [ 
+      input
+      [ placeholder "Flickr Query"
+      , onInput Search 
+      , style myStyle
+      ]
+      []
+    ]
+
 myStyle : List (String, String)
 myStyle =
     [ ("width", "100%")
@@ -29,152 +88,6 @@ imgStyle h src =
     , ("height", toString h ++ "px")
     ]
 
-type Msg = 
-      Info (Result Http.Error (List Photo))
-    | Photos (List Photo)
-    | Pic Photo
-    | Sizes (List Size)
-    | Source String
-    | InfoS (Result Http.Error String)
-    | Search String
-    | SizeChange Window.Size
-
-type alias Model = {
-    count     : Int
-  , info      : String
-  , photos : List Photo
-  , photo  : Photo
-  , sizes  : List Size
-  , source : String
-  , winSize : Window.Size
-  }
-
-main = Html.program { 
-    init = init
-  , view = view
-  , update = update
-  , subscriptions = subscriptions 
-  }
-
-model = { 
-    count = 0
-  , info = "initial state"
-  , photos = []
-  , photo =  { id = "1", title = "init" }
-  , sizes = []
-  , source = "https://farm3.staticflickr.com/2270/32148136323_62f3449417_s.jpg"
-  , winSize = { width = 50, height = 50 }
-  }
-
-init = (
-    model
-  , Cmd.none)
-
-subscriptions : Model -> Sub Msg
-subscriptions model = Window.resizes (\size -> SizeChange size)
-
-update : Msg -> Model -> (Model, Cmd Msg )
-update msg model = 
-  let 
-    flikr s = 
-      Task.perform Source (getFlickrImage (model.winSize.width, model.winSize.height) s)
-  in
-  case msg of 
-    Info r -> 
-      case r of 
-        Ok ps ->  ( {model | photos = ps}, Cmd.none)
-        Err s ->  (model, Cmd.none)
-    InfoS a -> 
-      ( {model | count = model.count + 1 }, flikr "kitten" )
-    Search s ->
-      ( {model | count = model.count + 1 }, flikr s)
-    Photos ps ->
-      ( {model | count = model.count + 1, photos = ps }, Cmd.none)
-    Pic pic ->
-      ( { model | count = model.count + 1, photo = pic }, Cmd.none)
-    Sizes zs ->
-      ( { model | count = model.count + 1, sizes = zs }, Cmd.none )
-    Source s ->
-      ( { model | count = model.count + 1, source = s }, Cmd.none )
-    SizeChange size ->
-      ( { model | count = model.count + 1, winSize = size }, Cmd.none )
-    
-view : Model -> Html Msg
-view model =
-  div [ 
-        style (imgStyle model.winSize.height model.source)
-      ]
-    [ 
-      input
-      [ placeholder "Flickr Query"
-      , onInput Search 
-      , style myStyle
-      ]
-      []
-    , ol []
-      (List.map (\p -> option [] [text <| toString p] ) model.photos)
-    , text <| "pic: " ++ ( toString model.photo )
-    , ol []
-      (List.map (\sz -> option [] [text <| toString sz] ) model.sizes)
-    , text model.source
-    , text <| "height: " ++ (toString model.winSize.height)    
-    ]
-
-getFlickrImageBasic : (Int,Int) -> String -> Cmd Msg
-getFlickrImageBasic dimensions tag =
-  let searchArgs =
-        [ ("sort", "random"), ("per_page", "10"), ("tags", tag) ]
-  in 
-    Http.send Info <|
-      Http.get 
-        (createFlickrURL "search" searchArgs)
-        photoList 
-
-getFlickrImageChain : (Int,Int) -> String -> Task x (List Photo)
-getFlickrImageChain dimensions tag =
-  let searchArgs =
-        [ ("sort", "random"), ("per_page", "10"), ("tags", tag) ]
-  in
-    (Http.toTask (Http.get (createFlickrURL "search" searchArgs) photoList ))
-      |>
-        (Task.andThen           
-          (\ps -> Task.succeed ps
-          )) 
-
-      |> (onError (\_ -> succeed [
-            { id = "2"
-            , title = "error"
-            }
-          ]))
-
-getFlickrImageSingle : (Int,Int) -> String -> Task x Photo
-getFlickrImageSingle dimensions tag =
-  let searchArgs =
-        [ ("sort", "random"), ("per_page", "10"), ("tags", tag) ]
-  in
-    (Http.toTask (Http.get (createFlickrURL "search" searchArgs) photoList ))
-      |>
-        (Task.andThen selectPhoto)
-      |> (onError (\_ -> succeed 
-            { id = "2"
-            , title = "error"
-            }
-          ))
-
-getFlickrImageSizes : (Int,Int) -> String -> Task x (List Size)
-getFlickrImageSizes dimensions tag =
-  let searchArgs =
-        [ ("sort", "random"), ("per_page", "10"), ("tags", tag) ]
-  in
-    (Http.toTask (Http.get (createFlickrURL "search" searchArgs) photoList ))
-      |> (Task.andThen selectPhoto)
-      |> (Task.andThen 
-            (\photo -> 
-              (Http.toTask 
-                (Http.get (createFlickrURL "getSizes" [ ("photo_id", photo.id) ]) sizeList )))
-         )
-      |> (onError (\_ -> succeed [] ))
-
 getFlickrImage : (Int,Int) -> String -> Task x String
 getFlickrImage dimensions tag =
   let searchArgs =
@@ -190,12 +103,6 @@ getFlickrImage dimensions tag =
       |> (Task.andThen <| pickSize dimensions)
       |> (onError (\_ -> succeed "no photo size" ))
              
-sendBlankPhotos :  a -> Task.Task x (List Photo)
-sendBlankPhotos = (\_ -> Task.succeed [])
-
-blankPhotos : Cmd Msg
-blankPhotos = Task.perform Photos (Task.succeed [])
-
 -- JSON DECODERS
 type alias Photo =
     { id : String
