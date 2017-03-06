@@ -112,17 +112,6 @@ view model =
           -- br [] [], 
           checkbox Filter "Apply Filter"
         ]
-      , div [class "firstFileName"]
-        [
-          text <| "First file name - "  ++ toString model.firstFileName
-        ]
-      , div [class "fileNames"]
-        [
-          text "File names - "
-        , ul [] <| infoListItems model.fileNames
-        , text <| toString model.fileNames
-        , text <| ("httpInfo: " ++ model.httpInfo)
-        ]
       , div [class "sortOptions"]
         [
           label [
@@ -134,6 +123,17 @@ view model =
             ] 
             <| List.map (\s -> option [] [ text <| s ]) model.fileNames
         -- , text model.currentFileName
+        ]
+      , div [class "firstFileName"]
+        [
+          text <| "First file name - "  ++ toString model.firstFileName
+        ]
+      , div [class "fileNames"]
+        [
+          text "File names - "
+        , ul [] <| infoListItems model.fileNames
+        , text <| toString model.fileNames
+        , text <| ("httpInfo: " ++ model.httpInfo)
         ]
 
       -- , div []

@@ -1,6 +1,6 @@
 .contain {
   max-width: 1600px;
-  line-height: 2.1em;
+  line-height: 2.4em;
   margin-left: 10px;
 }
 @media screen and (max-width: 520px) {
@@ -197,4 +197,13 @@ ul {
 input,
 select {
   margin-left: 5px;
+  padding-left: 5px;
+  height: 25px;
+}
+[type="checkbox"] {
+  margin-right: 8px;
+  height: 12px;
+}
+label {
+  font-weight: 600;
 }
