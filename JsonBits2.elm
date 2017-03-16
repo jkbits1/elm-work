@@ -116,7 +116,7 @@ titleDetailsList4 =
           (\r ->
             case r of 
               Ok xs -> Json.Decode.succeed xs
-              Err err -> Json.Decode.fail <| err ++ "xx"
+              Err err -> Json.Decode.fail <| err ++ "xx4"
           )
       )
 
@@ -132,7 +132,7 @@ titleDetailsList =
           (\result ->
             case result of 
               Ok xs -> Json.Decode.succeed xs
-              Err err -> Json.Decode.fail <| err ++ "xx"
+              Err err -> Json.Decode.fail <| err ++ " fn: titleDetailsList "
           )
       )
 
