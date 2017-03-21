@@ -32,10 +32,10 @@ type SortBy = SortByLength | SortByNumber
 type Msg = 
     NoOp
 
-  | ButtonGetFirstFileName
-  | ButtonGetFileNames
-  | ButtonGetFileDetails
-  | ButtonGetFileDetailsWrapped
+  | GetFirstFileName
+  | GetFileNames
+  | GetFileDetails
+  | GetFileDetailsWrapped
 
   | SortDetails SortBy
 
@@ -44,7 +44,7 @@ type Msg =
 
   | ShowJsonErrors
 
-  | CurrentFileName String
+  | GetCurrentFileNameDetails String
 
   | InfoFirstFileName (Result Http.Error String)
   | InfoFileNames (Result Http.Error (List String))
@@ -67,7 +67,7 @@ onChangeSort =
           _         -> SortDetails SortByNumber ))
 
 onChangeFileName : Attribute Msg
-onChangeFileName = onChange (\s -> CurrentFileName s)          
+onChangeFileName = onChange (\s -> GetCurrentFileNameDetails s)          
 
 checkbox : Msg -> String -> Html.Html Msg
 checkbox msg name =
