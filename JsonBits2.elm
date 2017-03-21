@@ -51,6 +51,9 @@ type Msg =
   | InfoFileNamesMaybe (Result Http.Error (List (Maybe String)))
   | InfoTitleDetails (Result Http.Error (List TitleDetail))
 
+
+-- VIEW HELPERS
+
 -- Html Event for select onChange
 onChange : (String -> msg) -> Attribute msg
 onChange f = on "change" <| Json.Decode.map f Html.Events.targetValue
@@ -89,14 +92,42 @@ detailsListItems : List TitleDetail -> List (Html Msg)
 detailsListItems tds = 
   List.map (\td -> li [] [text <| detailsDisplay td]) tds
 
-vidInfoStubURL : String
-vidInfoStubURL = "http://localhost:8000/vidInfo"
 
-vidInfoFilesURL : String
-vidInfoFilesURL = "http://localhost:8000/vidInfo/files" 
+-- DECODERs
 
-vidInfoURLWrapped : String
-vidInfoURLWrapped = "http://localhost:8000/vidInfoWrapped"
+getFirstStringDecoder : Decoder String
+getFirstStringDecoder = 
+  stringListDecoder |> andThen 
+             (\xs ->
+                -- create Decoder String that decodes to first file name
+                Json.Decode.succeed <|
+                  Maybe.withDefault "" <| List.head xs 
+             )
+
+stringListDecoder : Json.Decode.Decoder (List String)    
+stringListDecoder = Json.Decode.list Json.Decode.string
+
+maybeStringList : Json.Decode.Decoder (List (Maybe String))    
+maybeStringList = Json.Decode.list (nullable Json.Decode.string)
+-- decodeString (list (nullable string)) """["42", null, "43"]"""
+-- decodeString maybeStringListx """["42", null, "43"]"""
+
+getFirstStringx : List String -> Json.Decode.Decoder String
+getFirstStringx strings =
+
+-- ODDLY, this line below worked, with the anon fn below
+-- all taken from customDecoder code
+  -- stringList |> andThen 
+
+-- customDecoder decoder toResult = 
+  --  Json.Decode.andThen
+            --  (\xs ->
+                -- create Decoder String that decodes to first file name
+                -- succeed : a -> Decoder a
+                Json.Decode.succeed <|
+                  Maybe.withDefault "" <| List.head strings --xs 
+            --  )
+            --  decoder
 
 -- not used
 titleDetailsList3a : Json.Decode.Decoder (String)
@@ -125,11 +156,65 @@ titleDetailsList =
           )
       )
 
-getFileDetailsReqWrapped : String -> Http.Request (List TitleDetail)
+titleDetailsListWrapped : Json.Decode.Decoder (List TitleDetail)
+titleDetailsListWrapped =
+  Json.Decode.at ["wrapper", "titleDetails"] <| 
+    Json.Decode.list <|
+      titleDetailDecoder
+
+--  customDecoder decoder toResult = 
+--    Json.Decode.andThen
+--            (\a ->
+--                  case toResult a of 
+--                     Ok b -> Json.Decode.succeed b
+--                     Err err -> Json.Decode.fail err
+--            )
+--            decoder
+
+
+-- URLs
+
+serverAddress     = "http://localhost:8000/"
+
+createVidInfoURL : String -> String
+createVidInfoURL  = (++) serverAddress
+
+vidInfoFilesURL   = createVidInfoURL "vidInfo/files" 
+vidInfoStubURL    = createVidInfoURL "vidInfo"
+vidInfoURLWrapped = createVidInfoURL "vidInfoWrapped"
+
+
+-- HTTP.REQUESTs
+
+getFileDetailsReqWrapped :  String -> Http.Request (List TitleDetail)
 getFileDetailsReqWrapped string =
   Http.get 
     (vidInfoURLWrapped ++ "/" ++ string)
     titleDetailsListWrapped
+
+getFileDetailsReq :         String -> Http.Request (List TitleDetail)
+getFileDetailsReq string =
+  Http.get (vidInfoStubURL ++ "\\" ++ string) titleDetailsList
+
+getFileNamesReq :                     Http.Request (List String)
+getFileNamesReq = Http.get vidInfoFilesURL stringListDecoder
+
+getFileNamesMaybeReq :                Http.Request (List (Maybe String))
+getFileNamesMaybeReq = Http.get vidInfoFilesURL maybeStringList
+
+
+-- CMDs
+
+getFirstFileName : String -> Cmd Msg
+getFirstFileName string = 
+  Http.send InfoFirstFileName <|
+    Http.get vidInfoFilesURL getFirstStringDecoder
+
+getFileNames : String -> Cmd Msg
+getFileNames string = Http.send InfoFileNames <| getFileNamesReq
+
+getFileNamesMaybe : String -> Cmd Msg
+getFileNamesMaybe string = Http.send InfoFileNamesMaybe <| getFileNamesMaybeReq
 
 httpSendTitleDetails : Request (List TitleDetail) -> Cmd Msg
 httpSendTitleDetails = Http.send InfoTitleDetails
@@ -141,97 +226,4 @@ getFileDetailsWrapped string =
 getFileDetails : String -> Cmd Msg
 getFileDetails string = 
   httpSendTitleDetails <| getFileDetailsReq string
-
-titleDetailsListWrapped : Json.Decode.Decoder (List TitleDetail)
-titleDetailsListWrapped =
-  Json.Decode.at ["wrapper", "titleDetails"] <| 
-    Json.Decode.list <|
-      titleDetailDecoder
-
-getFileDetailsReq : String -> Http.Request (List TitleDetail)
-getFileDetailsReq string =
-  Http.get 
-    (vidInfoStubURL ++ "\\" ++ string)
-    -- titleDetailsListOrig
-    titleDetailsList
-
---  customDecoder decoder toResult = 
---    Json.Decode.andThen
---            (\a ->
---                  case toResult a of 
---                     Ok b -> Json.Decode.succeed b
---                     Err err -> Json.Decode.fail err
---            )
---            decoder
-
-getFirstStringx : List String -> Json.Decode.Decoder String
-getFirstStringx strings =
-
--- ODDLY, this line below worked, with the anon fn below
--- all taken from customDecoder code
-  -- stringList |> andThen 
-
--- customDecoder decoder toResult = 
-  --  Json.Decode.andThen
-            --  (\xs ->
-                -- create Decoder String that decodes to first file name
-                -- succeed : a -> Decoder a
-                Json.Decode.succeed <|
-                  Maybe.withDefault "" <| List.head strings --xs 
-            --  )
-            --  decoder
-
-
-getFirstString : Decoder String
-getFirstString = 
-  stringListDecoder |> andThen 
-             (\xs ->
-                -- create Decoder String that decodes to first file name
-                Json.Decode.succeed <|
-                  Maybe.withDefault "" <| List.head xs 
-             )
-
-stringListDecoder : Json.Decode.Decoder (List String)    
-stringListDecoder = Json.Decode.list Json.Decode.string
-
-maybeStringList : Json.Decode.Decoder (List (Maybe.Maybe String))    
-maybeStringList = Json.Decode.list (nullable Json.Decode.string)
--- decodeString (list (nullable string)) """["42", null, "43"]"""
--- decodeString maybeStringListx """["42", null, "43"]"""
-
-getFirstFileName : String -> Cmd Msg
-getFirstFileName string = 
-  Http.send InfoFirstFileName <|
-    Http.get 
-      vidInfoFilesURL 
-      getFirstString
-
-getFileNames : String -> Cmd Msg
-getFileNames string = Http.send InfoFileNames <| getFileNamesReq
-
-getFileNamesReq : Http.Request (List String)
-getFileNamesReq = Http.get vidInfoFilesURL stringListDecoder
-
-getFileNamesMaybe : String -> Cmd Msg
-getFileNamesMaybe string = Http.send InfoFileNamesMaybe <| getFileNamesMaybeReq
-
-getFileNamesMaybeReq : Http.Request (List (Maybe String))
-getFileNamesMaybeReq = Http.get vidInfoFilesURL maybeStringList
-
-getFirstFileNameTest : String -> Cmd Msg
-getFirstFileNameTest string = 
-  Http.send InfoFirstFileName <|
-    Http.get 
-      ("https://api.giphy.com/v1/gifs/random?api_key=dc6zaTOxFJmzC&tag=" ++ "kitten")
-      getFirstStringTest
-
-getFirstStringTest : Json.Decode.Decoder String
-getFirstStringTest =
-  Json.Decode.at ["data", "image_url"] Json.Decode.string
-
--- getFileNamesAsStringReq : String -> Http.Request String
--- getFileNamesAsStringReq string = Http.getString vidInfoFilesURL        
-
--- getFileNamesAsStringCmd : Cmd Msg
--- getFileNamesAsStringCmd = Http.send Info <| getFileNamesAsStringReq ""
 
