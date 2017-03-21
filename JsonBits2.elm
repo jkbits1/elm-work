@@ -107,11 +107,12 @@ getFirstStringDecoder =
 stringListDecoder : Json.Decode.Decoder (List String)    
 stringListDecoder = Json.Decode.list Json.Decode.string
 
-maybeStringList : Json.Decode.Decoder (List (Maybe String))    
-maybeStringList = Json.Decode.list (nullable Json.Decode.string)
+maybeStringListDecoder : Json.Decode.Decoder (List (Maybe String))    
+maybeStringListDecoder = Json.Decode.list (nullable Json.Decode.string)
 -- decodeString (list (nullable string)) """["42", null, "43"]"""
 -- decodeString maybeStringListx """["42", null, "43"]"""
 
+-- not used
 getFirstStringx : List String -> Json.Decode.Decoder String
 getFirstStringx strings =
 
@@ -128,17 +129,6 @@ getFirstStringx strings =
                   Maybe.withDefault "" <| List.head strings --xs 
             --  )
             --  decoder
-
--- not used
-titleDetailsList3a : Json.Decode.Decoder (String)
-titleDetailsList3a =
-  (field "titleDetails" Json.Decode.string) 
-    |> andThen 
-    -- sort of a NoOp 
-             (\s ->
-                -- create Decoder String that decodes to first file name
-                Json.Decode.succeed <| s
-             )
 
 titleDetailDecoder : Decoder TitleDetail
 titleDetailDecoder = map2 TitleDetail (field "titleNumber" int) (field "length" float)
@@ -161,6 +151,17 @@ titleDetailsListWrapped =
   Json.Decode.at ["wrapper", "titleDetails"] <| 
     Json.Decode.list <|
       titleDetailDecoder
+
+-- not used
+titleDetailsList3a : Json.Decode.Decoder (String)
+titleDetailsList3a =
+  (field "titleDetails" Json.Decode.string) 
+    |> andThen 
+    -- sort of a NoOp 
+             (\s ->
+                -- create Decoder String that decodes to first file name
+                Json.Decode.succeed <| s
+             )
 
 --  customDecoder decoder toResult = 
 --    Json.Decode.andThen
@@ -186,8 +187,14 @@ vidInfoURLWrapped = createVidInfoURL "vidInfoWrapped"
 
 -- HTTP.REQUESTs
 
-getFileDetailsReqWrapped :  String -> Http.Request (List TitleDetail)
-getFileDetailsReqWrapped string =
+getFileNamesReq :                     Http.Request (List String)
+getFileNamesReq = Http.get vidInfoFilesURL stringListDecoder
+
+getFileNamesMaybeReq :                Http.Request (List (Maybe String))
+getFileNamesMaybeReq = Http.get vidInfoFilesURL maybeStringListDecoder
+
+getFileDetailsWrappedReq :  String -> Http.Request (List TitleDetail)
+getFileDetailsWrappedReq string =
   Http.get 
     (vidInfoURLWrapped ++ "/" ++ string)
     titleDetailsListWrapped
@@ -196,34 +203,28 @@ getFileDetailsReq :         String -> Http.Request (List TitleDetail)
 getFileDetailsReq string =
   Http.get (vidInfoStubURL ++ "\\" ++ string) titleDetailsList
 
-getFileNamesReq :                     Http.Request (List String)
-getFileNamesReq = Http.get vidInfoFilesURL stringListDecoder
-
-getFileNamesMaybeReq :                Http.Request (List (Maybe String))
-getFileNamesMaybeReq = Http.get vidInfoFilesURL maybeStringList
-
 
 -- CMDs
 
-getFirstFileName : String -> Cmd Msg
-getFirstFileName string = 
+getFirstFileNameCmd :       String -> Cmd Msg
+getFirstFileNameCmd string = 
   Http.send InfoFirstFileName <|
     Http.get vidInfoFilesURL getFirstStringDecoder
 
-getFileNames : String -> Cmd Msg
-getFileNames string = Http.send InfoFileNames <| getFileNamesReq
+getFileNamesCmd :           String -> Cmd Msg
+getFileNamesCmd string = Http.send InfoFileNames <| getFileNamesReq
 
-getFileNamesMaybe : String -> Cmd Msg
-getFileNamesMaybe string = Http.send InfoFileNamesMaybe <| getFileNamesMaybeReq
+getFileNamesMaybeCmd :      String -> Cmd Msg
+getFileNamesMaybeCmd string = Http.send InfoFileNamesMaybe <| getFileNamesMaybeReq
 
-httpSendTitleDetails : Request (List TitleDetail) -> Cmd Msg
-httpSendTitleDetails = Http.send InfoTitleDetails
+httpSendTitleDetailsCmd : Request (List TitleDetail) -> Cmd Msg
+httpSendTitleDetailsCmd = Http.send InfoTitleDetails
 
-getFileDetailsWrapped : String -> Cmd Msg
-getFileDetailsWrapped string = 
-  httpSendTitleDetails <| getFileDetailsReqWrapped string
+getFileDetailsWrappedCmd :  String -> Cmd Msg
+getFileDetailsWrappedCmd string = 
+  httpSendTitleDetailsCmd <| getFileDetailsWrappedReq string
 
-getFileDetails : String -> Cmd Msg
-getFileDetails string = 
-  httpSendTitleDetails <| getFileDetailsReq string
+getFileDetailsCmd :         String -> Cmd Msg
+getFileDetailsCmd string = 
+  httpSendTitleDetailsCmd <| getFileDetailsReq string
 
