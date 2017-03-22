@@ -15,7 +15,6 @@ import List exposing (..)
 view : Model -> Html Msg
 view model =
   div [ 
-        -- style (imgStyle height "") 
         class "container"
     ]
     [
@@ -108,7 +107,6 @@ view model =
                         case model.filter of 
                           True -> td.length > 
                             model.filterLength
-                            -- 5
                           False -> True)
                     <| 
                     -- List.sortBy .length
@@ -125,46 +123,25 @@ view model =
     -- ]
     ]
     
-firstSpecific : List TitleDetail -> TitleDetail
-firstSpecific details = 
-  let m = List.head details
-  in 
-    case m of 
-      Just detail -> detail
-      Nothing     -> TitleDetail 0 0.0
+-- firstSpecific : List TitleDetail -> TitleDetail
+-- firstSpecific details = 
+--   let m = List.head details
+--   in 
+--     case m of 
+--       Just detail -> detail
+--       Nothing     -> TitleDetail 0 0.0
 
-resultsAsString2 : List String -> String
-resultsAsString2 results = String.join ", " results
+-- resultsAsString2 : List String -> String
+-- resultsAsString2 results = String.join ", " results
 
-resultsAsString : List String -> String
-resultsAsString strings = List.foldr 
-  --  (++) 
-  (appendResults)  
-  "" strings
+-- resultsAsString : List String -> String
+-- resultsAsString strings = List.foldr 
+--   --  (++) 
+--   (appendResults)  
+--   "" strings
   
-appendResults : String -> String -> String
-appendResults a b = a ++ ", " ++ b 
-
-myStyle : List (String, String)
-myStyle =
-    [ ("width", "100%")
-    , ("height", "40px")
-    , ("padding", "10px 0")
-    , ("font-size", "2em")
-    , ("text-align", "center")
-    ]
-
-
-imgStyle : Int -> String -> List (String, String)
-imgStyle h src =
-    [ ("background-image", "url('" ++ src ++ "')")
-    , ("background-repeat", "no-repeat")
-    , ("background-attachment", "fixed")
-    , ("background-position", "center")
-    , ("width", "100%")
-    , ("height", toString h ++ "px")
-    ]
-
+-- appendResults : String -> String -> String
+-- appendResults a b = a ++ ", " ++ b 
 
 
 -- trigger : Signal Bool
@@ -186,8 +163,6 @@ imgStyle h src =
 --     |> Signal.map (\task -> task `andThen` 
 --                     Signal.send detailsChnl)
     
--- JSON DECODERS
-
 type alias Photo =
     { id : String
     , title : String
@@ -199,75 +174,33 @@ type alias Size =
     , height : Int
     }
     
--- filenameDecoder : Json.DecodeDecoder (String)    
--- filenameDecoder = "fileName" |> field Json.Decodestring
-
--- titleDetailsDecoder : Json.DecodeDecoder (List String)    
--- titleDetailsDecoder = 
--- --  Debug.log "titleDetails" <|
---     "titleDetails" |> field Json.Decodelist Json.Decodestring
-    
--- photoList : Json.DecodeDecoder (List Photo)
--- photoList =
---   Json.Decodeat ["photos","photo"] <| Json.Decodelist <|
---       Json.Decodemap2 Photo
---         ("id" |> field Json.Decodestring)
---         ("title" |> field Json.Decodestring)
-
-
--- sizeList : Json.DecodeDecoder (List Size)
--- sizeList =
---   let number =
---         -- Json.DecodeoneOf [ Json.Decodeint, Json.DecodecustomDecoder Json.Decodestring String.toInt ]
---         Json.DecodeoneOf [ Json.Decodeint, customDecoder Json.Decodestring String.toInt ]
---   in
---       Json.Decodeat ["sizes","size"] <| Json.Decodelist <|
---           Json.Decodemap3 Size
---             ("source" |> field Json.Decodestring)
---             ("width" |> field number)
---             ("height" |> field number)
-
-
 -- HANDLE RESPONSES
 
-getDetail : String -> Task Http.Error (List String)
-getDetail string = succeed [string]
+-- getDetail : String -> Task Http.Error (List String)
+-- getDetail string = succeed [string]
 
-getDetails : List String -> Task Http.Error (List String)
-getDetails strings =
-  case strings of
-    string :: _ -> succeed [
-      Debug.log "files dets" "file details"
-      ]
-    [] ->
---      fail (Http.UnexpectedPayload "expecting 1 or more strings from server")
-        succeed ["no details found"]
+-- getDetails : List String -> Task Http.Error (List String)
+-- getDetails strings =
+--   case strings of
+--     string :: _ -> succeed [
+--       Debug.log "files dets" "file details"
+--       ]
+--     [] ->
+-- --      fail (Http.UnexpectedPayload "expecting 1 or more strings from server")
+--         succeed ["no details found"]
         
-getTitleDetails : List TitleDetail -> Task Http.Error (List String)
-getTitleDetails details =
-  case details of
-    string :: _ -> succeed 
-      (List.map (toString) details)
---      [
-----      Debug.log "files dets" "file details"
---        "dummy title dets"
---      ]
-    [] ->
---      fail (Http.UnexpectedPayload "expecting 1 or more strings from server")
-        succeed ["no details found"]
-
--- pickSize : (Int,Int) -> List Size -> Task Http.Error String
--- pickSize (width,height) sizes =
---   let sizeRating size =
---         let penalty =
---               if size.width > width || size.height > height then 400 else 0
---         in
---             abs (width - size.width) + abs (height - size.height) + penalty
---   in
---       case List.sortBy sizeRating sizes of
---         size :: _ -> succeed size.source
---         [] ->
---           fail (Http.UnexpectedPayload "expecting 1 or more image sizes to choose from")
+-- getTitleDetails : List TitleDetail -> Task Http.Error (List String)
+-- getTitleDetails details =
+--   case details of
+--     string :: _ -> succeed 
+--       (List.map (toString) details)
+-- --      [
+-- ----      Debug.log "files dets" "file details"
+-- --        "dummy title dets"
+-- --      ]
+--     [] ->
+-- --      fail (Http.UnexpectedPayload "expecting 1 or more strings from server")
+--         succeed ["no details found"]
 
 
 -- GETSTRING FOR CUSTOM HEADERS
@@ -348,75 +281,6 @@ init = (
   , Cmd.none)
 
 subscriptions model = Sub.none
-
-
--- code below grabbed from original, now deprecated, package
--- https://github.com/evancz/elm-http/blob/3.0.1/src/Http.elm
--- REQUESTS
-
-{-| Create a properly encoded URL with a [query string][qs]. The first argument is
-the portion of the URL before the query string, which is assumed to be
-properly encoded already. The second argument is a list of all the
-key/value pairs needed for the query string. Both the keys and values
-will be appropriately encoded, so they can contain spaces, ampersands, etc.
-[qs]: http://en.wikipedia.org/wiki/Query_string
-    url "http://example.com/users" [ ("name", "john doe"), ("age", "30") ]
-    -- http://example.com/users?name=john+doe&age=30
--}
--- url : String -> List (String,String) -> String
--- url baseUrl args =
---   case args of
---     [] ->
---         baseUrl
-
---     _ ->
---         baseUrl ++ "?" ++ String.join "&" (List.map queryPair args)
-
-
--- queryPair : (String,String) -> String
--- queryPair (key,value) =
---   queryEscape key ++ "=" ++ queryEscape value
-
-
--- queryEscape : String -> String
--- queryEscape string =
---   String.join "+" (String.split "%20" (uriEncode string))
-
--- uriEncode : String -> String
--- uriEncode =
---   Native.Http.uriEncode
-
-customDecoder decoder toResult = 
-   Json.Decode.andThen
-             (\a ->
-                   case toResult a of 
-                      Ok b -> Json.Decode.succeed b
-                      Err err -> Json.Decode.fail err
-             )
-             decoder
-
-respInfo : Http.Response String -> String
-respInfo resp = 
-             resp.url 
-          ++ " " ++ (toString resp.status.code) 
-          ++ " " ++ resp.status.message
-          ++ " " ++ (toString resp.headers) 
-          ++ " " ++ resp.body        
-
-handleError model s = ( {model | httpInfo = s }, Cmd.none)       
-
-handleHttpError model err = 
-  case err of 
-    Timeout         -> handleError model "timeout"
-    NetworkError    -> handleError model "nw error"
-    BadUrl s        -> handleError model <| "bad url: " ++ s
-    BadStatus resp  -> handleError model <| "bad status: " 
-                        ++ (respInfo resp)
-    BadPayload s resp  
-                    -> handleError model <| "bad payload: " 
-                        ++ s ++ " " 
-                        ++ (respInfo resp)
-
 
 update : Msg -> Model -> (Model, Cmd Msg )
 update msg model = 
@@ -503,6 +367,8 @@ update msg model =
     InfoTitleDetails (Ok titleDetails) -> ( {model | titleDetails = titleDetails }, Cmd.none)    
     InfoTitleDetails (Err err) -> handleHttpError model err
 
+
+
 filterMaybes showJsonErrors xs = 
   List.filter
   (\x -> 
@@ -511,3 +377,27 @@ filterMaybes showJsonErrors xs =
       Nothing -> showJsonErrors
   )
   xs
+
+respInfo : Http.Response String -> String
+respInfo resp = 
+             resp.url 
+          ++ " " ++ (toString resp.status.code) 
+          ++ " " ++ resp.status.message
+          ++ " " ++ (toString resp.headers) 
+          ++ " " ++ resp.body        
+
+handleError model s = ( {model | httpInfo = s }, Cmd.none)       
+
+handleHttpError model err = 
+  case err of 
+    Timeout         -> handleError model "timeout"
+    NetworkError    -> handleError model "nw error"
+    BadUrl s        -> handleError model <| "bad url: " ++ s
+    BadStatus resp  -> handleError model <| "bad status: " 
+                        ++ (respInfo resp)
+    BadPayload s resp  
+                    -> handleError model <| "bad payload: " 
+                        ++ s ++ " " 
+                        ++ (respInfo resp)
+
+
