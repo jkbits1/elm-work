@@ -1,9 +1,9 @@
 import Html exposing (..)
-import Html.App as HtmlApp
+-- import Html.App as HtmlApp
 import Html.Attributes as Attr exposing (..)
 import Html.Events exposing (..)
-import Text exposing (color)
-import Color exposing (..)
+-- import Text exposing (color)
+-- import Color exposing (..)
 
 import String
 import List exposing (..)
@@ -13,7 +13,7 @@ type alias Model = String
 type Msg =
       Change String 
 
-main = HtmlApp.program { init = init, view = view, update = updateModel, subscriptions = subscriptions }
+main = Html.program { init = init, view = view, update = updateModel, subscriptions = subscriptions }
 
 subscriptions : Model -> Sub Msg
 subscriptions model = Sub.none
