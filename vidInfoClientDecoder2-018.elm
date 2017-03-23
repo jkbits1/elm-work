@@ -93,13 +93,15 @@ view model =
         [
           text "File names - "
         , ul [] <| infoListItems model.fileNames
-        , text <| toString model.fileNames
-        , text <| ("httpInfo: " ++ model.httpInfo)
+        -- , text <| toString model.fileNames
+        , br [] []
+        , h3 [] [text "http Info: "]
+        , text model.httpInfo
         ]
 
       , div [class "titleDetails"]
         [
-          text "Title details - "
+          h3 [] [text "Title details - "]
         , ul [] <| detailsListItems 
                     <| 
                     List.filter 
@@ -162,17 +164,6 @@ view model =
 --     |> Signal.sampleOn trigger
 --     |> Signal.map (\task -> task `andThen` 
 --                     Signal.send detailsChnl)
-    
-type alias Photo =
-    { id : String
-    , title : String
-    }
-
-type alias Size =
-    { source : String
-    , width : Int
-    , height : Int
-    }
     
 -- HANDLE RESPONSES
 
@@ -336,7 +327,12 @@ update msg model =
       
 
 -- HTTP responses
-    -- triggers http request for first file name details
+    InfoFirstFileName (Ok fileName) -> 
+      ( {model | firstFileName = fileName }, Cmd.none)    
+    -- InfoFirstFileName (Err _) -> (model, Cmd.none)
+    InfoFirstFileName (Err err) -> handleHttpError model err
+
+    -- triggers http request for first file details
     InfoFileNames (Ok fileNames) -> 
       let 
         firstFileName = Maybe.withDefault "zzz" <| head fileNames
@@ -361,10 +357,8 @@ update msg model =
     InfoFileNamesMaybe (Err err) -> 
       handleHttpError model err
 
-    InfoFirstFileName (Ok fileName) -> ( {model | firstFileName = fileName }, Cmd.none)    
-    InfoFirstFileName (Err _) -> (model, Cmd.none)
-
-    InfoTitleDetails (Ok titleDetails) -> ( {model | titleDetails = titleDetails }, Cmd.none)    
+    InfoTitleDetails (Ok titleDetails) -> 
+      ( {model | titleDetails = titleDetails }, Cmd.none)    
     InfoTitleDetails (Err err) -> handleHttpError model err
 
 
