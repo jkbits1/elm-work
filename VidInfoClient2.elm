@@ -377,10 +377,10 @@ filterMaybes showJsonErrors xs =
 respInfo : Http.Response String -> String
 respInfo resp = 
              resp.url 
-          ++ " " ++ (toString resp.status.code) 
-          ++ " " ++ resp.status.message
-          ++ " " ++ (toString resp.headers) 
-          ++ " " ++ resp.body        
+          ++ " Code: " ++ (toString resp.status.code) 
+          ++ " Message: " ++ resp.status.message
+          ++ " Headers: " ++ (toString resp.headers) 
+          ++ " Body: " ++ resp.body        
 
 handleError : Model -> String -> (Model, Cmd Msg)
 handleError model s = ( {model | httpInfo = s }, Cmd.none)       
@@ -395,7 +395,5 @@ handleHttpError model err =
                         ++ (respInfo resp)
     BadPayload s resp  
                     -> handleError model <| "bad payload: " 
-                        ++ s ++ " " 
+                        ++ "Details: " ++ s ++ " Response: " 
                         ++ (respInfo resp)
-
-
