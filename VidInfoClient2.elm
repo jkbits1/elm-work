@@ -382,8 +382,10 @@ respInfo resp =
           ++ " " ++ (toString resp.headers) 
           ++ " " ++ resp.body        
 
+handleError : Model -> String -> (Model, Cmd Msg)
 handleError model s = ( {model | httpInfo = s }, Cmd.none)       
 
+handleHttpError : Model -> Http.Error -> (Model, Cmd Msg) 
 handleHttpError model err = 
   case err of 
     Timeout         -> handleError model "timeout"
