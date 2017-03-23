@@ -112,24 +112,6 @@ maybeStringListDecoder = Json.Decode.list (nullable Json.Decode.string)
 -- decodeString (list (nullable string)) """["42", null, "43"]"""
 -- decodeString maybeStringListx """["42", null, "43"]"""
 
--- not used
-getFirstStringx : List String -> Json.Decode.Decoder String
-getFirstStringx strings =
-
--- ODDLY, this line below worked, with the anon fn below
--- all taken from customDecoder code
-  -- stringList |> andThen 
-
--- customDecoder decoder toResult = 
-  --  Json.Decode.andThen
-            --  (\xs ->
-                -- create Decoder String that decodes to first file name
-                -- succeed : a -> Decoder a
-                Json.Decode.succeed <|
-                  Maybe.withDefault "" <| List.head strings --xs 
-            --  )
-            --  decoder
-
 titleDetailDecoder : Decoder TitleDetail
 titleDetailDecoder = map2 TitleDetail (field "titleNumber" int) (field "length" float)
 
@@ -151,17 +133,6 @@ titleDetailsListWrapped =
   Json.Decode.at ["wrapper", "titleDetails"] <| 
     Json.Decode.list <|
       titleDetailDecoder
-
--- not used
-titleDetailsList3a : Json.Decode.Decoder (String)
-titleDetailsList3a =
-  (field "titleDetails" Json.Decode.string) 
-    |> andThen 
-    -- sort of a NoOp 
-             (\s ->
-                -- create Decoder String that decodes to first file name
-                Json.Decode.succeed <| s
-             )
 
 --  customDecoder decoder toResult = 
 --    Json.Decode.andThen
