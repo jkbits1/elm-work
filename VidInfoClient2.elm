@@ -1,3 +1,5 @@
+module VidInfoClient2 exposing (..)
+
 import Debug exposing (log)
 import Html exposing (..)
 import Html.Attributes as Attr exposing (..)
