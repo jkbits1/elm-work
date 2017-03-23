@@ -277,6 +277,10 @@ subscriptions model = Sub.none
 
 update : Msg -> Model -> (Model, Cmd Msg )
 update msg model = 
+  let 
+    modelHttpReset = 
+      { model | count = model.count + 1, httpInfo = "reset" }
+  in
   case msg of 
     NoOp -> (model, Cmd.none)
 
@@ -310,19 +314,19 @@ update msg model =
 
 -- HTTP requests
     GetFirstFileName -> 
-      ( {model | count = model.count + 1 }, getFirstFileNameCmd "string" )
+      ( modelHttpReset, getFirstFileNameCmd "string" )
 
     GetFileNames -> 
-      ( {model | count = model.count + 1, httpInfo = "reset" }, 
+      ( modelHttpReset, 
           -- getFileNames "string" 
           getFileNamesMaybeCmd "string" 
           )
 
     GetFileDetails ->
-      ( {model | count = model.count + 1 }, getFileDetailsCmd model.currentFileName )
+      ( modelHttpReset, getFileDetailsCmd model.currentFileName )
 
     GetFileDetailsWrapped  ->
-      ( {model | count = model.count + 1 }, getFileDetailsWrappedCmd model.currentFileName )
+      ( modelHttpReset, getFileDetailsWrappedCmd model.currentFileName )
 
     GetCurrentFileNameDetails s -> 
       ( {model | count = model.count + 1, currentFileName = s }, getFileDetailsCmd s )
