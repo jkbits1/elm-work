@@ -314,16 +314,22 @@ update msg model =
 
 -- HTTP requests
     GetFirstFileName -> 
-      ( modelHttpReset, getFirstFileNameCmd "string" )
+      ( modelHttpReset, 
+          -- getFirstFileNameCmd  
+          getFirstFileNameMaybeCmd "string" 
+          )
 
     GetFileNames -> 
       ( modelHttpReset, 
-          -- getFileNames "string" 
+          -- getFileNamesCmd  
           getFileNamesMaybeCmd "string" 
           )
 
     GetFileDetails ->
-      ( modelHttpReset, getFileDetailsCmd model.currentFileName )
+      ( modelHttpReset, 
+          -- getFileDetailsCmd
+          getFileDetailsMaybeCmd model.currentFileName 
+          )
 
     GetFileDetailsWrapped  ->
       ( modelHttpReset, getFileDetailsWrappedCmd model.currentFileName )
@@ -337,6 +343,16 @@ update msg model =
       ( {model | firstFileName = fileName }, Cmd.none)    
     -- InfoFirstFileName (Err _) -> (model, Cmd.none)
     InfoFirstFileName (Err err) -> handleHttpError model err
+
+    InfoFirstFileNameMaybe (Ok maybeFileName) ->
+      let
+        fileName = 
+          case maybeFileName of
+            Just fileName -> fileName
+            Nothing -> "dodgy data"
+      in
+      ( {model | firstFileName = fileName }, Cmd.none)
+    InfoFirstFileNameMaybe (Err err) -> handleHttpError model err
 
     -- triggers http request for first file details
     InfoFileNames (Ok fileNames) -> 
@@ -367,6 +383,20 @@ update msg model =
       ( {model | titleDetails = titleDetails }, Cmd.none)    
     InfoTitleDetails (Err err) -> handleHttpError model err
 
+    InfoTitleDetailsMaybe (Ok maybeTitleDetails) -> 
+        ( { model | currentFileName = "todo", 
+                    titleDetails = 
+                      List.map (\m -> 
+                        Maybe.withDefault ( { 
+                            titleNumber = 0
+                          , length = 0.0
+                          }
+                        ) m) <| filterMaybes model.showJsonErrors maybeTitleDetails 
+          , count = model.count + 3 
+          }, Cmd.none)       
+
+    InfoTitleDetailsMaybe (Err err) -> 
+      handleHttpError model err
 
 
 filterMaybes showJsonErrors xs = 
