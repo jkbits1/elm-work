@@ -15,7 +15,7 @@ type alias Model = {
   , xvals : List Int
   , titleDetails : List TitleDetail
   , sortDetailsByLength : Bool
-  , filter : Bool
+  , applyFilter : Bool
   , showJsonErrors : Bool
   , filterLength : Float
   , httpInfo : String
@@ -73,13 +73,13 @@ onChangeSort =
 onChangeFileName : Attribute Msg
 onChangeFileName = onChange (\s -> GetCurrentFileNameDetails s)          
 
-checkbox : Msg -> String -> Html.Html Msg
-checkbox msg name =
+checkbox : Msg -> Bool -> String -> Html.Html Msg
+checkbox msg checkedState name =
   label
     [ 
       -- style [("padding", "20px")]
     ]
-    [ input [ type_ "checkbox", onClick msg ] []
+    [ input [ type_ "checkbox", checked checkedState, onClick msg ] []
     , Html.text name
     ]
 

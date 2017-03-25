@@ -67,7 +67,7 @@ view model =
           ]
         , div [ class "checkbox" ]
           [
-            checkbox Filter "Apply Filter"
+            checkbox Filter model.applyFilter "Apply Filter"
           ]
         , div [class "form-group"]
           [
@@ -84,7 +84,7 @@ view model =
           ]
         , div [ class "checkbox" ]
           [
-            checkbox ShowJsonErrors "Show Json Errors"
+            checkbox ShowJsonErrors model.showJsonErrors "Show Json Errors"
           ]
         ]
       , div [class "firstFileName"]
@@ -108,7 +108,7 @@ view model =
                     <| 
                     List.filter 
                       (\td -> 
-                        case model.filter of 
+                        case model.applyFilter of 
                           True -> td.length > 
                             model.filterLength
                           False -> True)
@@ -263,8 +263,8 @@ model = {
   , xvals = []
   , titleDetails = [] 
   , sortDetailsByLength = False
-  , filter = False
-  , showJsonErrors = False
+  , applyFilter = False
+  , showJsonErrors = True
   , filterLength = 0.0001
   , httpInfo = ""
   }
@@ -293,7 +293,7 @@ update msg model =
           ( {model | count = model.count + 1, sortDetailsByLength = False }, Cmd.none )
 
     Filter ->
-      ( {model | count = model.count + 1, filter = not model.filter }, Cmd.none )
+      ( {model | count = model.count + 1, applyFilter = not model.applyFilter }, Cmd.none )
 
     FilterLen s ->
       ( {model | count = model.count + 1, 
@@ -365,14 +365,14 @@ update msg model =
 
     InfoFileNamesMaybe (Ok fileNames) ->
       let 
-        firstFileName = Maybe.withDefault "aaa" <| Maybe.withDefault (Just "xxx") <| head <| 
-          filterMaybes model.showJsonErrors fileNames
+        filteredFileNames = filterMaybes model.showJsonErrors fileNames 
+        firstFileName = 
+          Maybe.withDefault "aaa" <| Maybe.withDefault (Just "xxx") <| head <| filteredFileNames
         _ = Debug.log "show json errors: " (toString model.showJsonErrors)
       in
         ( { model | currentFileName = firstFileName, 
                     fileNames = 
-                      List.map (\m -> Maybe.withDefault "dodgy data" m) 
-                                      <| filterMaybes model.showJsonErrors fileNames 
+                      List.map (\m -> Maybe.withDefault "dodgy data" m) <| filteredFileNames 
           , count = model.count + 3 
           }, Cmd.none)       
 
@@ -384,16 +384,15 @@ update msg model =
     InfoTitleDetails (Err err) -> handleHttpError model err
 
     InfoTitleDetailsMaybe (Ok maybeTitleDetails) -> 
-        ( { model | currentFileName = "todo", 
-                    titleDetails = 
-                      List.map (\m -> 
-                        Maybe.withDefault ( { 
-                            titleNumber = 0
-                          , length = 0.0
-                          }
-                        ) m) <| filterMaybes model.showJsonErrors maybeTitleDetails 
-          , count = model.count + 3 
-          }, Cmd.none)       
+      ( { model | titleDetails = 
+                    List.map (\m -> 
+                      Maybe.withDefault ( { 
+                          titleNumber = 0
+                        , length = 0.0
+                        }
+                      ) m) <| filterMaybes model.showJsonErrors maybeTitleDetails 
+        , count = model.count + 3 
+        }, Cmd.none)       
 
     InfoTitleDetailsMaybe (Err err) -> 
       handleHttpError model err
