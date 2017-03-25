@@ -128,6 +128,15 @@ maybeFirstStringDecoder =
 titleDetailDecoder : Decoder TitleDetail
 titleDetailDecoder = map2 TitleDetail (field "titleNumber" int) (field "length" float)
 
+-- this decoder supplies a default value if no length property exists
+titleDetailOptLenDecoder : Decoder TitleDetail
+-- titleDetailOptLenDecoder = map2 TitleDetail (field "titleNumber" int) (oneOf [field "length" float, null 0])
+titleDetailOptLenDecoder = 
+  map2 TitleDetail 
+    (field "titleNumber" int) 
+    -- (oneOf [field "length" float, null 0])
+    <| Json.Decode.succeed 0.0 
+
 titleDetailListDecoder : Json.Decode.Decoder (List TitleDetail)
 titleDetailListDecoder =
   (field "titleDetails" string) |> 
@@ -152,8 +161,15 @@ titleDetailListMaybeDecoder =
             case m of 
               Just str -> str
               Nothing -> ""
+          detailsDecoder = 
+            -- nullable titleDetailDecoder
+            nullable <|
+              oneOf [
+                  titleDetailDecoder
+                , titleDetailOptLenDecoder
+                ]
         in
-          decodeString (Json.Decode.list (nullable titleDetailDecoder)) s |>
+          decodeString (Json.Decode.list detailsDecoder) s |>
             (\result ->
               case result of 
                 Ok xs -> Json.Decode.succeed xs
@@ -255,4 +271,3 @@ getFileDetailsCmd string =
 getFileDetailsMaybeCmd :         String -> Cmd Msg
 getFileDetailsMaybeCmd string = 
   Http.send InfoTitleDetailsMaybe   <| getFileDetailsMaybeReq string
-

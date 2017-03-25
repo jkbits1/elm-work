@@ -316,26 +316,33 @@ update msg model =
     GetFirstFileName -> 
       ( modelHttpReset, 
           -- getFirstFileNameCmd  
-          getFirstFileNameMaybeCmd "string" 
-          )
+          getFirstFileNameMaybeCmd 
+            "string" 
+      )
 
     GetFileNames -> 
       ( modelHttpReset, 
           -- getFileNamesCmd  
-          getFileNamesMaybeCmd "string" 
-          )
+          getFileNamesMaybeCmd 
+            "string" 
+      )
 
     GetFileDetails ->
       ( modelHttpReset, 
           -- getFileDetailsCmd
-          getFileDetailsMaybeCmd model.currentFileName 
-          )
+          getFileDetailsMaybeCmd 
+            model.currentFileName 
+      )
 
     GetFileDetailsWrapped  ->
       ( modelHttpReset, getFileDetailsWrappedCmd model.currentFileName )
 
     GetCurrentFileNameDetails s -> 
-      ( {model | count = model.count + 1, currentFileName = s }, getFileDetailsCmd s )
+      ( {model | count = model.count + 1, currentFileName = s }, 
+          -- getFileDetailsCmd
+          getFileDetailsMaybeCmd 
+            s 
+      )
       
 
 -- HTTP responses
