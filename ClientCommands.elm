@@ -1,4 +1,4 @@
-module JsonBits2 exposing (..)
+module ClientCommands exposing (..)
 
 import Http exposing (..)
 import Json.Decode exposing (..)
