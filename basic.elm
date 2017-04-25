@@ -5,7 +5,7 @@ import Html.Events exposing (..)
 -- import Text exposing (color)
 -- import Color exposing (..)
 
-import String
+import String exposing (..)
 import List exposing (..)
 
 type alias Model = String
@@ -31,6 +31,10 @@ view s =
   , br [] []
     
   , text  s
+  , br [] []
+  , text  <| toUpper s
+  , br [] []
+  , text  <| toLower s
   ]
 
 -- converts Update to new Model
@@ -40,7 +44,7 @@ updateModel update s =
       Change s1       ->    (s1, Cmd.none)
 
 
-initialModelState = "hi"
+initialModelState = "hello, Front End London"
 
 init = (initialModelState, Cmd.none )
 
