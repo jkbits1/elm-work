@@ -60,7 +60,6 @@ update msg model =
       let 
         twoRands            = Random.map2 (,) randInt randInt
         ((r1, r2), newSeed) = Random.step twoRands model.seed
-        _ = Debug.log "rands: " ((r1, r2), newSeed)
         flikr s             = 
           Task.perform Source (getFlickrImage (model.winSize.width, model.winSize.height) r1 r2 s)
       in
@@ -73,14 +72,8 @@ update msg model =
           ( { model | count = model.count + 1 }, Cmd.none )
           
     SizeChange size ->
-      -- let
-      --   _ = Debug.log "size: " size 
-      -- in        
         ( { model | count = model.count + 1, winSize = size }, Cmd.none )
     InitialTime t ->
-      -- let
-      --   _ = Debug.log "time: " t
-      -- in
         ( { model | seed = Random.initialSeed <| round t }, Cmd.none )
 
 randInt : Generator Int
@@ -124,23 +117,18 @@ getFlickrImage dimensions r1 r2 tag =
   let searchArgs =
         [ ("sort", "random"), ("per_page", "10"), ("tags", tag) ]
   in
-    (Http.toTask (Http.get (createFlickrURL "search" searchArgs r1) photoList ))
-      |> (Task.andThen selectPhoto)
-      |> (Task.andThen 
-            (\photo ->
-              let                
-                _ = Debug.log "photo: " ((r1, r2), photo)                
-              in                 
+    (Http.toTask (Http.get (createFlickrURL "search" searchArgs r1)     photoList )) -- decoder
+      |> (Task.andThen                                                  selectPhoto )
+      |> (Task.andThen                                                  (\photo ->
                 (Http.toTask 
-                  (Http.get (createFlickrURL "getSizes" [ ("photo_id", photo.id) ] r2) sizeList )))
+                  (Http.get 
+                    (createFlickrURL 
+                      "getSizes" [ ("photo_id", photo.id) ] r2)         sizeList ))) -- decoder
          )
-      |> (Task.andThen <| pickSize dimensions)
+      |> (Task.andThen <|                                               pickSize dimensions)
       |> (onError 
             (\err ->
-              let
-                _ = Debug.log "get image error: " ((r1, r2), err)                
-              in                 
-                succeed Nothing -- "no photo size" 
+                                                                        succeed Nothing 
             )
          )
              
@@ -212,11 +200,7 @@ createFlickrURL method args r =
     mainUrlSectionBase = "https://api.flickr.com/services/rest/"
     mainUrlSection = 
       case rem r 3 of
-        0         ->
-          let
-            _ = Debug.log "x: " method
-          in             
-            mainUrlSectionBase ++ "x"
+        0         -> mainUrlSectionBase ++ "x"
         otherwise -> mainUrlSectionBase  
   in
     url mainUrlSection <|
