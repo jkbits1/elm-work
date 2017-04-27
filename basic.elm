@@ -27,14 +27,9 @@ view s =
     
   , input [ onInput Change ] []
   
-  , br [] []
-  , br [] []
-    
-  , text  s
-  , br [] []
-  , text  <| toUpper s
-  , br [] []
-  , text  <| toLower s
+  , br [] [], br [] [], text  s
+  , br [] [], br [] [], text "UPPER - ", text  <| toUpper s
+  , br [] [], br [] [], text "LOWER - ", text  <| toLower s
   ]
 
 -- converts Update to new Model
